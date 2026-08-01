@@ -1,0 +1,88 @@
+<!doctype html>
+<!--
+  data-cf-product picks the accent ramp and data-cf-substrate the ash ramp, both from
+  @cloudsforge/ui/tokens.css. They are on <html> and set STATICALLY here rather than by React,
+  because a page that paints before the attributes land flashes the default ember and then changes
+  colour.
+
+  'network' — and unlike the explorer, this surface's own key is the right one. tokens.css declares
+  `[data-cf-product='network']` at `ui/packages/ui/src/tokens.css:340-345`, carrying #d6412f, which
+  is the exact accent the registry gives this surface (`ui/packages/ui/src/surfaces.ts:194`).
+
+  It was checked rather than assumed. tokens.css says at `:389-396` that "every key an app may set
+  is declared", precisely so a surface cannot fall through to the company ember in silence — which
+  is what platform/apps/admin/index.html did for as long as nobody looked. `explorer` is still the
+  key with no block of its own; this one has had one since the ramp was written.
+  test/brand-chrome.test.ts asserts the selector this file names really exists.
+
+  'warm' is the ash ramp every product frontend in the estate uses.
+-->
+<html lang="en-GB" data-cf-product="network" data-cf-substrate="warm">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="colour-scheme" content="dark" />
+    <!--
+      The build that produced this bundle. Stamped by the Dockerfile, read by src/lib/obs.ts, and
+      the reason an error report can be pinned to the deploy that introduced it. It is an identity
+      rather than a configuration: it names the artefact, it does not tell it where it is running.
+    -->
+    <meta name="cf-release" content="dev" />
+
+    <!--
+      THE DESCRIPTION SAYS THE STATE OF THE CHAIN IN THE SAME SENTENCE AS WHAT IT IS.
+
+      This string is what ends up in a search result and in a link preview, read entirely without
+      the page around it — so it is the single easiest place on this surface to imply a running
+      network by omission. `hearth/MAP.md:39` is the fact it must not leave out: "there is no live
+      endpoint, no testnet and no mainnet". test/brand-chrome.test.ts asserts that this description
+      and the og one below both contain the word "no mainnet", so a copy edit cannot quietly drop it.
+    -->
+    <meta
+      name="description"
+      content="Hearth is a CPU-mined, ASIC-resistant proof-of-work chain that speaks Ethereum, and its coin is EMBER. It is under construction: no mainnet, no public testnet, and no EMBER of any monetary value."
+    />
+
+    <!--
+      Brand chrome for the `network` surface, from micro-brand's assets/network/ set, copied
+      byte-identical — test/brand-chrome.test.ts compares the bytes in both directions.
+
+      `network` is entitled to the FULL set of eight files (`brand/README.md:36`) and all eight
+      exist in `brand/assets/network/`. Four of them are shipped here, and the choice is the same
+      one every frontend in the estate makes: the favicons and the og card are BROWSER CHROME that a
+      hostname cannot inherit, and the mark, the wordmark, the as-delivered og source and the social
+      banner are not requested by a browser at all.
+
+      The mark is still rendered, and it is rendered as SVG by `<Mark>` from the design system
+      (`ui/packages/ui/src/index.tsx:453`, drawing at `:330`) rather than as one of these PNGs — so
+      it wears `--cf-accent`, stays crisp at any size, and costs no request. `brand/assets/network/`
+      keeps the raster copies for the places a browser is not the consumer.
+    -->
+    <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png" />
+    <link rel="icon" type="image/png" sizes="192x192" href="/favicon-192x192.png" />
+    <link rel="icon" type="image/png" sizes="512x512" href="/favicon-512x512.png" />
+    <link rel="apple-touch-icon" sizes="192x192" href="/favicon-192x192.png" />
+
+    <!--
+      ONE og block, not two. foresight-web/index.html declares og:type, og:title and og:description
+      twice — the second set silently wins in every crawler and the first is dead text nobody edits.
+      Reported there; not repeated here, and test/brand-chrome.test.ts counts each property.
+
+      The image is a RELATIVE path so the card resolves against whichever origin served the page,
+      which is the same rule the rest of this bundle follows for hosts.
+    -->
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="Forge Network — Hearth and EMBER" />
+    <meta
+      property="og:description"
+      content="A CPU-mined proof-of-work chain that speaks Ethereum. Under construction: no mainnet, no public testnet, and no EMBER of any monetary value."
+    />
+    <meta property="og:image" content="/og-1200x630.png" />
+
+    <title>Forge Network</title>
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html>

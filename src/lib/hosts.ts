@@ -1,0 +1,219 @@
+/**
+ * Where this app talks to, resolved at runtime.
+ *
+ * `cloudsforgeHosts()` reads `window.location.hostname` on every call, so one image serves
+ * localhost, a preview deployment and production. Nothing here reads a build-time constant; see
+ * the note in vite.config.ts and `test/no-build-time-config.test.ts`.
+ *
+ * ══════════════════════════════════════════════════════════════════════════════════════════════
+ * THIS SURFACE READS TWO SERVICES, AND THE REGISTRY GIVES A WORKING BASE FOR NEITHER. BOTH GAPS
+ * ARE RESOLVED THROUGH THE REGISTRY ANYWAY, NAMED HERE, AND PINNED BY TEST.
+ *
+ * A hard-coded host is a second, unversioned copy of the registry, and the copy is the one that
+ * goes stale — the conclusion admin-web, mint-web, trade-web, worlds-web and explorer-web each
+ * reached about their own entry. So the numbers below are reported, not patched over.
+ *
+ * ── 1. The chain index. Registry key `explorer`, and the read is CROSS-ORIGIN ─────────────────
+ *
+ * There is no `indexer` key: `SurfaceKey` is declared at `ui/packages/ui/src/surfaces.ts:23-38`
+ * and `indexer` is not among them, and `CloudsForgeHosts` is `Record<SurfaceKey, string>`
+ * (`ui/packages/ui/src/index.tsx:121`), so a frontend can only name a surface. The one that means
+ * "the chain index" is `explorer`, whose devPort is **4008** — the port `micro-indexer` binds
+ * (`ui/packages/ui/src/surfaces.ts:456`, `indexer/src/env.ts:295`). That entry was 8080 until
+ * recently and micro-ui has since corrected it, with the reasoning in the comment above it.
+ *
+ * So `cloudsforgeHosts().explorer` is `https://explorer.<apex>` in production, and this bundle is
+ * served from `https://network.<apex>` (`ui/packages/ui/src/surfaces.ts:192`). **Those are
+ * different origins, and micro-indexer sends no CORS headers at all.** Its `send()
+ * (`indexer/src/server.ts:794-807`) writes `content-type`, `content-length`, `x-request-id` and
+ * `cache-control` and nothing else, and there is no `access-control-` anywhere in that
+ * repository's source. The estate's CORS headers come from the gateway instead — one middleware
+ * on the websecure entrypoint (`deploy/compose/docker-compose.gateway.yml:90`,
+ * `deploy/gateway/dynamic/policy.yml:43-69`) — and **`https://network.cloudsforge.online` is not
+ * in that allowlist** (`deploy/gateway/dynamic/policy.yml:45-60` lists the apex, hub, market,
+ * mint, trade, worlds, explorer, admin, developers and status).
+ *
+ * Two of those are the same finding said twice, so state it once: today a browser on this surface
+ * cannot read the chain index, and the page says so rather than rendering a number it did not
+ * fetch. `test/hosts.test.ts` asserts BOTH the absent allowlist entry and the absent header, so
+ * the day either is fixed this file goes red and the apology gets deleted instead of ageing.
+ *
+ * It resolves through `resolveApiBase` rather than being written absolute, so the day the chain
+ * index is also routed behind `network.<apex>` the comparison makes the base `''` and every
+ * request goes relative with no edit here.
+ *
+ * ── 2. The faucet. Registry key `faucet`, whose devPort is THIS PAGE ──────────────────────────
+ *
+ * `faucet` is a `surface` with `subdomain: 'network'`, `basePath: '/faucet'` and devPort **3003**
+ * (`ui/packages/ui/src/surfaces.ts:365-380`) — "a route on the Network site rather than a host of
+ * its own". `micro-faucet` the SERVICE binds **4013** (`faucet/src/env.ts:311`,
+ * `faucet/.env.example:19`, `faucet/Dockerfile:84`).
+ *
+ * So `cloudsforgeHosts().faucet` is `https://network.<apex>/faucet` — a PAGE on this app, which is
+ * exactly what the registry means by it, and not an API base. This is the same shape of confusion
+ * the `explorer` row was corrected for, arriving from the other direction: there, one field had to
+ * name a service; here, it names a page and there is no field left to name the service.
+ *
+ * Two consequences this file has to handle rather than assume away:
+ *
+ *   * **The basePath must be stripped before a request path is appended.** `${hosts.faucet}/v1/faucet`
+ *     is `/faucet/v1/faucet`, which `micro-faucet` does not serve — its table is at
+ *     `faucet/src/server.ts:301-437` and every path there starts `/v1`. `faucetBase()` below takes
+ *     the ORIGIN and drops the path, and `test/hosts.test.ts` pins that.
+ *   * **In production the origin is this page's**, so the base is `''` and the drip request is
+ *     relative — which is what the registry asserts and what the gateway therefore has to route.
+ *     Under `pnpm dev` it is `http://localhost:3003`, which is neither this bundle (5190, see
+ *     vite.config.ts) nor the faucet (4013). The README says the one line that makes it work.
+ *
+ * And a third gap, in the service rather than in the registry: `micro-faucet` DOES do CORS, with
+ * an allowlist and no wildcard (`faucet/src/server.ts:518-533`), fed from `FAUCET_CORS_ORIGINS`
+ * (`faucet/src/index.ts:212`). The example value is `https://faucet.cloudsforge.online`
+ * (`faucet/.env.example:112`) — **a hostname the registry does not have**. The browser origin that
+ * posts a drip is `https://network.<apex>`, because that is where the faucet page lives. An
+ * allowlist naming a host nobody serves fails closed and silently, which is the exact defect
+ * `deploy/gateway/dynamic/policy.yml:53-56` records having already fixed once for `devportal`
+ * versus `developers`. Reported to micro-faucet; not fixed from here.
+ * ══════════════════════════════════════════════════════════════════════════════════════════════
+ */
+import { cloudsforgeHosts, type CloudsForgeHosts, type SurfaceKey } from '@cloudsforge/ui'
+
+/**
+ * The surface this application IS.
+ *
+ * `ui/packages/ui/src/surfaces.ts:187-199` registers `network` as a **product**: verb `Mine`,
+ * subdomain `network`, devPort 3003, accent `#d6412f`, glyph `●`, `markId: 'mark-network'` and
+ * `inSwitcher: true`. Unlike the explorer, this surface DOES have a mark — `brand/README.md:36`
+ * gives `network` the **full** set of eight files and `brand/assets/network/` holds all eight —
+ * and `test/brand-chrome.test.ts` checks the four this bundle ships byte for byte.
+ */
+export const PRODUCT: SurfaceKey = 'network'
+
+/**
+ * The registry key that means "the chain index".
+ *
+ * Named as a constant rather than written at the call site because it is the load-bearing
+ * substitution in this file: the surface this bundle IS and the surface it READS are different
+ * rows, and confusing them is how `explorer` came to resolve to its own nginx port.
+ */
+export const CHAIN_INDEX_SURFACE: SurfaceKey = 'explorer'
+
+/** The registry key for the faucet. A page on THIS host; see the header. */
+export const FAUCET_SURFACE: SurfaceKey = 'faucet'
+
+/** The name reported to the observability ingest and shown in error copy. */
+export const APP_NAME = 'network-site'
+
+/**
+ * The accent block this page's `<html>` names.
+ *
+ * `[data-cf-product='network']` exists at `ui/packages/ui/src/tokens.css:340-345` and carries
+ * `#d6412f`, the exact accent the registry gives this surface
+ * (`ui/packages/ui/src/surfaces.ts:194`). Checked rather than assumed: tokens.css says at
+ * `:389-396` that "every key an app may set is declared", precisely so a surface cannot fall
+ * through to the company ember in silence, which is what `admin` did.
+ */
+export const ACCENT_SURFACE = 'network'
+
+/**
+ * Resolve a base URL for a surface, comparing ORIGINS.
+ *
+ * A surface may carry a `basePath` — the wallet inside Hub, the faucet inside this site — so the
+ * comparison is between origins rather than whole URLs; otherwise every such surface would look
+ * cross-origin to itself. The result is `''` when the surface shares this page's origin, so the
+ * request stays relative and no CORS question arises.
+ *
+ * Derived by comparison rather than by a `DEV` flag, because a flag is a build-time constant and
+ * this repository has none: an image built for production and opened on localhost would then point
+ * at a host that is not there.
+ */
+export function resolveApiBase(
+  pageOrigin: string,
+  hosts: CloudsForgeHosts,
+  key: SurfaceKey,
+): string {
+  const own = hosts[key]
+  // With no page origin there is nothing for a relative URL to resolve against, so the absolute
+  // form is the only correct answer.
+  if (!pageOrigin) return originOf(own)
+  return originOf(own) === pageOrigin ? '' : originOf(own)
+}
+
+/**
+ * The ORIGIN of a registry URL, with any `basePath` dropped.
+ *
+ * This is not tidying. `hosts.faucet` is `https://network.<apex>/faucet`, and appending an API
+ * path to it produces `/faucet/v1/drips` — a path `micro-faucet` does not serve
+ * (`faucet/src/server.ts:301-437`; every entry begins `/v1`). A 404 from a path shape nobody
+ * serves is indistinguishable from a service that is down, which is exactly the class of defect
+ * this estate keeps shipping.
+ */
+export function originOf(url: string): string {
+  try {
+    return new URL(url).origin
+  } catch {
+    // An unparseable registry value is a bug upstream, not something to guess at. Returning the
+    // input unchanged makes the failure visible in the request URL rather than silently correct.
+    return url
+  }
+}
+
+/** The same four names `cloudsforgeHosts()` treats as development. Kept in step by test. */
+export function isLocal(hostname: string): boolean {
+  return (
+    hostname === '' ||
+    hostname === 'localhost' ||
+    hostname === '127.0.0.1' ||
+    hostname.endsWith('.local')
+  )
+}
+
+/**
+ * Whether this bundle is being served from an address the surface registry knows.
+ *
+ * `cloudsforgeHosts()` derives the apex by stripping a KNOWN subdomain prefix
+ * (`ui/packages/ui/src/index.tsx:149-158`). Served from an unknown name, the whole name becomes
+ * the apex, and every CloudsForge URL derived from it — the chain index, the account portal,
+ * Lantern — resolves one level too deep. The app still renders, because this is a public reference
+ * surface and nothing here is a security boundary; but it says so, once, in the shell.
+ */
+export function isRegisteredPlacement(
+  pageOrigin: string,
+  hostname: string,
+  hosts: CloudsForgeHosts,
+): boolean {
+  if (isLocal(hostname)) return true
+  if (!pageOrigin) return true
+  return originOf(hosts[PRODUCT]) === pageOrigin
+}
+
+/** Every CloudsForge base URL, for the current environment. */
+export function hosts(): CloudsForgeHosts {
+  return cloudsforgeHosts()
+}
+
+/** The page origin, or a stable placeholder when there is no document (tests, prerender). */
+export function pageOrigin(): string {
+  return typeof window === 'undefined' ? 'http://localhost' : window.location.origin
+}
+
+/**
+ * The chain index's base. Call it per request; never cache it in a module constant.
+ *
+ * Cross-origin in every environment that exists today. See the header for the two upstream
+ * changes that would make it relative, and `test/hosts.test.ts` for the assertions that go red
+ * when either lands.
+ */
+export function chainIndexBase(): string {
+  return resolveApiBase(pageOrigin(), cloudsforgeHosts(), CHAIN_INDEX_SURFACE)
+}
+
+/** The faucet API's base, with the registry `basePath` dropped. See the header. */
+export function faucetBase(): string {
+  return resolveApiBase(pageOrigin(), cloudsforgeHosts(), FAUCET_SURFACE)
+}
+
+/** Whether the current address is one the registry knows. Read by the shell. */
+export function placementIsKnown(): boolean {
+  if (typeof window === 'undefined') return true
+  return isRegisteredPlacement(window.location.origin, window.location.hostname, cloudsforgeHosts())
+}

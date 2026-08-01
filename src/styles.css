@@ -1,0 +1,660 @@
+/*
+ * Forge Network's own styles, on top of @cloudsforge/ui.
+ *
+ * ══════════════════════════════════════════════════════════════════════════════════════════════
+ * EVERY CUSTOM PROPERTY REFERENCED HERE IS DEFINED IN `ui/packages/ui/src/tokens.css`, AND A TEST
+ * PROVES IT.
+ *
+ * `test/tokens.test.ts` reads the sibling design system, collects every `--cf-*` this file names,
+ * and fails on one that tokens.css does not declare. That is not a style preference. An undefined
+ * custom property makes the whole declaration invalid at computed-value time, so
+ * `border: 1px solid var(--cf-undefined)` does not fall back to a sensible border — it drops the
+ * border entirely, silently, in a file that looks correct.
+ *
+ * The estate has already shipped this. `micro-mint-web/src/styles.css` references TEN properties
+ * that do not exist — `--cf-border`, `--cf-radius-md`, `--cf-space-1` through `--cf-space-5`, and
+ * `--cf-status-good`/`-warn`/`-crit` — across 72 declarations, while every other frontend in the
+ * estate is clean. Reported, not fixed from here.
+ *
+ * The names that DO exist and are used below:
+ *   borders   --cf-line, --cf-line-strong           (never --cf-border)
+ *   states    --cf-success, --cf-warn, --cf-danger  (never --cf-status-*, never --cf-critical)
+ *   radii     --cf-radius-sm, --cf-radius, --cf-radius-lg  (never --cf-radius-md)
+ *   spacing   --cf-space-3xs … --cf-space-3xl       (never --cf-space-1..5)
+ *   type      --cf-font-sans, --cf-font-mono, --cf-font-display  (never --cf-font)
+ *
+ * A `var(--undefined, #hex)` is not a repair either: it is a hard-coded colour wearing a token's
+ * clothes, and it stops following the substrate the moment somebody switches the ash ramp. There
+ * is one literal colour in this file and it is `transparent`.
+ *
+ * ── The same rule applies to CLASS names ─────────────────────────────────────────────────────
+ *
+ * A class that does not exist fails exactly as quietly as a property that does: the element renders
+ * unstyled and nothing reports it. `test/tokens.test.ts` asserts that every `cf-` class this bundle
+ * names is declared upstream.
+ *
+ * The form control on the faucet page is `.cf-input` with the `--mono` modifier, from
+ * `ui/packages/ui/src/ui.css:174-192`. **There is no local `.ns-input` and there must not be one** —
+ * five frontends each wrote their own before that rule existed and two of them had already drifted
+ * (`ui/packages/ui/src/ui.css:149-172`). `.cf-btn--ember` is the design system's ONE solid call to
+ * action; `.cf-btn--primary` does not exist and a second name for one thing is how a token set
+ * starts to drift.
+ * ══════════════════════════════════════════════════════════════════════════════════════════════
+ */
+
+/* ---- the frame -------------------------------------------------------- */
+
+.ns-skip {
+  position: absolute;
+  left: -9999px;
+  top: 0;
+  z-index: 100;
+  padding: var(--cf-space-sm) var(--cf-space-lg);
+  background: var(--cf-accent);
+  color: var(--cf-accent-ink);
+  border-radius: 0 0 var(--cf-radius) 0;
+}
+
+.ns-skip:focus {
+  left: 0;
+}
+
+.ns-subnav {
+  position: sticky;
+  /* The bar's OWN height token, not a number copied out of it. */
+  top: var(--cf-bar-h);
+  z-index: 20;
+  background: var(--cf-bg);
+  border-bottom: 1px solid var(--cf-line);
+}
+
+.ns-subnav__inner {
+  max-width: var(--cf-max-w);
+  margin: 0 auto;
+  display: flex;
+  align-items: center;
+  gap: var(--cf-space-xs);
+  padding: 0 var(--cf-space-xl);
+  overflow-x: auto;
+}
+
+.ns-subnav__brand {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--cf-space-2xs);
+  padding-right: var(--cf-space-md);
+  margin-right: var(--cf-space-2xs);
+  border-right: 1px solid var(--cf-line);
+  white-space: nowrap;
+}
+
+.ns-subnav__name {
+  font-family: var(--cf-font-display);
+  font-size: var(--cf-text-sm);
+  font-weight: 600;
+  color: var(--cf-fg);
+}
+
+.ns-subnav__link {
+  padding: var(--cf-space-md) var(--cf-space-sm);
+  color: var(--cf-fg-dim);
+  text-decoration: none;
+  font-size: var(--cf-text-md);
+  border-bottom: 2px solid transparent;
+  white-space: nowrap;
+}
+
+.ns-subnav__link:hover {
+  color: var(--cf-fg);
+}
+
+.ns-subnav__link.is-active {
+  color: var(--cf-fg);
+  border-bottom-color: var(--cf-accent);
+}
+
+.ns-main {
+  max-width: var(--cf-max-w);
+  margin: 0 auto;
+  padding: var(--cf-space-2xl) var(--cf-space-xl) var(--cf-space-3xl);
+  font-family: var(--cf-font-sans);
+  color: var(--cf-fg);
+  display: flex;
+  flex-direction: column;
+  gap: var(--cf-space-xl);
+}
+
+/* ---- page furniture --------------------------------------------------- */
+
+.ns-page {
+  display: flex;
+  flex-direction: column;
+  gap: var(--cf-space-2xl);
+}
+
+.ns-page__head {
+  display: flex;
+  flex-direction: column;
+  gap: var(--cf-space-sm);
+}
+
+.ns-eyebrow {
+  margin: 0;
+  color: var(--cf-accent);
+  font-family: var(--cf-font-mono);
+  font-size: var(--cf-text-xs);
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.ns-page__title {
+  margin: 0;
+  font-family: var(--cf-font-display);
+  font-size: var(--cf-text-4xl);
+  font-weight: 600;
+  line-height: 1.1;
+}
+
+.ns-page__standfirst {
+  margin: 0;
+  color: var(--cf-fg-dim);
+  font-size: var(--cf-text-lg);
+  max-width: 52rem;
+}
+
+.ns-section {
+  display: flex;
+  flex-direction: column;
+  gap: var(--cf-space-md);
+}
+
+.ns-section__title {
+  margin: 0;
+  font-family: var(--cf-font-display);
+  font-size: var(--cf-text-xl);
+  font-weight: 600;
+}
+
+.ns-section__lede,
+.ns-prose {
+  margin: 0;
+  color: var(--cf-fg-dim);
+  max-width: 52rem;
+}
+
+.ns-list {
+  margin: 0;
+  padding-left: var(--cf-space-xl);
+  display: flex;
+  flex-direction: column;
+  gap: var(--cf-space-sm);
+  color: var(--cf-fg-dim);
+  max-width: 52rem;
+}
+
+/*
+ * An absent value is italic and muted, and it is a SENTENCE rather than a dash.
+ *
+ * The whole argument of this surface is that "not observed" and "could not be fetched" are
+ * different facts and neither is a nought. A style that reduced both to an em dash would undo that
+ * in CSS after the type system had spent four states protecting it.
+ */
+.ns-absent {
+  color: var(--cf-fg-mute);
+  font-style: italic;
+}
+
+.ns-code {
+  padding: 0.1rem 0.35rem;
+  border-radius: var(--cf-radius-sm);
+  background: var(--cf-bg-sunken);
+  font-family: var(--cf-font-mono);
+  font-size: var(--cf-text-sm);
+}
+
+.ns-hex {
+  font-family: var(--cf-font-mono);
+  font-size: var(--cf-text-sm);
+  overflow-wrap: anywhere;
+}
+
+/* ---- citations -------------------------------------------------------- */
+
+/*
+ * A citation is rendered small and muted, but it is NEVER hidden behind a hover or a disclosure.
+ * The claim and the evidence for it have to be visible at the same time, or the evidence is
+ * decoration.
+ */
+.ns-cite {
+  margin: 0;
+  color: var(--cf-fg-mute);
+  font-size: var(--cf-text-2xs);
+}
+
+.ns-cite__label {
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+.ns-cite__path {
+  font-family: var(--cf-font-mono);
+  overflow-wrap: anywhere;
+}
+
+/* ---- cards ------------------------------------------------------------ */
+
+.ns-cards {
+  display: grid;
+  gap: var(--cf-space-lg);
+  grid-template-columns: repeat(auto-fill, minmax(20rem, 1fr));
+}
+
+.ns-card {
+  display: flex;
+  flex-direction: column;
+  gap: var(--cf-space-sm);
+  padding: var(--cf-space-lg);
+  border: 1px solid var(--cf-line);
+  border-radius: var(--cf-radius-lg);
+  background: var(--cf-surface-solid);
+}
+
+/* A caveat card is bordered on the warn colour, and its heading still carries the word. */
+.ns-card--warn {
+  border-color: var(--cf-warn);
+}
+
+.ns-card__title {
+  margin: 0;
+  font-size: var(--cf-text-md);
+  font-weight: 600;
+}
+
+.ns-card__body {
+  margin: 0;
+  color: var(--cf-fg-dim);
+  flex: 1 1 auto;
+}
+
+.ns-card__go {
+  align-self: flex-start;
+  text-decoration: none;
+}
+
+/* ---- details ---------------------------------------------------------- */
+
+.ns-details {
+  margin: 0;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(22rem, 1fr));
+  gap: var(--cf-space-md) var(--cf-space-xl);
+}
+
+.ns-detail {
+  display: flex;
+  flex-direction: column;
+  gap: var(--cf-space-3xs);
+  padding: var(--cf-space-sm) 0;
+  border-top: 1px solid var(--cf-line);
+}
+
+.ns-detail__label {
+  color: var(--cf-fg-mute);
+  font-size: var(--cf-text-sm);
+}
+
+.ns-detail__value {
+  margin: 0;
+  overflow-wrap: anywhere;
+}
+
+.ns-detail__aside {
+  display: block;
+  color: var(--cf-fg-mute);
+  font-size: var(--cf-text-xs);
+}
+
+/* ---- figures ---------------------------------------------------------- */
+
+.ns-figure {
+  display: inline-flex;
+  align-items: baseline;
+  gap: var(--cf-space-2xs);
+  flex-wrap: wrap;
+}
+
+.ns-figure__n {
+  font-weight: 600;
+  font-size: var(--cf-text-lg);
+}
+
+.ns-figure__unit {
+  color: var(--cf-fg-dim);
+  font-size: var(--cf-text-sm);
+}
+
+/* ---- notes ------------------------------------------------------------ */
+
+.ns-note {
+  display: flex;
+  align-items: baseline;
+  gap: var(--cf-space-sm);
+  margin: 0;
+  padding: var(--cf-space-lg) var(--cf-space-xl);
+  border: 1px solid var(--cf-line-strong);
+  border-radius: var(--cf-radius);
+  background: var(--cf-surface);
+  color: var(--cf-fg-dim);
+  max-width: 60rem;
+  font-size: var(--cf-text-md);
+}
+
+.ns-note__icon {
+  line-height: 1;
+  font-size: var(--cf-text-lg);
+}
+
+.ns-note__body {
+  display: flex;
+  flex-direction: column;
+  gap: var(--cf-space-2xs);
+}
+
+.ns-note__body p {
+  margin: 0;
+}
+
+.ns-note__title {
+  color: var(--cf-fg);
+  font-weight: 600;
+}
+
+.ns-note__aside {
+  color: var(--cf-fg-mute);
+  font-size: var(--cf-text-sm);
+}
+
+.ns-note--warn {
+  border-color: var(--cf-warn);
+}
+
+.ns-note--warn .ns-note__icon {
+  color: var(--cf-warn);
+}
+
+.ns-note--accent {
+  border-color: var(--cf-accent);
+}
+
+.ns-note--accent .ns-note__icon {
+  color: var(--cf-accent);
+}
+
+/* ---- badges ----------------------------------------------------------- */
+
+.ns-badge {
+  display: inline-flex;
+  align-items: baseline;
+  gap: var(--cf-space-2xs);
+  padding: 0.1rem 0.5rem;
+  border: 1px solid var(--cf-line-strong);
+  border-radius: var(--cf-radius-sm);
+  font-size: var(--cf-text-xs);
+  white-space: nowrap;
+}
+
+.ns-badge__glyph {
+  line-height: 1;
+}
+
+/* Colour is the THIRD channel. The word and the glyph carry the meaning on their own. */
+.ns-badge--good {
+  border-color: var(--cf-success);
+  color: var(--cf-success);
+}
+
+.ns-badge--warn {
+  border-color: var(--cf-warn);
+  color: var(--cf-warn);
+}
+
+.ns-badge--bad {
+  border-color: var(--cf-danger);
+  color: var(--cf-danger);
+}
+
+.ns-badge--idle {
+  color: var(--cf-fg-mute);
+}
+
+/* ---- tables ----------------------------------------------------------- */
+
+.ns-tablewrap {
+  overflow-x: auto;
+  border: 1px solid var(--cf-line);
+  border-radius: var(--cf-radius);
+}
+
+.ns-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: var(--cf-text-sm);
+}
+
+.ns-table th,
+.ns-table td {
+  padding: var(--cf-space-sm) var(--cf-space-md);
+  text-align: left;
+  vertical-align: top;
+  border-bottom: 1px solid var(--cf-line);
+}
+
+.ns-table thead th {
+  color: var(--cf-fg-mute);
+  font-weight: 600;
+  white-space: nowrap;
+  background: var(--cf-bg-sunken);
+}
+
+.ns-table tbody tr:last-child th,
+.ns-table tbody tr:last-child td {
+  border-bottom: 0;
+}
+
+/* ---- steps and commands ----------------------------------------------- */
+
+.ns-steps {
+  margin: 0;
+  padding-left: var(--cf-space-xl);
+  display: flex;
+  flex-direction: column;
+  gap: var(--cf-space-xl);
+}
+
+.ns-step {
+  display: flex;
+  flex-direction: column;
+  gap: var(--cf-space-xs);
+}
+
+.ns-step__title {
+  margin: 0;
+  font-size: var(--cf-text-md);
+  font-weight: 600;
+}
+
+.ns-step__body {
+  margin: 0;
+  color: var(--cf-fg-dim);
+  max-width: 52rem;
+}
+
+/*
+ * A command is selectable in one gesture and scrolls rather than wrapping.
+ *
+ * A wrapped command is a command somebody pastes with a newline in the middle of it, and the shell
+ * runs the first half. `white-space: pre` plus a scroll is the only rendering that cannot do that.
+ */
+.ns-cmd {
+  margin: 0;
+  padding: var(--cf-space-md) var(--cf-space-lg);
+  border: 1px solid var(--cf-line-strong);
+  border-radius: var(--cf-radius-sm);
+  background: var(--cf-bg-sunken);
+  font-family: var(--cf-font-mono);
+  font-size: var(--cf-text-sm);
+  white-space: pre;
+  overflow-x: auto;
+  user-select: all;
+}
+
+/* ---- the faucet form -------------------------------------------------- */
+
+.ns-form {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  gap: var(--cf-space-md);
+  padding: var(--cf-space-xl);
+  border: 1px solid var(--cf-line);
+  border-radius: var(--cf-radius-lg);
+  background: var(--cf-surface-solid);
+}
+
+.ns-field {
+  display: flex;
+  flex-direction: column;
+  gap: var(--cf-space-3xs);
+  flex: 1 1 24rem;
+}
+
+.ns-field__label {
+  color: var(--cf-fg-mute);
+  font-size: var(--cf-text-sm);
+}
+
+.ns-field__hint {
+  margin: 0;
+  color: var(--cf-fg-mute);
+  font-size: var(--cf-text-xs);
+  max-width: 40rem;
+}
+
+.ns-drip {
+  display: flex;
+  flex-direction: column;
+  gap: var(--cf-space-md);
+  padding: var(--cf-space-xl);
+  border: 1px solid var(--cf-line-strong);
+  border-radius: var(--cf-radius-lg);
+  background: var(--cf-bg-sunken);
+}
+
+.ns-drip__head {
+  margin: 0;
+  font-weight: 600;
+}
+
+/* ---- the states, from the template ------------------------------------ */
+
+.wt-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--cf-space-sm);
+  padding: var(--cf-space-3xl) var(--cf-space-xl);
+  border-radius: var(--cf-radius-lg);
+  text-align: center;
+}
+
+.wt-state__icon {
+  font-size: var(--cf-text-3xl);
+  line-height: 1;
+}
+
+.wt-state__title {
+  margin: 0;
+  font-weight: 600;
+}
+
+.wt-state__hint,
+.wt-state__meta {
+  margin: 0;
+  color: var(--cf-fg-dim);
+  font-size: var(--cf-text-md);
+  max-width: 40rem;
+}
+
+/*
+ * The "why" block inside a failure is left-aligned inside a centred panel on purpose: it is a
+ * paragraph with a citation under it, and a centred paragraph with a centred file path under it is
+ * unreadable at the exact moment somebody is trying to read it carefully.
+ */
+.wt-state__why {
+  text-align: left;
+  max-width: 44rem;
+  color: var(--cf-fg-dim);
+  font-size: var(--cf-text-sm);
+  display: flex;
+  flex-direction: column;
+  gap: var(--cf-space-2xs);
+}
+
+.wt-state__why p {
+  margin: 0;
+}
+
+.wt-state__action {
+  display: flex;
+  gap: var(--cf-space-sm);
+  flex-wrap: wrap;
+  justify-content: center;
+  margin-top: var(--cf-space-sm);
+}
+
+.wt-state--empty {
+  border: 1px dashed var(--cf-line);
+  color: var(--cf-fg-dim);
+}
+
+.wt-state--failed {
+  border: 1px solid var(--cf-danger);
+}
+
+.wt-state--failed .wt-state__icon {
+  color: var(--cf-danger);
+}
+
+/*
+ * The request id is the string a reader reads down a phone line or pastes into a support form, so
+ * it is monospace, selectable and set apart.
+ */
+.wt-reqid {
+  user-select: all;
+  padding: 0.1rem 0.35rem;
+  border-radius: var(--cf-radius-sm);
+  background: var(--cf-bg-sunken);
+  font-family: var(--cf-font-mono);
+}
+
+.wt-spinner {
+  width: 1.1rem;
+  height: 1.1rem;
+  border-radius: 50%;
+  border: 2px solid var(--cf-line-strong);
+  border-top-color: var(--cf-accent);
+  animation: ns-spin 700ms linear infinite;
+}
+
+@keyframes ns-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* Respecting a stated preference is not optional; a spinner is the classic trigger. */
+@media (prefers-reduced-motion: reduce) {
+  .wt-spinner {
+    animation-duration: 3s;
+  }
+}

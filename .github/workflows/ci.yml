@@ -1,0 +1,1026 @@
+# Continuous integration.
+#
+# ────────────────────────────────────────────────────────────────────────────────────────────────
+# THE `check` AND `image` JOBS BELOW ARE TEMPORARY, exactly as they are in `micro-explorer-web`,
+# `micro-admin-web`, `micro-mint-web`, `micro-trade-web` and `micro-hub-web`. The org's reusable
+# `web-ci.yml` is the target and the `hygiene` job already calls the org repository; the two local
+# jobs exist for one reason and disappear with it:
+#
+#   @cloudsforge/ui is unpublished, and this repository consumes it as `link:../ui/packages/ui`.
+#   The reusable workflow does a single checkout and then `pnpm install --frozen-lockfile`, which
+#   cannot resolve a sibling directory that is not there. The day the design system is published
+#   and the specifier in package.json becomes `^1.0.0`, everything from `check:` to the end of
+#   `image:` is deleted and replaced by:
+#
+#     jobs:
+#       ci:
+#         uses: cloudsforge-online/micro-org/.github/workflows/web-ci.yml@main
+#         with:
+#           app: network-site
+#           deep-link-path: /faucet
+#         permissions:
+#           contents: read
+#           packages: read
+#
+#   — the calling convention in `org/templates/web/_github/workflows/ci.yml`. The measured target
+#   in docs/ecosystem/03 §5 is zero repositories with a bespoke CI file, so treat every line from
+#   `check:` down as a liability with a deletion date rather than as something to extend.
+#
+# TWO INPUTS OF THE REUSABLE WORKFLOW WILL STILL NOT SUIT THIS REPOSITORY:
+#
+#   * its `image` job probes a deep route and requires a 200 for ANY address. This app's nginx.conf
+#     enumerates its real routes and answers 404 for everything else ON PURPOSE, so
+#     `build-image: false` will be passed and the image is checked here, where the probe can assert
+#     the honest answer as well as the deep link.
+#   * it checks out no SIBLING SERVICE, so `test/chainstatus.test.ts` and `test/faucet.test.ts`
+#     would skip their cross-repository halves and every route citation would go unverified. That
+#     is the check this repository exists to have; it stays local until the reusable workflow grows
+#     the input.
+#
+# `deep-link-path` is `/faucet` — a REAL route, exported as `DEEP_LINK_PATH` from
+# `src/lib/routes.ts`, which `test/routes.test.ts` checks this file against. It is also the path
+# every other repository in the estate links to through `cloudsforgeHosts().faucet`, so a deploy
+# that dropped it would break links in six repositories and this is the probe that would say so.
+# ────────────────────────────────────────────────────────────────────────────────────────────────
+
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  check:
+    name: Typecheck, test, build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with: { path: network-site }
+
+      # Temporary, for the same reason as the Dockerfile's second build context: the design system
+      # is unpublished and resolves through `link:../ui/packages/ui`. It is also what
+      # `test/tokens.test.ts` reads to prove every custom property AND every `cf-` class this app
+      # names exists, and what `test/hosts.test.ts` reads for the registry rows and the CO_HOSTED
+      # set.
+      - uses: actions/checkout@v4
+        with:
+          repository: cloudsforge-online/micro-ui
+          path: ui
+          # micro-ui is private; without a contents:read token this checkout 404s and the job dies
+          # before install. Same wiring as the service repos' runtime checkout.
+          token: ${{ secrets.ESTATE_READ_TOKEN }}
+
+      # ══════════════════════════════════════════════════════════════════════════════════════════
+      # THE TWO SERVICES THIS CLIENT IS BUILT AGAINST, CHECKED OUT SO THE CITATIONS CAN BE VERIFIED.
+      #
+      # `test/chainstatus.test.ts` reads `indexer/src/server.ts`, `reads.ts`, `chains.ts` and
+      # `env.ts` and requires that every route this bundle calls OR DECLINES is registered at the
+      # line its citation names, that each of the nine domain routes still opens with the gate this
+      # app believes, and that `status` still returns null rather than zero for an unobserved
+      # height — which is the fact the whole `Figure` union rests on.
+      #
+      # `test/faucet.test.ts` does the same against `faucet/src/server.ts`, whose routes are
+      # `define()` calls rather than a table, so the checker had to be written for the shape that
+      # service actually has.
+      #
+      # Eight clients in this estate were built against a surface somebody imagined; one made every
+      # on-chain escrow activation fail with a false diagnosis.
+      # ══════════════════════════════════════════════════════════════════════════════════════════
+      - uses: actions/checkout@v4
+        with:
+          repository: cloudsforge-online/micro-indexer
+          path: indexer
+          token: ${{ secrets.ESTATE_READ_TOKEN }}
+          sparse-checkout: |
+            src
+      - uses: actions/checkout@v4
+        with:
+          repository: cloudsforge-online/micro-faucet
+          path: faucet
+          token: ${{ secrets.ESTATE_READ_TOKEN }}
+          sparse-checkout: |
+            src
+            .env.example
+
+      # ══════════════════════════════════════════════════════════════════════════════════════════
+      # HEARTH. The subject of this entire surface, and the ONE PUBLIC REPOSITORY behind it.
+      #
+      # Every factual sentence on this site cites a file in it, and `test/content.test.ts` requires
+      # that each of those files exists. That check matters more here than anywhere else in the
+      # estate: a reader can actually follow these citations, so a document renamed upstream is a
+      # broken promise to the public rather than an internal inconsistency.
+      #
+      # No token: `cloudsforge-online/hearth` is public. It is checked out in full rather than
+      # sparsely, because the citations reach into README.md, MAP.md, TESTNET.md, docs/, node/src/
+      # and CONTRIBUTING.md, and a sparse list would be a fourth copy of the set to keep in step.
+      # ══════════════════════════════════════════════════════════════════════════════════════════
+      - uses: actions/checkout@v4
+        with:
+          repository: cloudsforge-online/hearth
+          path: hearth
+
+      # The brand assets, so test/brand-chrome.test.ts can compare the bytes in public/ against the
+      # source set rather than merely checking that a file with the right name exists — and can
+      # assert that `network` really is entitled to the full set, which is what distinguishes this
+      # surface from the explorer.
+      - uses: actions/checkout@v4
+        with:
+          repository: cloudsforge-online/micro-brand
+          path: brand
+          token: ${{ secrets.ESTATE_READ_TOKEN }}
+          sparse-checkout: |
+            assets/network
+            README.md
+            plan.ts
+
+      # The gateway's CORS allowlist, which is one of the two reasons this surface cannot read the
+      # chain index today. `test/hosts.test.ts` asserts that `network.cloudsforge.online` is ABSENT
+      # from it, so the day it is added the suite goes red and the apology on the /chain page is
+      # deleted rather than left to age.
+      - uses: actions/checkout@v4
+        with:
+          repository: cloudsforge-online/micro-deploy
+          path: deploy
+          token: ${{ secrets.ESTATE_READ_TOKEN }}
+          sparse-checkout: |
+            gateway
+            compose
+
+      # `/auth/me` nests the profile under `user`. This repository states that as a fact and cites
+      # two lines for it; `test/citations.test.ts` checks both are inside the files they name.
+      - uses: actions/checkout@v4
+        with:
+          repository: cloudsforge-online/micro-identity
+          path: identity
+          token: ${{ secrets.ESTATE_READ_TOKEN }}
+          sparse-checkout: |
+            src
+
+      # The template this repository follows on the `/auth/me` shape, on the 401 guard in api.ts and
+      # on `COPY public`. Cited, so checked.
+      - uses: actions/checkout@v4
+        with:
+          repository: cloudsforge-online/micro-web-template
+          path: web-template
+          token: ${{ secrets.ESTATE_READ_TOKEN }}
+          sparse-checkout: |
+            src
+            Dockerfile
+
+      # The corrected shape guard this repository's `matches` is copied from, and the measurement of
+      # the collapsed-scope defect. Cited by line, so checked by the citation sweep.
+      - uses: actions/checkout@v4
+        with:
+          repository: cloudsforge-online/micro-market
+          path: market
+          token: ${{ secrets.ESTATE_READ_TOKEN }}
+          sparse-checkout: |
+            src
+
+      # Cited for the `Idempotency-Key` HEADER that micro-faucet does not read: micro-trade requires
+      # one on every mutating route, micro-faucet takes a body FIELD, and the two clients look alike
+      # and are not interchangeable. Checked out so that claim is verified rather than remembered.
+      - uses: actions/checkout@v4
+        with:
+          repository: cloudsforge-online/micro-trade
+          path: trade
+          token: ${{ secrets.ESTATE_READ_TOKEN }}
+          sparse-checkout: |
+            src
+
+      # The estate's own position on a public chain's public surfaces, and principle 5, "Honest
+      # copy" — both quoted in this repository. Checked out so the citation sweep verifies them
+      # rather than leaving them as remembered sentences.
+      - uses: actions/checkout@v4
+        with:
+          repository: cloudsforge-online/micro-docs
+          path: docs
+          token: ${{ secrets.ESTATE_READ_TOKEN }}
+          sparse-checkout: |
+            ecosystem
+
+      # The README template this repository's own README is written to, and the registry tool whose
+      # `micro-<name>` / `<name>` substitution the citation sweep relies on to resolve a sibling.
+      - uses: actions/checkout@v4
+        with:
+          repository: cloudsforge-online/micro-org
+          path: org
+          token: ${{ secrets.ESTATE_READ_TOKEN }}
+          sparse-checkout: |
+            tools
+            templates
+
+      # The surface whose green-on-unknown property this repository copied, and the surfaces whose
+      # vite ports `test/hosts.test.ts` reads so that 5190 is measured to be free rather than
+      # assumed. Also the repository whose stale devPort prose is reported in the README.
+      - uses: actions/checkout@v4
+        with:
+          repository: cloudsforge-online/micro-status-web
+          path: status-web
+          token: ${{ secrets.ESTATE_READ_TOKEN }}
+          sparse-checkout: |
+            src
+            vite.config.ts
+      - uses: actions/checkout@v4
+        with:
+          repository: cloudsforge-online/micro-explorer-web
+          path: explorer-web
+          token: ${{ secrets.ESTATE_READ_TOKEN }}
+          sparse-checkout: |
+            src
+            vite.config.ts
+      - uses: actions/checkout@v4
+        with:
+          repository: cloudsforge-online/micro-site
+          path: site
+          token: ${{ secrets.ESTATE_READ_TOKEN }}
+          sparse-checkout: |
+            src
+            vite.config.ts
+
+      # Cited for the chain spec: EMBER's decimals, its confirmation depth, its reorg alarm depth
+      # and the two chain ids. Every one of those numbers is in the register with a line.
+      - uses: actions/checkout@v4
+        with:
+          repository: cloudsforge-online/micro-contracts
+          path: contracts
+          token: ${{ secrets.ESTATE_READ_TOKEN }}
+          sparse-checkout: |
+            packages/chain
+
+      # Pinned, because the checkout lives at network-site/ and the action looks for the
+      # packageManager field in the workspace root, where there is no package.json.
+      - uses: pnpm/action-setup@v4
+        with: { version: 11.9.0 }
+      - uses: actions/setup-node@v4
+        with: { node-version: 22, cache: pnpm, cache-dependency-path: network-site/pnpm-lock.yaml }
+
+      # `link:` resolves to the sibling's own node_modules, so the design system must be installed
+      # before this repository is — without this, `tsc` cannot resolve ../ui's own imports (react,
+      # react/jsx-runtime) when it typechecks the linked sources.
+      - name: Install the sibling design system
+        run: pnpm --dir ui install --frozen-lockfile
+
+      - name: Install
+        working-directory: network-site
+        run: pnpm install --frozen-lockfile
+
+      - name: Typecheck
+        working-directory: network-site
+        run: pnpm typecheck
+
+      - name: Test
+        working-directory: network-site
+        run: pnpm test
+
+      # ── The route cross-checks must have RUN, not merely not failed ───────────────────────────
+      #
+      # Both route tests skip their cross-repository half when the sibling is absent, so that
+      # `pnpm test` passes for somebody who cloned only this repository. A skipped test is an
+      # unmeasured one, so on the runner the absence has to be fatal — otherwise a checkout that
+      # silently produced nothing would look exactly like a client whose citations are all correct.
+      - name: The indexer citations were checked against the real service
+        working-directory: network-site
+        run: |
+          set -euo pipefail
+          test -f ../indexer/src/server.ts || {
+            echo "::error::micro-indexer was not checked out; the route citations were never verified"
+            exit 1
+          }
+          # ── The line is READ out of the test, never written down here ──────────────────────────
+          #
+          # Hardcoding `154` in this file makes it a THIRD copy of a citation that already lives in
+          # two places, and the copy is the one that goes stale. micro-mint-web hardcoded exactly
+          # this: when the service's table moved, its sed matched nothing, the suite passed
+          # UNMUTATED, and the step failed with the diagnosis "the cross-check is not reading the
+          # service" — which was false, and sent the reader to the wrong repository.
+          cited=$(grep -oE "path: '/chains/:chain/:network/status', line: [0-9]+" test/chainstatus.test.ts \
+                  | grep -oE '[0-9]+$')
+          [ -n "${cited:-}" ] || {
+            echo "::error::no citation for GET /chains/:chain/:network/status in test/chainstatus.test.ts; the surface table has changed shape"
+            exit 1
+          }
+          out=$(node --import tsx --test test/chainstatus.test.ts 2>&1 || true)
+          if printf '%s\n' "$out" | grep -q 'SKIPPED: no micro-indexer checkout'; then
+            echo "::error::the route cross-check skipped itself while micro-indexer was present"
+            exit 1
+          fi
+          printf '%s\n' "$out" | grep -q "is registered at indexer/src/server.ts:${cited}" || {
+            echo "::error::the route cross-check did not run against indexer/src/server.ts"
+            exit 1
+          }
+          # One called route plus eight declined ones, each asserted against its own line.
+          #
+          # DEDUPED before counting. node:test names each subtest twice — once as it runs and once
+          # in the summary — so a raw `grep -c` reports double. The threshold would still pass, so
+          # nothing would be broken; the LOG LINE would simply be wrong, which is the defect this
+          # whole repository is built to avoid. (micro-trade-web found and fixed this in its own
+          # workflow.)
+          count=$(printf '%s\n' "$out" \
+                  | grep -oE 'is registered at indexer/src/server\.ts:[0-9]+' | sort -u | wc -l | tr -d ' ')
+          [ "$count" -ge 9 ] || {
+            echo "::error::only $count route citations were verified; the indexer surface has nine"
+            exit 1
+          }
+          echo "ok: $count cited indexer routes verified against the service that serves them"
+
+      - name: …and it would have noticed a wrong citation
+        working-directory: network-site
+        run: |
+          set -euo pipefail
+          cp test/chainstatus.test.ts "$RUNNER_TEMP/chainstatus.test.ts.orig"
+          restore() { cp "$RUNNER_TEMP/chainstatus.test.ts.orig" test/chainstatus.test.ts; }
+          trap restore EXIT
+
+          # Read the cited line and bend THAT, rather than naming a number here. A `sed` that names
+          # a line the file no longer carries is a silent no-op: the suite then passes UNCHANGED and
+          # this step reports "the cross-check passed a citation off by one line", accusing a
+          # correct test of being fake. micro-mint-web shipped precisely that. Deriving the number
+          # makes the mutation real, and the `cmp` below makes "the mutation happened" a CHECKED
+          # FACT rather than an assumption.
+          cited=$(grep -oE "path: '/chains/:chain/:network/status', line: [0-9]+" test/chainstatus.test.ts \
+                  | grep -oE '[0-9]+$')
+          [ -n "${cited:-}" ] || { echo "::error::no citation to bend"; exit 1; }
+          bent=$((cited + 1))
+          sed -i "s|path: '/chains/:chain/:network/status', line: ${cited}|path: '/chains/:chain/:network/status', line: ${bent}|" test/chainstatus.test.ts
+          if cmp -s test/chainstatus.test.ts "$RUNNER_TEMP/chainstatus.test.ts.orig"; then
+            echo "::error::the mutation changed nothing, so this step proves nothing"
+            exit 1
+          fi
+          if node --import tsx --test test/chainstatus.test.ts >/dev/null 2>&1; then
+            echo "::error::the cross-check passed with the status route cited at ${bent} instead of ${cited} — it is not reading the service"
+            exit 1
+          fi
+          echo "ok: moving one citation from ${cited} to ${bent} turns the suite red, so a pass is evidence"
+
+      - name: The faucet citations were checked against the real service
+        working-directory: network-site
+        run: |
+          set -euo pipefail
+          test -f ../faucet/src/server.ts || {
+            echo "::error::micro-faucet was not checked out; its route citations were never verified"
+            exit 1
+          }
+          out=$(node --import tsx --test test/faucet.test.ts 2>&1 || true)
+          if printf '%s\n' "$out" | grep -q 'SKIPPED: no micro-faucet checkout'; then
+            echo "::error::the faucet cross-check skipped itself while micro-faucet was present"
+            exit 1
+          fi
+          count=$(printf '%s\n' "$out" \
+                  | grep -oE 'is defined at faucet/src/server\.ts:[0-9]+' | sort -u | wc -l | tr -d ' ')
+          [ "$count" -ge 7 ] || {
+            echo "::error::only $count faucet route citations were verified; the surface has seven"
+            exit 1
+          }
+          echo "ok: $count cited faucet routes verified against the service that serves them"
+
+      # ── The authority contract must be a CHECKED fact, not a paragraph ───────────────────────
+      #
+      # Both directions. A read re-gated upstream breaks a client that sends no bearer; a bearer
+      # creeping back in here makes a public page fail for anybody holding an expired token.
+      - name: The authority contract was verified against the real services
+        working-directory: network-site
+        run: |
+          set -euo pipefail
+          out=$(node --import tsx --test test/chainstatus.test.ts test/faucet.test.ts 2>&1 || true)
+          for name in \
+            'the read this page depends on is ANONYMOUS: authoriseRead serves a caller with no token' \
+            'the nine handlers are exactly seven anonymous reads and two gated writes' \
+            'the three things still refused are still refused, and this app depends on none of them' \
+            'the three routes this page calls are UNAUTHENTICATED, and still are' \
+            '…and /metrics is still gated, which is why it is declined'
+          do
+            printf '%s\n' "$out" | grep -qF "$name" || {
+              echo "::error::the authority check '$name' did not run"
+              exit 1
+            }
+          done
+          echo "ok: the routes this page calls are anonymous, the ones it declines are not, and this client presents nothing"
+
+      # …and the no-bearer half is measured ON THE WIRE as well as read off the source.
+      #
+      # The route tests prove the calls all go through `publicRead` / `publicCall`. That is a check
+      # on the SHAPE of the modules, and a shape check cannot see a header. `test/api.test.ts`
+      # drives each of the four public calls with an access token in storage and inspects what fetch
+      # was handed, which is the only form of this assertion a rewrite of the clients cannot walk
+      # around.
+      - name: No bearer reaches the chain index or the faucet, measured on the wire
+        working-directory: network-site
+        run: |
+          set -euo pipefail
+          out=$(node --import tsx --test test/api.test.ts 2>&1 || true)
+          count=$(printf '%s\n' "$out" \
+                  | grep -oE '[a-zA-Z]+ sends no authorization header' | sort -u | wc -l | tr -d ' ')
+          [ "$count" -eq 4 ] || {
+            echo "::error::only $count of the four public calls were checked for a bearer"
+            exit 1
+          }
+          printf '%s\n' "$out" | grep -qF 'the stub WOULD have seen one' || {
+            echo "::error::the not-vacuous control did not run; the four checks prove nothing"
+            exit 1
+          }
+          echo "ok: four calls issued with a session in storage, none carrying an authorization header"
+
+      - name: …and it would have noticed a bearer creeping back in
+        working-directory: network-site
+        run: |
+          set -euo pipefail
+          cp src/lib/chainstatus.ts "$RUNNER_TEMP/chainstatus.ts.orig"
+          cp src/lib/faucet.ts "$RUNNER_TEMP/faucet.ts.orig"
+          restore() {
+            cp "$RUNNER_TEMP/chainstatus.ts.orig" src/lib/chainstatus.ts
+            cp "$RUNNER_TEMP/faucet.ts.orig" src/lib/faucet.ts
+          }
+          trap restore EXIT
+
+          # `auth: false` is written exactly once per client, in the single-decision helper, and both
+          # route tests assert that. Deleting the one copy is therefore the whole mutation — no line
+          # number named here, for the same reason the citation mutation above derives its own.
+          perl -0pi -e 's/    auth: false,\n//' src/lib/chainstatus.ts src/lib/faucet.ts
+          if cmp -s src/lib/chainstatus.ts "$RUNNER_TEMP/chainstatus.ts.orig"; then
+            echo "::error::the mutation changed nothing, so this step proves nothing"
+            exit 1
+          fi
+          if node --import tsx --test test/api.test.ts >/dev/null 2>&1; then
+            echo "::error::the suite passed with the bearer restored — it is not measuring the header"
+            exit 1
+          fi
+          echo "ok: restoring the bearer turns the suite red, so a pass is evidence"
+
+      # ── The honesty rules must be CHECKED, and must be able to fail ──────────────────────────
+      - name: No figure is produced from an absence
+        working-directory: network-site
+        run: |
+          set -euo pipefail
+          out=$(node --import tsx --test test/chainstatus.test.ts test/render.test.ts 2>&1 || true)
+          for name in \
+            'figureOf turns null and undefined into unobserved, never into a value' \
+            'the three absent states carry no numeric field at all' \
+            'the module contains no coalesce-to-zero anywhere' \
+            'no page renders a height except through Figure'
+          do
+            printf '%s\n' "$out" | grep -qF "$name" || {
+              echo "::error::the honesty check '$name' did not run"
+              exit 1
+            }
+          done
+          echo "ok: an absent figure has no path to a digit"
+
+      - name: …and it would have noticed a plausible default
+        working-directory: network-site
+        run: |
+          set -euo pipefail
+          cp src/lib/chainstatus.ts "$RUNNER_TEMP/cs.orig"
+          restore() { cp "$RUNNER_TEMP/cs.orig" src/lib/chainstatus.ts; }
+          trap restore EXIT
+          # The exact defect: coalesce an unobserved height to zero. If the check cannot see this,
+          # every panel on /chain could render a confident nought and nothing would go red.
+          perl -0pi -e "s/return typeof value === 'number' \? \{ state: 'known', value \} : \{ state: 'unobserved' \}/return { state: 'known', value: value ?? 0 }/" src/lib/chainstatus.ts
+          if cmp -s src/lib/chainstatus.ts "$RUNNER_TEMP/cs.orig"; then
+            echo "::error::the mutation changed nothing, so this step proves nothing"
+            exit 1
+          fi
+          if node --import tsx --test test/chainstatus.test.ts >/dev/null 2>&1; then
+            echo "::error::figureOf coalesced a null to zero and the suite passed"
+            exit 1
+          fi
+          echo "ok: a plausible default turns the suite red"
+
+      - name: Every number in copy is in the register, and it can fail
+        working-directory: network-site
+        run: |
+          set -euo pipefail
+          out=$(node --import tsx --test test/content.test.ts 2>&1 || true)
+          printf '%s\n' "$out" | grep -qF 'every digit run in every string is a registered value' || {
+            echo "::error::the content scan did not run"
+            exit 1
+          }
+          cp src/content/copy.ts "$RUNNER_TEMP/copy.orig"
+          restore() { cp "$RUNNER_TEMP/copy.orig" src/content/copy.ts; }
+          trap restore EXIT
+          # A number nobody registered, of the exact shape this surface is most tempted to invent.
+          perl -0pi -e "s/  eyebrow: 'Forge Network',/  eyebrow: 'Forge Network, 41204 blocks deep',/" src/content/copy.ts
+          if cmp -s src/content/copy.ts "$RUNNER_TEMP/copy.orig"; then
+            echo "::error::the mutation changed nothing, so this step proves nothing"
+            exit 1
+          fi
+          if node --import tsx --test test/content.test.ts >/dev/null 2>&1; then
+            echo "::error::an unregistered number reached the copy and the scan accepted it"
+            exit 1
+          fi
+          echo "ok: an unregistered number turns the suite red"
+
+      # ── The design-system cross-check must also have RUN ─────────────────────────────────────
+      #
+      # `test/tokens.test.ts` proves every `--cf-*` this stylesheet reads AND every `cf-` class this
+      # bundle names is declared by micro-ui. micro-mint-web ships ten properties that are not,
+      # across 72 declarations, and nothing in that repository fails — an undefined custom property
+      # invalidates the declaration silently. A class that does not exist fails the same way.
+      - name: The design tokens and classes were checked against the design system
+        working-directory: network-site
+        run: |
+          set -euo pipefail
+          test -f ../ui/packages/ui/src/tokens.css || {
+            echo "::error::micro-ui was not checked out; the token references were never verified"
+            exit 1
+          }
+          out=$(node --import tsx --test test/tokens.test.ts 2>&1 || true)
+          if printf '%s\n' "$out" | grep -q 'SKIPPED: no micro-ui checkout'; then
+            echo "::error::the token cross-check skipped itself while micro-ui was present"
+            exit 1
+          fi
+          printf '%s\n' "$out" | grep -q 'every property this stylesheet reads is declared' || {
+            echo "::error::the token cross-check did not run against tokens.css"
+            exit 1
+          }
+          printf '%s\n' "$out" | grep -q 'every cf- CLASS this bundle names is declared' || {
+            echo "::error::the class cross-check did not run against ui.css"
+            exit 1
+          }
+          echo "ok: every custom property and every cf- class this bundle names exists upstream"
+
+      - name: …and it would have noticed an invented token
+        working-directory: network-site
+        run: |
+          set -euo pipefail
+          cp src/styles.css "$RUNNER_TEMP/styles.css.orig"
+          restore() { cp "$RUNNER_TEMP/styles.css.orig" src/styles.css; }
+          trap restore EXIT
+          printf '\n.ns-canary { border: 1px solid var(--cf-border); }\n' >> src/styles.css
+          if cmp -s src/styles.css "$RUNNER_TEMP/styles.css.orig"; then
+            echo "::error::the mutation changed nothing, so this step proves nothing"
+            exit 1
+          fi
+          if node --import tsx --test test/tokens.test.ts >/dev/null 2>&1; then
+            echo "::error::the token cross-check accepted --cf-border, which does not exist"
+            exit 1
+          fi
+          echo "ok: an undefined custom property turns the suite red"
+
+      - name: …and it would have noticed an invented CLASS
+        working-directory: network-site
+        run: |
+          set -euo pipefail
+          cp src/pages/not-found.tsx "$RUNNER_TEMP/not-found.tsx.orig"
+          restore() { cp "$RUNNER_TEMP/not-found.tsx.orig" src/pages/not-found.tsx; }
+          trap restore EXIT
+          # ── THE CANARY MUST NAME SOMETHING THAT GENUINELY DOES NOT EXIST ──────────────────────
+          #
+          # micro-explorer-web's injected `cf-input` to prove its class check worked. The day
+          # `ui.css` grew `.cf-input`, that step started failing for the right reason: the check
+          # accepted the class BECAUSE IT HAD BECOME REAL. A canary that names a real class proves
+          # nothing and eventually asserts the opposite of the truth.
+          #
+          # `cf-not-a-real-class` is chosen to be un-implementable: it is a sentence, not a
+          # component, and no design system would ever declare it. `test/tokens.test.ts` asserts
+          # that ui.css does not declare it, so the day somebody does, the suite says so here rather
+          # than this step going quietly green.
+          #
+          # The string it targets is `className="ns-prose"`, which is IN this file. A sed that names
+          # a literal the file does not carry is a silent no-op: the suite then passes UNCHANGED and
+          # this step reports "the cross-check accepted a class that does not exist", accusing a
+          # correct test of being fake. That happened while this workflow was being written — the
+          # first version targeted a class held by a shared component rather than by the page — and
+          # the `cmp` below is what caught it. It stays for the same reason.
+          #
+          # `perl` rather than `sed`, and that is not a preference either. GNU sed's `0,/re/` address
+          # form is not in BSD sed, so the same line is a silent no-op on a developer's Mac and a
+          # real mutation on the runner — which means the step could only ever be verified in CI.
+          # Every mutation in this file uses perl so that all of them can be rehearsed locally.
+          perl -0pi -e 's/className="ns-prose"/className="ns-prose cf-not-a-real-class"/' src/pages/not-found.tsx
+          if cmp -s src/pages/not-found.tsx "$RUNNER_TEMP/not-found.tsx.orig"; then
+            echo "::error::the mutation changed nothing, so this step proves nothing"
+            exit 1
+          fi
+          if node --import tsx --test test/tokens.test.ts >/dev/null 2>&1; then
+            echo "::error::the class cross-check accepted cf-not-a-real-class, which ui.css does not declare"
+            exit 1
+          fi
+          echo "ok: a class the design system does not declare turns the suite red"
+
+      # ── Every OTHER citation, swept ──────────────────────────────────────────────────────────
+      #
+      # The route tests prove the route citations exactly. This repository carries hundreds more,
+      # into hearth, indexer/src/reads.ts, faucet/src/requests.ts, identity, micro-ui, micro-brand,
+      # micro-deploy and micro-market. The sweep cannot tell whether a citation means what the
+      # sentence around it says, but it catches the failure that actually happens: a file growing or
+      # shrinking under a line number nobody re-read.
+      #
+      # The sweep prints which repositories it could NOT check. That line is surfaced here rather
+      # than swallowed: a green run must never imply more than it measured.
+      - name: Every citation names a line that exists
+        working-directory: network-site
+        run: |
+          set -euo pipefail
+          out=$(node --import tsx --test test/citations.test.ts 2>&1) || {
+            printf '%s\n' "$out"
+            echo "::error::a citation in this repository names a line that does not exist"
+            exit 1
+          }
+          printf '%s\n' "$out" | grep -q 'names a line INSIDE that file' || {
+            echo "::error::the citation sweep did not run"
+            exit 1
+          }
+          if printf '%s\n' "$out" | grep 'UNCHECKED:'; then
+            echo "::notice::the citations into those repositories were not verified on this run"
+          fi
+          echo "ok: every citation into a checked-out repository resolves"
+
+      - name: Build
+        working-directory: network-site
+        run: pnpm build
+
+      # A frontend that builds to nothing is a blank page, not a build failure. The previous estate
+      # served SPAs from the API process and shipped an image with no dist in it.
+      - name: The bundle exists
+        working-directory: network-site
+        run: |
+          set -euo pipefail
+          test -f dist/index.html || { echo "::error::dist/index.html is missing after a successful build"; exit 1; }
+          echo "ok: $(find dist -type f | wc -l | tr -d ' ') files in dist"
+
+      # The brand chrome must survive the BUILD as well as be present in the source tree.
+      # test/brand-chrome.test.ts asserts the source; this asserts the artefact, because Vite copies
+      # publicDir at build time and a misconfigured publicDir would pass the first and fail the
+      # second.
+      - name: The brand chrome reached the bundle
+        working-directory: network-site
+        run: |
+          set -euo pipefail
+          for asset in favicon-32x32.png favicon-192x192.png favicon-512x512.png og-1200x630.png; do
+            test -f "dist/$asset" || { echo "::error::dist/$asset is missing from the build output"; exit 1; }
+          done
+          echo "ok: the favicons and the og card are in dist"
+
+  rules:
+    name: Estate rules
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: No build-time configuration
+        # The same rule as test/no-build-time-config.test.ts, checked again here so it fails even
+        # if somebody deletes the test along with the line it forbids. A `VITE_` variable is read
+        # at build time and frozen into the artefact, and an artefact with an environment frozen
+        # into it has to be rebuilt to be promoted — which means the thing that reaches production
+        # is not the thing that passed CI.
+        run: |
+          set -uo pipefail
+          if grep -rn --include='*.ts' --include='*.tsx' --include='*.html' \
+               -e 'import\.meta\.env' -e 'VITE_' src index.html; then
+            echo "::error::this bundle must read no build-time environment; hosts come from cloudsforgeHosts() at runtime"
+            exit 1
+          fi
+          echo "ok: no build-time environment"
+
+      - name: No hard-coded CloudsForge hostname
+        # A literal hostname is a second, unversioned copy of the surface registry, and the copy is
+        # the one that will be wrong. There is exactly one literal URL in this bundle and it is
+        # github.com, which is not a CloudsForge surface and has no registry key.
+        #
+        # COMMENTS STRIPPED FIRST — the fifth step in this file that has to, and the one that caught
+        # itself. `src/lib/hosts.ts` QUOTES `https://network.cloudsforge.online` in order to record
+        # that the gateway's CORS allowlist does not name it, and `src/lib/routes.ts` and
+        # `src/pages/home.tsx` both explain THIS RULE by naming the string it forbids. The first
+        # version of this step matched all four and failed a correct tree. A rule that can only be
+        # satisfied by deleting the sentence explaining it is a rule that gets deleted.
+        run: |
+          set -uo pipefail
+          strip() { perl -0pe 's{\{/\*.*?\*/\}}{}gs; s{/\*.*?\*/}{}gs; s{^\s*//.*$}{}gm' "$1"; }
+          fail=0
+          for f in $(find src -name '*.ts' -o -name '*.tsx'); do
+            if strip "$f" | grep -n 'cloudsforge\.online' | sed "s|^|$f:|" | grep .; then
+              fail=1
+            fi
+          done
+          if [ "$fail" = 1 ]; then
+            echo "::error::resolve hosts through cloudsforgeHosts() rather than naming them"
+            exit 1
+          fi
+          echo "ok: no literal CloudsForge hostnames in src"
+
+      - name: The SPA fallback keeps its 404
+        # Comments are stripped first. nginx.conf's own header QUOTES the directive it forbids, in
+        # order to explain why the routes are enumerated by hand, so a grep over the raw file
+        # matches the warning and would fail a correct config.
+        run: |
+          set -uo pipefail
+          directives=$(grep -v '^[[:space:]]*#' nginx.conf)
+          if printf '%s\n' "$directives" | grep -nE 'try_files[[:space:]]+\$uri[[:space:]]+(\$uri/[[:space:]]+)?/index\.html'; then
+            echo "::error::unknown paths must 404; serve the shell through error_page 404 /index.html"
+            exit 1
+          fi
+          printf '%s\n' "$directives" | grep -q 'error_page 404 /index.html'
+          echo "ok: unknown paths answer 404"
+
+      - name: No credential can reach the image
+        # The tempting fix for the cross-origin gap is an nginx proxy with an Authorization header.
+        # An image is built once and promoted; a credential inside one is a published credential.
+        # Comments stripped first, for the reason above — both files EXPLAIN the ban.
+        run: |
+          set -uo pipefail
+          directives=$(grep -v '^[[:space:]]*#' nginx.conf)
+          if printf '%s\n' "$directives" | grep -niE 'proxy_pass|Authorization|Bearer'; then
+            echo "::error::this container proxies nothing and holds no credential"
+            exit 1
+          fi
+          dockerfile=$(grep -v '^[[:space:]]*#' Dockerfile)
+          if printf '%s\n' "$dockerfile" | grep -niE 'TOKEN|SECRET|indexer:read|faucet:read'; then
+            echo "::error::the image must carry no credential"
+            exit 1
+          fi
+          echo "ok: no proxy, no credential"
+
+      - name: The auth callback is redeemed before the app renders
+        # The hand-off code has to leave the address bar before the exchange goes over the wire,
+        # and that only happens if bootstrapSession() runs before React mounts. It matters here
+        # even though a session unlocks nothing: a code left in a shared link is a code somebody
+        # else can redeem.
+        run: grep -q 'bootstrapSession' src/main.tsx
+
+      - name: The route table, the router and nginx agree
+        # Already asserted by test/routes.test.ts; repeated here so deleting the test does not
+        # silently delete the rule.
+        run: test -f test/routes.test.ts && grep -q 'nginx.conf' test/routes.test.ts
+
+      - name: Nothing is gated behind a session
+        # Every route this bundle calls is anonymous — the chain read through `authoriseRead`
+        # (indexer/src/server.ts:708-717) and the three faucet routes by that service's own
+        # decision (faucet/src/server.ts:334-335). Asserted as an ABSENCE, because the reflex is to
+        # add one back.
+        #
+        # COMMENTS STRIPPED FIRST. app.tsx, auth.tsx and routes.ts all NAME the thing they refuse
+        # in order to explain the refusal, so a raw grep matches the explanation and fails a
+        # correct file.
+        run: |
+          set -uo pipefail
+          strip() { perl -0pe 's{\{/\*.*?\*/\}}{}gs; s{/\*.*?\*/}{}gs; s{^\s*//.*$}{}gm' "$1"; }
+          for f in $(find src -name '*.ts' -o -name '*.tsx'); do
+            if strip "$f" | grep -n 'ProtectedRoute' | sed "s|^|$f:|" | grep .; then
+              echo "::error::nothing on this surface needs a session; see src/lib/auth.tsx"
+              exit 1
+            fi
+          done
+          echo "ok: every route renders for everybody, with no session and no bearer"
+
+      - name: Every route this client calls cites the line that serves it
+        # The rule the two route tests enforce, restated so that deleting them does not delete it.
+        # Every `/v1/...` path must live in a file that also carries a `<service>/src/server.ts:<line>`
+        # citation, and no page may call one directly.
+        run: |
+          set -uo pipefail
+          indexer=$(grep -coE 'indexer/src/server\.ts:[0-9]+' src/lib/chainstatus.ts || true)
+          if [ "${indexer:-0}" -lt 9 ]; then
+            echo "::error::src/lib/chainstatus.ts carries ${indexer:-0} route citations; the indexer surface has nine"
+            exit 1
+          fi
+          faucet=$(grep -coE 'faucet/src/server\.ts:[0-9]+' src/lib/faucet.ts || true)
+          if [ "${faucet:-0}" -lt 7 ]; then
+            echo "::error::src/lib/faucet.ts carries ${faucet:-0} route citations; the faucet surface has seven"
+            exit 1
+          fi
+          if grep -rn --include='*.tsx' -E "(chainIndex|faucet)<[^>]*>\(\s*[\`'\"]/v1/" src; then
+            echo "::error::a page calls /v1 directly; every call goes through a cited client module"
+            exit 1
+          fi
+          echo "ok: ${indexer} + ${faucet} citations, and no uncited call site"
+
+      - name: The scope is always two path segments
+        # A helper standing for `chain/network` hides a segment, and a path one segment short of the
+        # route it means can silently match a DIFFERENT route — measured in
+        # market/src/indexerclient.test.ts:328-341.
+        #
+        # COMMENTS STRIPPED FIRST. src/lib/chainstatus.ts QUOTES `${scope}` in order to explain why
+        # it is banned, so a raw grep matches the explanation and fails a correct file. A rule that
+        # can only be satisfied by deleting the sentence explaining it is a rule that gets deleted.
+        run: |
+          set -uo pipefail
+          strip() { perl -0pe 's{<!--.*?-->}{}gs; s{\{/\*.*?\*/\}}{}gs; s{/\*.*?\*/}{}gs; s{^\s*//.*$}{}gm' "$1"; }
+          fail=0
+          for f in $(find src -name '*.ts' -o -name '*.tsx'); do
+            if strip "$f" | grep -nE '\$\{seg\(scope\)\}|\$\{scope\}/' | sed "s|^|$f:|" | grep .; then
+              fail=1
+            fi
+          done
+          if [ "$fail" = 1 ]; then
+            echo "::error::write chain and network out as two segments; a combined one hides a segment"
+            exit 1
+          fi
+          echo "ok: every scope is two segments"
+
+      - name: Nothing on this surface claims a price, a yield or a running network
+        # The product's central claim, and the one this surface is most able to break. Also asserted
+        # by test/content.test.ts; repeated so deleting the test does not delete the rule.
+        #
+        # COMMENTS ARE STRIPPED FIRST. src/lib/format.ts's own header QUOTES the words it forbids in
+        # order to explain the rule, so a grep over the raw file matches the explanation and fails a
+        # correct file. A rule that can only be satisfied by deleting the sentence explaining it is
+        # a rule that gets deleted.
+        run: |
+          set -uo pipefail
+          strip() { perl -0pe 's{<!--.*?-->}{}gs; s{\{/\*.*?\*/\}}{}gs; s{/\*.*?\*/}{}gs; s{^\s*//.*$}{}gm' "$1"; }
+          for f in index.html $(find src -name '*.tsx' -o -name '*.ts'); do
+            if strip "$f" | grep -niE '\bfinali[sz]ed?\b|\bAPY\b|\bpassive income\b|\breturn on invest|\bmarket cap|\bmainnet is live\b' \
+                 | sed "s|^|$f:|" | grep .; then
+              echo "::error::this surface states no price, no yield and no running network"
+              exit 1
+            fi
+          done
+          echo "ok: no page claims a price, a yield or a running network"
+
+      - name: Every figure about the network is fetched or absent
+        # The structural property. `Figure` has four states and three of them carry no value, so a
+        # coalesce is the only way to break it — and a coalesce is what is grepped for.
+        run: |
+          set -uo pipefail
+          strip() { perl -0pe 's{\{/\*.*?\*/\}}{}gs; s{/\*.*?\*/}{}gs; s{^\s*//.*$}{}gm' "$1"; }
+          fail=0
+          for f in src/lib/chainstatus.ts src/components/parts.tsx src/pages/chain.tsx; do
+            if strip "$f" | grep -nE '\?\?[[:space:]]*0\b|\|\|[[:space:]]*0\b' | sed "s|^|$f:|" | grep .; then
+              fail=1
+            fi
+          done
+          if [ "$fail" = 1 ]; then
+            echo "::error::a null coalesces to zero; an unobserved height must never render as a number"
+            exit 1
+          fi
+          echo "ok: no figure has a path from an absence to a digit"
+
+      - name: Every design token this stylesheet names is a real one
+        # test/tokens.test.ts proves it against the sibling checkout. This is the half that runs
+        # without one: the ten property names micro-mint-web invented are refused by name. Comments
+        # are stripped first, for the same reason the nginx step strips them.
+        run: |
+          set -uo pipefail
+          css=$(perl -0pe 's{/\*.*?\*/}{}gs' src/styles.css)
+          if printf '%s\n' "$css" | grep -nE 'var\(--cf-(border|radius-md|space-[1-5][^a-z0-9-]|status-(good|warn|crit)|critical|warning|font[^-])'; then
+            echo "::error::that custom property does not exist in tokens.css; see the header of src/styles.css"
+            exit 1
+          fi
+          if printf '%s\n' "$css" | grep -nE 'var\(--cf-[a-z0-9-]+[[:space:]]*,'; then
+            echo "::error::a var() fallback is a hard-coded value wearing a token's clothes"
+            exit 1
+          fi
+          if printf '%s\n' "$css" | grep -nE '#[0-9a-fA-F]{3,8}\b|\brgba?\(|\bhsla?\('; then
+            echo "::error::no literal colours; every colour comes from a token"
+            exit 1
+          fi
+          echo "ok: real tokens only, no fallbacks, no literals"
+
+      - name: This surface uses the shared form controls, not a local copy
+        # `.cf-input`, `.cf-select` and the `--mono` modifier exist upstream now
+        # (ui/packages/ui/src/ui.css:174-192). Five frontends each wrote their own before that, and
+        # two had already drifted. A local copy here would be the sixth.
+        run: |
+          set -uo pipefail
+          css=$(perl -0pe 's{/\*.*?\*/}{}gs' src/styles.css)
+          if printf '%s\n' "$css" | grep -nE '\.ns-(input|select)\b'; then
+            echo "::error::use .cf-input and .cf-select from the design system"
+            exit 1
+          fi
+          # COMMENTS STRIPPED FIRST — the sixth step in this file that has to, and the second one
+          # that caught itself while being written. `src/pages/faucet.tsx` NAMES `.cf-btn--primary`
+          # in order to record that it does not exist and must not be reached for; a raw grep
+          # matched that sentence and failed a correct tree.
+          strip() { perl -0pe 's{\{/\*.*?\*/\}}{}gs; s{/\*.*?\*/}{}gs; s{^\s*//.*$}{}gm' "$1"; }
+          fail=0
+          for f in $(find src -name '*.tsx'); do
+            if strip "$f" | grep -n 'cf-btn--primary' | sed "s|^|$f:|" | grep .; then fail=1; fi
+          done
+          if [ "$fail" = 1 ]; then
+            echo "::error::.cf-btn--primary does not exist; .cf-btn--ember is the one solid call to action"
+            exit 1
+          fi
+          echo "ok: the shared form controls, and one call to action"
+
+  image:
+    name: Docker image
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with: { path: network-site }
+      - uses: actions/checkout@v4
+        with:
+          repository: cloudsforge-online/micro-ui
+          path: ui
+          token: ${{ secrets.ESTATE_READ_TOKEN }}
+
+      - uses: docker/setup-buildx-action@v3
+      - name: Build
+        uses: docker/build-push-action@v6
+        with:
+          context: network-site
+          build-contexts: uipkg=ui
+          build-args: RELEASE=${{ github.sha }}
+          push: false
+          load: true
+          tags: network-site:ci
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+      # PROBED, NOT READ. Both defects this step guards were invisible in the config and obvious in
+      # a response: nginx's `add_header` is all-or-nothing per level, so a location that sets
+      # Cache-Control silently loses every inherited security header; and `try_files` is a file
+      # lookup rather than an internal redirect, so serving /index.html from `location = /` never
+      # enters `location = /index.html`. Reading the file suggests both are fine. Curling it does not.
+      - name: The image serves the app, 404s what it does not own, and sends the headers it promises
+        run: |
+          set -uo pipefail
+          docker run -d --name ci-network-site -p 127.0.0.1:8080:8080 network-site:ci
+          for _ in $(seq 1 30); do
+            code=$(curl -s -m 5 -o /dev/null -w '%{http_code}' http://127.0.0.1:8080/ || true)
+            [ "$code" = "200" ] && break
+            sleep 1
+          done
+          [ "${code:-}" = "200" ] || { echo "::error::the image returned ${code:-no answer} for /"; docker logs --tail 60 ci-network-site; exit 1; }
+
+          fail=0
+
+          # A route this app OWNS must survive a hard refresh. The path is DEEP_LINK_PATH in
+          # src/lib/routes.ts, and test/routes.test.ts checks this file against it. It is /faucet,
+          # which is the registry's basePath for the faucet surface — a deploy that dropped it would
+          # break links in six other repositories.
+          deep=$(curl -s -m 5 -o /dev/null -w '%{http_code}' http://127.0.0.1:8080/faucet || true)
+          [ "$deep" = "200" ] || { echo "::error::an owned route returned $deep — it must be served the shell"; fail=1; }
+
+          for owned in /chain /mine /node; do
+            got=$(curl -s -m 5 -o /dev/null -w '%{http_code}' "http://127.0.0.1:8080$owned" || true)
+            [ "$got" = "200" ] || { echo "::error::$owned returned $got"; fail=1; }
+          done
+
+          # A route it does NOT own must answer 404 while still serving the shell, so the reader
+          # gets a real page and the status line tells the truth. This is the assertion the org's
+          # reusable image job cannot make, because it requires a 200 for any deep link.
+          unknown=$(curl -s -m 5 -o /dev/null -w '%{http_code}' http://127.0.0.1:8080/nope/not/a/route || true)
+          [ "$unknown" = "404" ] || { echo "::error::an unknown address returned $unknown; it must be 404"; fail=1; }
+          curl -s -m 5 http://127.0.0.1:8080/nope/not/a/route | grep -q '<div id="root">' \
+            || { echo "::error::the 404 did not serve the app shell"; fail=1; }
+
+          # Near-misses of real routes, because those are the typos people actually make. `/faucets`
+          # is not `/faucet` and `/chains` is not `/chain` — and the second is the sharper one,
+          # because `/chains` IS a real route on the block explorer, so somebody will type it here.
+          for near in /faucets/ember /chains/ember/testnet; do
+            got=$(curl -s -m 5 -o /dev/null -w '%{http_code}' "http://127.0.0.1:8080$near" || true)
+            [ "$got" = "404" ] || { echo "::error::$near returned $got; only the enumerated routes are served"; fail=1; }
+          done
+
+          check() { # url, header, expected-substring, label
+            got=$(curl -sI "$1" | tr -d '\r' | grep -i "^$2:" | cut -d' ' -f2- || true)
+            case "${got:-}" in
+              "") echo "::error::$4 is missing $2"; fail=1 ;;
+              *"$3"*) echo "  ok   $4: $2: $got" ;;
+              *) echo "::error::$4 has the wrong $2 (got '${got:-nothing}', wanted '$3')"; fail=1 ;;
+            esac
+          }
+
+          asset=$(curl -s http://127.0.0.1:8080/ | grep -oE '/assets/[^"]+\.js' | head -1)
+          for target in "http://127.0.0.1:8080/" "http://127.0.0.1:8080/faucet" "http://127.0.0.1:8080$asset"; do
+            [ -n "$asset" ] || [ "$target" != "http://127.0.0.1:8080" ] || continue
+            check "$target" X-Content-Type-Options "nosniff" "$target"
+            check "$target" X-Frame-Options "SAMEORIGIN" "$target"
+            check "$target" Referrer-Policy "strict-origin" "$target"
+          done
+          check "http://127.0.0.1:8080/" Cache-Control "no-store" "the shell"
+          check "http://127.0.0.1:8080/faucet" Cache-Control "no-store" "an enumerated route"
+          [ -n "$asset" ] && check "http://127.0.0.1:8080$asset" Cache-Control "immutable" "a hashed asset"
+
+          # This surface must NOT be kept out of an index: it is the public face of a public chain.
+          robots=$(curl -sI http://127.0.0.1:8080/ | tr -d '\r' | grep -ci '^X-Robots-Tag:' || true)
+          [ "${robots:-0}" = "0" ] || { echo "::error::this public surface sends X-Robots-Tag"; fail=1; }
+
+          # The brand chrome is SERVED by the image, not merely committed to the repository. The web
+          # template's Dockerfile once did not copy public/ into the build context, so four frontends
+          # shipped an image with no icon in it while their own brand test passed. Fixed upstream at
+          # micro-web-template/Dockerfile:39; this probe is what would have caught it.
+          for asset in favicon-32x32.png favicon-192x192.png favicon-512x512.png og-1200x630.png; do
+            code=$(curl -s -m 5 -o /dev/null -w '%{http_code}' "http://127.0.0.1:8080/$asset" || true)
+            [ "$code" = "200" ] || { echo "::error::/$asset returned $code from the image"; fail=1; }
+          done
+
+          # …and the description in the served HTML still says the network is absent. It is the one
+          # string a search engine and a link preview show without the page around them, which makes
+          # it the easiest place on this surface to imply a running network by omission.
+          curl -s -m 5 http://127.0.0.1:8080/ | grep -q 'no mainnet, no public testnet' \
+            || { echo "::error::the served page no longer states that there is no mainnet"; fail=1; }
+
+          docker rm -f ci-network-site >/dev/null 2>&1 || true
+          exit $fail
+      - name: Down
+        if: always()
+        run: docker rm -f ci-network-site || true
+
+  hygiene:
+    # The org's reusable secret check. Cheap, and it catches the failure that cannot be undone: a
+    # secret pushed to a repository is compromised the moment it lands, and rotating it is the only
+    # remedy.
+    uses: cloudsforge-online/micro-org/.github/workflows/secret-hygiene.yml@main
+    permissions:
+      contents: read

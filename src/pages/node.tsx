@@ -1,0 +1,61 @@
+/**
+ * Running a node.
+ *
+ * Everything on this page runs on one machine, and the page says so at the top rather than at the
+ * bottom: `hearth/MAP.md:66` records that the testnet "runs on `127.0.0.1` and nothing routes it",
+ * so there is no bootstrap list, no peer to dial and no endpoint to configure. A page that offered
+ * a "connect to the network" step would be inventing a network.
+ *
+ * The four steps are Hearth's own, in Hearth's own order (`hearth/README.md:168-207`, "Try it now"),
+ * because that order was chosen by somebody who had run them. Each carries the command as text a
+ * reader copies rather than as a screenshot, and each cites the line it came from.
+ */
+import { NODE } from '../content/copy.ts'
+import { HEARTH_REPO, hearthFile } from '../lib/routes.ts'
+import { Cite, Command, Note, Page, PageHead, Section } from '../components/parts.tsx'
+
+export function NodePage() {
+  return (
+    <Page>
+      <PageHead title={NODE.title} standfirst={NODE.standfirst} />
+
+      <Section title="Four things you can run today" id="steps">
+        <ol className="ns-steps">
+          {NODE.steps.map((step) => (
+            <li className="ns-step" key={step.title}>
+              <h3 className="ns-step__title">{step.title}</h3>
+              <p className="ns-step__body">{step.body}</p>
+              <Command>{step.command}</Command>
+              <Cite source={step.source} />
+            </li>
+          ))}
+        </ol>
+      </Section>
+
+      {/*
+        The genesis check.
+
+        On a public page because both traps under it produce a SILENT split rather than an error:
+        the genesis hash does not cover the chain id or the Commons address, and the genesis file is
+        pinned to a data directory on first start. A reader cannot diagnose either without being
+        told they exist.
+      */}
+      <Section title={NODE.sameChain.title} id="same-chain">
+        <p className="ns-prose">{NODE.sameChain.body}</p>
+        <Command>{NODE.sameChain.command}</Command>
+        <Cite source={NODE.sameChain.source} />
+      </Section>
+
+      <Note tone="accent" title={NODE.contribute.title}>
+        <p>{NODE.contribute.body}</p>
+        <p className="ns-note__aside">
+          <a href={HEARTH_REPO}>The repository</a> ·{' '}
+          <a href={hearthFile('CONTRIBUTING.md')}>How to contribute</a> ·{' '}
+          <a href={hearthFile('MAP.md')}>The verified inventory</a> ·{' '}
+          <a href={hearthFile('SECURITY.md')}>Reporting a vulnerability</a>
+        </p>
+        <Cite source={NODE.contribute.source} />
+      </Note>
+    </Page>
+  )
+}
