@@ -234,8 +234,16 @@ jobs:
           repository: cloudsforge-online/micro-explorer-web
           path: explorer-web
           token: ${{ secrets.ESTATE_READ_TOKEN }}
+          # `test` and `nginx.conf` as well as `src`, because the finding in this repository's README
+          # §4 is that FOUR of that repository's files still describe the old devPort — one of them
+          # its own test header and one its nginx config. A sparse list that fetched only `src`
+          # would leave two of the four citations UNVERIFIED while the sweep passed, which is the
+          # shape of failure the sweep exists to catch. The first run of this workflow did exactly
+          # that and went red; the list below is what it made true.
           sparse-checkout: |
             src
+            test
+            nginx.conf
             vite.config.ts
       - uses: actions/checkout@v4
         with:
@@ -244,6 +252,16 @@ jobs:
           token: ${{ secrets.ESTATE_READ_TOKEN }}
           sparse-checkout: |
             src
+            vite.config.ts
+      # Cited once, for the OTHER settled answer about a Vite port: micro-worlds-web binds the
+      # registry's own number rather than a 517x one, and this repository had to choose between the
+      # two. `test/hosts.test.ts` also reads its port so that 5190 is measured to be free.
+      - uses: actions/checkout@v4
+        with:
+          repository: cloudsforge-online/micro-worlds-web
+          path: worlds-web
+          token: ${{ secrets.ESTATE_READ_TOKEN }}
+          sparse-checkout: |
             vite.config.ts
 
       # Cited for the chain spec: EMBER's decimals, its confirmation depth, its reorg alarm depth
