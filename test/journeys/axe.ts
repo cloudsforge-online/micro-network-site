@@ -240,6 +240,11 @@ export async function assertSkipLink(page: Page, where: string, target = '#main'
  * announces what it is.
  */
 export async function assertLandmarks(page: Page, where: string): Promise<void> {
+  // Wait for the first heading before measuring. These pages fetch before they render their own
+  // head, so a check taken at mount time reads the shell alone and reports "no headings at all" on
+  // a page that has one. If none ever arrives the wait expires and the assertion below fires with
+  // the same message — the wait changes when the answer is read, never what counts as an answer.
+  await page.waitForSelector('h1', { timeout: 10_000 }).catch(() => undefined)
   const structure = await page.evaluate(() => ({
     mains: document.querySelectorAll('main').length,
     levels: [...document.querySelectorAll('h1,h2,h3,h4,h5,h6')].map((h) => Number(h.tagName.slice(1))),

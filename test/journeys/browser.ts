@@ -167,17 +167,20 @@ export interface Collected {
   readonly requests: SentRequest[]
 }
 
-/** Requests to these are the page fetching itself and are not interesting as "client requests". */
+/**
+ * Is this the page fetching ITSELF?
+ *
+ * Same origin means yes, without exception. Not just `/assets/…` — a route the app owns is a
+ * top-level navigation, and counting `GET /markets` as a client request puts the DOCUMENT in
+ * `apiCalls()`, where a scenario reading "the first call to /markets" finds the navigation and
+ * asserts against its query string rather than the API's. That produced a confident, wrong failure
+ * before this was tightened.
+ *
+ * It is also exactly the rule the route handler follows: same origin goes to the surface, never to
+ * the stub table. One rule, stated once, in the two places that have to agree.
+ */
 function isOwnAsset(url: string, origin: string): boolean {
-  if (!url.startsWith(origin)) return false
-  const path = new URL(url).pathname
-  return (
-    path === '/' ||
-    path.startsWith('/assets/') ||
-    path.startsWith('/art/') ||
-    path.startsWith('/game/') ||
-    /\.(js|css|map|png|svg|ico|webp|woff2?|json|glb)$/.test(path)
-  )
+  return url.startsWith(origin)
 }
 
 /* ---- stubbing the API ---------------------------------------------- */
@@ -224,8 +227,14 @@ function matches(pattern: string, req: SentRequest, url: URL): boolean {
   const hasMethod = rest.length > 0 && /^[A-Z]+$/.test(maybeMethod ?? '')
   const path = hasMethod ? rest.join(' ') : pattern
   if (hasMethod && req.method !== maybeMethod) return false
-  if (path.endsWith('*')) return url.pathname.startsWith(path.slice(0, -1))
-  return url.pathname === path
+  if (!path.includes('*')) return url.pathname === path
+  // `*` matches anywhere in the path, not only at the end. `GET /markets/*/resolution` has to
+  // reach a route that is nested under one the table also answers, and a trailing-only wildcard
+  // silently matched nothing: the specific stub never fired, the general one answered the wrong
+  // document, and the page threw while rendering it. The failure read as "the application never
+  // mounted", which is true and unhelpful.
+  const source = `^${path.replace(/[.+?^${}()|[\]\\]/g, '\\$&').replace(/\*/g, '.*')}$`
+  return new RegExp(source).test(url.pathname)
 }
 
 /* ---- driving one page ----------------------------------------------- */
@@ -339,9 +348,24 @@ export async function open(origin: string, options: PageOptions = {}): Promise<S
       headers: request.headers(),
       body: request.postData(),
     }
-    if (!isOwnAsset(sent.url, origin)) requests.push(sent)
+    // EVERY request, including this surface's own. `apiCalls()` filters to the cross-origin ones;
+    // a scenario that needs to know the page fetched one of its OWN files — the art manifest,
+    // a model — reads `collected.requests`. Recording only cross-origin requests made "did the
+    // credits page fetch the manifest, or are the words baked in?" unanswerable.
+    requests.push(sent)
 
-    if (sent.url.startsWith(origin) && isOwnAsset(sent.url, origin)) {
+    // ANYTHING ON THIS SURFACE'S OWN ORIGIN GOES TO THE SURFACE, always and before the stub table.
+    //
+    // Not just its assets. A route the app owns — `/markets`, `/settings` — is a top-level
+    // navigation, and a stub table entry spelled `GET /markets` would otherwise answer the
+    // DOCUMENT request with JSON. The browser then renders the JSON, `#root` never appears, and
+    // the failure reads as "the application did not mount" while the bundle is perfectly fine.
+    //
+    // Every API this estate's frontends call is cross-origin from a surface served on 127.0.0.1:
+    // `resolveApiBase` compares origins and the registry resolves each service to its own dev
+    // port. So there is nothing a scenario legitimately needs to stub on this origin, and the
+    // ambiguity is worth removing rather than documenting.
+    if (sent.url.startsWith(origin)) {
       await route.continue()
       return
     }
@@ -384,10 +408,6 @@ export async function open(origin: string, options: PageOptions = {}): Promise<S
       return
     }
 
-    if (sent.url.startsWith(origin)) {
-      await route.continue()
-      return
-    }
     // Nothing in the table and not our own origin: refuse it, loudly, in `failedRequests`.
     await route.abort('connectionrefused')
   })

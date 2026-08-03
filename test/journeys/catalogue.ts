@@ -253,6 +253,31 @@ export const CATALOGUE: readonly Scenario[] = [
           'before',
           'the three things Homefire is not are below "how to start"',
         )
+        /*
+         * A LITERAL, NOT THE IMPORTED CONSTANT.
+         *
+         * Every other assertion in this scenario compares the page against `MINE` and
+         * `NOT_AN_INCOME` — the modules it renders FROM. That catches a page that stops rendering
+         * the caveat or moves it, and it cannot catch the caveat being softened: rewriting
+         * `format.ts` rewrites both sides and stays green. This is the one sentence this surface
+         * says about what mining pays, so the clause that carries the meaning is written out here.
+         * Scoped to the warn note rather than the page, because a whole-page search for a common
+         * phrase finds it somewhere else and passes for the wrong reason — which happened once
+         * already, in micro-site's build page.
+         */
+        const caveat = await session.page
+          .locator('.ns-note', { hasText: 'What mining pays, before anything else' })
+          .first()
+          .innerText()
+        assert.ok(
+          caveat.includes('a block reward, not an income'),
+          `the yield caveat no longer says a block reward is not an income. It says: ${caveat.slice(0, 200)}`,
+        )
+        assert.ok(
+          caveat.includes('no market to price it in'),
+          'the caveat no longer says EMBER has no market to price a reward in',
+        )
+
         // Nothing on the page states or implies a yield. A block reward is a consensus constant;
         // what a machine earns is its share of one against a difficulty that moves every block,
         // and there is no market to price it in.
