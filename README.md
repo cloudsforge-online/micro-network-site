@@ -1,5 +1,11 @@
 # micro-network-site
 
+[![ci](https://github.com/cloudsforge-online/micro-network-site/actions/workflows/ci.yml/badge.svg)](https://github.com/cloudsforge-online/micro-network-site/actions/workflows/ci.yml)
+![node](https://img.shields.io/badge/node-%3E%3D22-5FA04E?logo=node.js&logoColor=white)
+![typescript](https://img.shields.io/badge/TypeScript-strict-3178C6?logo=typescript&logoColor=white)
+![module](https://img.shields.io/badge/module-ESM-F7DF1E?logo=javascript&logoColor=black)
+![tests](https://img.shields.io/badge/tests-headless%20Chromium-2EAD33?logo=googlechrome&logoColor=white)
+
 Forge Network's public surface: what Hearth is, how to run a node, how to mine, the state of the
 chain, and the testnet faucet. It is the front door to
 [`cloudsforge-online/hearth`](https://github.com/cloudsforge-online/hearth) — the one **public**
@@ -281,3 +287,10 @@ design system does not declare is injected and the token check must go red. **Th
 `cf-not-a-real-class`, and it must keep naming something that genuinely does not exist** —
 `micro-explorer-web`'s used to inject `cf-input` to prove the class check worked, and the day
 `ui.css` grew `.cf-input` the canary started asserting the opposite of the truth.
+
+---
+
+## Provenance
+
+The code in this repository was written by **Claude Opus 5** and **Claude Fable 5**, assets
+generated with **FLUX 2 Pro**, under human direction and review.
