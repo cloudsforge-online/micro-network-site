@@ -78,7 +78,7 @@ describe('no page renders a height except through Figure', () => {
     }
     // …and it renders the FAILED panel with figures too, so a reader sees WHICH facts are missing
     // rather than merely that some are.
-    assert.match(chain, /unfetched\(CHAIN\.crossOrigin\.title\)/)
+    assert.match(chain, /unfetched\(CHAIN\.unreachable\.title\)/)
   })
 
   it('and it never prints a raw height', () => {
@@ -169,7 +169,7 @@ describe('the failed state on the chain page explains itself with citations', ()
     // alone — and strictly better than a specific explanation invented in the error handler, which
     // is how this estate keeps shipping confident wrong diagnoses.
     const chain = code('chain.tsx')
-    assert.match(chain, /<Failed[\s\S]*?CHAIN\.crossOrigin\.body[\s\S]*?CHAIN\.crossOrigin\.source/)
+    assert.match(chain, /<Failed[\s\S]*?CHAIN\.unreachable\.body[\s\S]*?CHAIN\.unreachable\.source/)
   })
 
   it('and offers a retry, because the reason may stop being true without a reload', () => {

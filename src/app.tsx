@@ -9,7 +9,7 @@
  *
  * There is no `ProtectedRoute` in this repository, and there must not be one. The chain read is
  * anonymous (`authoriseRead` returns `null` for a caller with no token and lets the handler run,
- * `indexer/src/server.ts:708-717`) and the three faucet routes are unauthenticated by that
+ * `indexer/src/server.ts:727-736`) and the three faucet routes are unauthenticated by that
  * service's own decision (`faucet/src/server.ts:334-335`, `:407-409`). A gate here would demand a
  * session for facts anyone can read off a public chain and a faucet anyone may use —
  * `docs/ecosystem/15-monetisation-model.md:50` settles the neighbouring case: "A public chain whose

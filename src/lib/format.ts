@@ -164,7 +164,7 @@ export interface Tone {
  * everything before it is `idle` rather than `warn`: **waiting is the normal condition of a young
  * dispense**, and painting it amber would make it look like something had gone wrong — which is the
  * exact misreading that made a marketplace tell every seller their escrow had failed
- * (`indexer/src/server.ts:426-436`).
+ * (`indexer/src/server.ts:445-455`).
  */
 export function dripTone(status: string): Tone {
   switch (status) {

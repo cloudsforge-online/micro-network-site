@@ -124,24 +124,26 @@ function ScopePanel({ scope }: { scope: Scope }) {
           title={`No figures for ${title}`}
         >
           {/*
-            The specific, CITED reason this request is expected to fail today. It is a fact about
-            this estate's plumbing rather than a guess assembled in the error handler — the two
-            citations are checked by `test/citations.test.ts` and the claims themselves by
-            `test/hosts.test.ts`, which goes red the day either is fixed so this paragraph is
-            deleted rather than left to age.
+            No CAUSE is named. This paragraph used to name two — micro-indexer sending no CORS
+            headers, and this hostname being absent from the gateway allowlist — and
+            `test/hosts.test.ts` was written to go red the day either was fixed. Both have been,
+            and it did. Nothing here can establish what the new cause is: no compose profile in
+            this estate serves a frontend behind the gateway, so the request has never been made
+            from a browser against the real plumbing. A replacement explanation would be a second
+            unverifiable claim on a public page.
           */}
-          <p>{CHAIN.crossOrigin.body}</p>
-          <Cite source={CHAIN.crossOrigin.source} />
+          <p>{CHAIN.unreachable.body}</p>
+          <Cite source={CHAIN.unreachable.source} />
         </Failed>
         {/* Every figure the panel would have carried, rendered as unfetched rather than omitted:
             a reader must be able to see WHICH facts are missing, not merely that some are. */}
         <Figures
-          walked={unfetched(CHAIN.crossOrigin.title)}
-          claimed={unfetched(CHAIN.crossOrigin.title)}
-          lag={unfetched(CHAIN.crossOrigin.title)}
-          chainId={unfetched(CHAIN.crossOrigin.title)}
-          depth={unfetched(CHAIN.crossOrigin.title)}
-          alarm={unfetched(CHAIN.crossOrigin.title)}
+          walked={unfetched(CHAIN.unreachable.title)}
+          claimed={unfetched(CHAIN.unreachable.title)}
+          lag={unfetched(CHAIN.unreachable.title)}
+          chainId={unfetched(CHAIN.unreachable.title)}
+          depth={unfetched(CHAIN.unreachable.title)}
+          alarm={unfetched(CHAIN.unreachable.title)}
           known={false}
           halted={false}
           seenAt={null}

@@ -93,7 +93,7 @@ describe('the public calls send no credential', () => {
 
   it('no public call sets any request header beyond accept and content-type', () => {
     // Neither service reads one. `micro-indexer` reads `authorization` on a domain route and
-    // nothing else (`indexer/src/server.ts:709`); `micro-faucet` reads `authorization` and
+    // nothing else (`indexer/src/server.ts:728`); `micro-faucet` reads `authorization` and
     // `x-faucet-token` on /metrics only (`faucet/src/server.ts:499`, `:503`). An `Idempotency-Key`
     // in particular would be silently ignored — the faucet's is a BODY FIELD
     // (`faucet/src/server.ts:386-388`).

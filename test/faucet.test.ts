@@ -370,27 +370,28 @@ describe('the cited lines are the lines that define the routes', () => {
     assert.match(env, /integer\(source, 'PORT', 4013/, 'micro-faucet no longer defaults PORT to 4013')
   })
 
-  it('and its CORS example still names a hostname the registry does not have', () => {
-    // Reported to micro-faucet, not fixed from here. The browser origin that posts a drip is
-    // `https://network.<apex>`, because the faucet page is a route on the Network site
-    // (`ui/packages/ui/src/surfaces.ts:372-374`). An allowlist naming a host nobody serves fails
-    // closed and silently — the same defect `deploy/gateway/dynamic/policy.yml:53-56` records
-    // having fixed once already for `devportal` versus `developers`.
-    //
-    // Asserted so that the day it IS fixed, this goes red and the note in src/lib/hosts.ts is
-    // deleted rather than left to age into another stale inherited claim.
+  it('and its CORS example now names the hostname the registry actually has', () => {
+    /*
+     * THIS ASSERTION WAS ITS OWN OPPOSITE UNTIL micro-faucet WAS FIXED.
+     *
+     * It required `FAUCET_CORS_ORIGINS=https://faucet.…` — a hostname the registry has never
+     * defined — and said it was asserted "so that the day it IS fixed, this goes red and the note
+     * in src/lib/hosts.ts is deleted rather than left to age into another stale inherited claim".
+     * micro-faucet now suggests `https://network.cloudsforge.online`, which is where the faucet
+     * page lives, so the note is gone and this is the guard against it coming back.
+     */
     const example = `${faucetRoot}/.env.example`
     if (!existsSync(example)) return
     const text = readFileSync(example, 'utf8')
     assert.match(
       text,
-      /FAUCET_CORS_ORIGINS=https:\/\/faucet\./,
-      'micro-faucet has changed its CORS example; re-read the note in src/lib/hosts.ts',
+      /FAUCET_CORS_ORIGINS=https:\/\/network\./,
+      'micro-faucet no longer allows the origin the faucet page is served from; a drip would fail closed',
     )
     assert.doesNotMatch(
       text,
-      /FAUCET_CORS_ORIGINS=[^\n]*network\./,
-      'the network hostname is now in the example — delete the finding in src/lib/hosts.ts',
+      /FAUCET_CORS_ORIGINS=[^\n]*faucet\.cloudsforge/,
+      'the example names faucet.<apex> again, a hostname the registry does not define',
     )
   })
 })

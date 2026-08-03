@@ -11,7 +11,7 @@
  * was actually an unreachable service are the three failures this file exists to prevent.
  *
  * **There is no `Refused` here and there must not be one.** Every route this bundle calls is
- * anonymous — the chain read by the service's own decision (`indexer/src/server.ts:708-717`), the
+ * anonymous — the chain read by the service's own decision (`indexer/src/server.ts:727-736`), the
  * three faucet routes by theirs (`faucet/src/server.ts:334-335`, `:407-409`) — and this bundle
  * presents no credential, so nothing it sends can be refused for lacking one. A 401 or a 403
  * arriving anyway means a service re-gated a route or something in front of it injected a

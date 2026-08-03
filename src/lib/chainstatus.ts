@@ -13,7 +13,7 @@
  *
  * The table is `DOMAIN` at `indexer/src/server.ts:153-163`, one entry per line. Both spellings of
  * every path are mounted, because `PREFIXES` is `['/v1', '']` (`indexer/src/server.ts:134`) and
- * `buildRoutes` loops over it (`indexer/src/server.ts:374-378`). This client uses the `/v1` form:
+ * `buildRoutes` loops over it (`indexer/src/server.ts:393-397`). This client uses the `/v1` form:
  * it is the estate convention, and the service's own comment at `:130-133` says the bare form
  * exists for the operator runbooks rather than for new callers.
  *
@@ -46,29 +46,29 @@
  * The two writes are refused to a browser and would be declined even if they were not:
  *
  *   * `POST /v1/watch/:chain/:network/:address` (`indexer/src/server.ts:161`) calls
- *     `authorise(ctx, deps, WRITE_SCOPE)` (`indexer/src/server.ts:532`, scope at `:90`). "Watch
+ *     `authorise(ctx, deps, WRITE_SCOPE)` (`indexer/src/server.ts:551`, scope at `:90`). "Watch
  *     this address" is an operator or a service decision about what this deployment indexes.
  *   * `POST /v1/backfills/:chain/:network` (`indexer/src/server.ts:162`) takes `indexer:write` too
- *     (`indexer/src/server.ts:554`) and enqueues a range walk — which is provider calls, which is
+ *     (`indexer/src/server.ts:573`) and enqueues a range walk — which is provider calls, which is
  *     money.
  *
- * `/livez`, `/readyz` and `/metrics` (`indexer/src/server.ts:340`, `:350`, `:357`) are the platform
+ * `/livez`, `/readyz` and `/metrics` (`indexer/src/server.ts:359`, `:350`, `:357`) are the platform
  * probes and are not wrapped here either. Every declination above is re-enumerated in
  * `test/chainstatus.test.ts` with the line the handler is declared at and the gate it opens with,
  * so a route this app has never read is a red run rather than an omission somebody has to notice.
  *
  * ── THE READ IS ANONYMOUS, AND THIS CLIENT SENDS NO BEARER ────────────────────────────────────
  *
- * `authoriseRead` (`indexer/src/server.ts:708-717`) reads the `authorization` header and, when
- * there is none, **returns `null` and lets the handler run** (`indexer/src/server.ts:710`). The
- * service's reasoning is in the doc comment above it (`indexer/src/server.ts:679-707`): every read
+ * `authoriseRead` (`indexer/src/server.ts:727-736`) reads the `authorization` header and, when
+ * there is none, **returns `null` and lets the handler run** (`indexer/src/server.ts:729`). The
+ * service's reasoning is in the doc comment above it (`indexer/src/server.ts:698-726`): every read
  * answers with a chain fact anyone can obtain by running a Hearth node, this service stores nothing
  * linking an address to a person, and the check that used to sit there was "a lock on a public
  * library".
  *
  * `auth: false` is therefore load-bearing rather than an optimisation. `src/lib/api.ts` attaches a
  * bearer whenever it happens to hold an access token, and **a token that IS presented is still
- * verified**: a service principal without `indexer:read` is a 403 (`indexer/src/server.ts:712-715`)
+ * verified**: a service principal without `indexer:read` is a 403 (`indexer/src/server.ts:731-734`)
  * and a broken or expired one is a 401. A reader whose access token had expired would then get a
  * 401 on a page that needs no session at all.
  *
@@ -293,11 +293,11 @@ function publicRead<T>(path: string, opts: { signal?: AbortSignal } = {}) {
 /**
  * `GET /v1/chains/:chain/:network/status` — `indexer/src/server.ts:154`.
  *
- * Authenticates: `authoriseRead(ctx, deps)` at `indexer/src/server.ts:385`. Anonymous is served
- * (`indexer/src/server.ts:710`), and this call presents nothing.
+ * Authenticates: `authoriseRead(ctx, deps)` at `indexer/src/server.ts:404`. Anonymous is served
+ * (`indexer/src/server.ts:729`), and this call presents nothing.
  *
  * A chain this estate does not run is a **404 `unknown_chain`** rather than a 400, and the service
- * says why (`indexer/src/server.ts:580-583`): the path names a resource that does not exist, and a
+ * says why (`indexer/src/server.ts:599-602`): the path names a resource that does not exist, and a
  * caller asking for `/chains/doge/mainnet/status` "has not made a malformed request, it has asked
  * for a chain this estate does not run". `ember` is one of the five it runs
  * (`indexer/src/chains.ts:41`), so this page's own two scopes cannot produce that answer — but a

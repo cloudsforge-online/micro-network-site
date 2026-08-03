@@ -25,7 +25,7 @@
  * So `cloudsforgeHosts().explorer` is `https://explorer.<apex>` in production, and this bundle is
  * served from `https://network.<apex>` (`ui/packages/ui/src/surfaces.ts:192`). **Those are
  * different origins, and micro-indexer sends no CORS headers at all.** Its `send()
- * (`indexer/src/server.ts:794-807`) writes `content-type`, `content-length`, `x-request-id` and
+ * (`indexer/src/server.ts:813-826`) writes `content-type`, `content-length`, `x-request-id` and
  * `cache-control` and nothing else, and there is no `access-control-` anywhere in that
  * repository's source. The estate's CORS headers come from the gateway instead — one middleware
  * on the websecure entrypoint (`deploy/compose/docker-compose.gateway.yml:90`,
@@ -65,14 +65,13 @@
  *     Under `pnpm dev` it is `http://localhost:3003`, which is neither this bundle (5190, see
  *     vite.config.ts) nor the faucet (4013). The README says the one line that makes it work.
  *
- * And a third gap, in the service rather than in the registry: `micro-faucet` DOES do CORS, with
- * an allowlist and no wildcard (`faucet/src/server.ts:518-533`), fed from `FAUCET_CORS_ORIGINS`
- * (`faucet/src/index.ts:212`). The example value is `https://faucet.cloudsforge.online`
- * (`faucet/.env.example:112`) — **a hostname the registry does not have**. The browser origin that
- * posts a drip is `https://network.<apex>`, because that is where the faucet page lives. An
- * allowlist naming a host nobody serves fails closed and silently, which is the exact defect
- * `deploy/gateway/dynamic/policy.yml:53-56` records having already fixed once for `devportal`
- * versus `developers`. Reported to micro-faucet; not fixed from here.
+ * And a third gap, in the service rather than in the registry — **now closed**. `micro-faucet`
+ * DOES do CORS, with an allowlist and no wildcard, fed from `FAUCET_CORS_ORIGINS`. Its example
+ * value used to be `https://faucet.cloudsforge.online`, a hostname the registry has never defined,
+ * while the browser origin that posts a drip is `https://network.<apex>` — an allowlist naming a
+ * host nobody serves fails closed and silently. It was reported from here and it has been fixed:
+ * the example now names the network hostname. `test/faucet.test.ts` was written to go red the day
+ * that happened, and did; the assertion is now inverted, so a regression is still caught.
  * ══════════════════════════════════════════════════════════════════════════════════════════════
  */
 import { cloudsforgeHosts, type CloudsForgeHosts, type SurfaceKey } from '@cloudsforge/ui'

@@ -94,9 +94,24 @@ describe('the router renders every declared route', () => {
 })
 
 describe('nginx serves the shell for every declared route and nothing else', () => {
-  it('enumerates them in one alternation', () => {
-    const m = /location ~ \^\/\(([^)]+)\)\(\/\|\$\)/.exec(directives)
-    assert.ok(m, 'nginx.conf no longer enumerates the client routes')
+  it('enumerates them in one alternation, and matches the route EXACTLY', () => {
+    /*
+     * `/?$`, not `(/|$)`, and the pattern is asserted rather than assumed.
+     *
+     * `(/|$)` is a PREFIX. It matched /faucet and it also matched /faucet/history, /chain/ember and
+     * every address beneath a route this app owns — none of which app.tsx routes, because no route
+     * here takes a parameter. So React rendered NotFoundPage and nginx served it with a 200: the
+     * not-found page delivered as a success, which is the exact failure the enumeration exists to
+     * prevent. `test/browser-journeys.test.ts` probes /faucet/history in a browser and is what
+     * found it; this line is what stops it coming back through a copy-paste from another frontend.
+     */
+    const m = /location ~ \^\/\(([^)]+)\)\/\?\$/.exec(directives)
+    assert.ok(m, 'nginx.conf no longer enumerates the client routes as exact matches')
+    assert.doesNotMatch(
+      directives,
+      /location ~ \^\/\([^)]+\)\(\/\|\$\)/,
+      'a route block matches a PREFIX, so every address beneath it answers 200',
+    )
     const served = (m[1] ?? '').split('|')
     assert.deepEqual(
       [...served].sort(),

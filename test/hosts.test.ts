@@ -120,26 +120,32 @@ describe('the chain-index read is cross-origin, and nothing today makes it work'
     assert.notEqual(surfaceRow(PRODUCT)?.subdomain, surfaceRow(CHAIN_INDEX_SURFACE)?.subdomain)
   })
 
-  it('micro-indexer sets no CORS header of its own', () => {
+  it('micro-indexer now sets a CORS header of its own', () => {
+    // Was `doesNotMatch`, and was written to go red the day it changed so the apology on the
+    // /chain page could be deleted. It changed. Flipped rather than removed: an assertion dropped
+    // because it started passing leaves nothing watching for the regression.
     const indexer = sibling('indexer')
     if (indexer === null) {
       console.log('UNCHECKED: the indexer CORS claim — micro-indexer is not checked out')
       return
     }
     const server = readFileSync(`${indexer}/src/server.ts`, 'utf8')
-    assert.doesNotMatch(
+    assert.match(
       server,
       /access-control-allow-origin/i,
-      'micro-indexer now sets CORS headers — delete the note on the /chain page and in hosts.ts',
+      'micro-indexer has stopped setting CORS headers; a browser on this host cannot read it again',
     )
   })
 
-  it('and the gateway allowlist does not name this surface', () => {
-    // The estate's CORS comes from ONE middleware on the websecure entrypoint
-    // (`deploy/compose/docker-compose.gateway.yml:90`), fed by one list. `network` is absent from
-    // that list while `explorer`, `hub`, `market` and six others are present. Reported to
-    // micro-deploy; asserted here so that the day it is added, this goes red and the apology in
-    // `CHAIN.crossOrigin` is deleted rather than left to age.
+  it('and the gateway allowlist now names this surface', () => {
+    /*
+     * The other half of the same story, and the same flip.
+     *
+     * The estate's CORS comes from ONE middleware on the websecure entrypoint, fed by one list.
+     * `network` was absent from it while `explorer`, `hub`, `market` and six others were present;
+     * this assertion required that absence and said "the day it is added, this goes red and the
+     * apology in `CHAIN.crossOrigin` is deleted rather than left to age". It has been added.
+     */
     const deploy = sibling('deploy')
     if (deploy === null) {
       console.log('UNCHECKED: the gateway CORS allowlist — micro-deploy is not checked out')
@@ -147,12 +153,13 @@ describe('the chain-index read is cross-origin, and nothing today makes it work'
     }
     const policy = readFileSync(`${deploy}/gateway/dynamic/policy.yml`, 'utf8')
     assert.match(policy, /accessControlAllowOriginList:/, 'the CORS middleware is gone from the policy')
-    // Not vacuous: a hostname that IS on the list, so a broken read of the file fails here first.
+    // Not vacuous: a hostname that was ALREADY on the list, so a broken read of the file fails
+    // here first rather than reporting this surface as allowlisted when nothing was read.
     assert.match(policy, /- https:\/\/explorer\.cloudsforge\.online/)
-    assert.doesNotMatch(
+    assert.match(
       policy,
       /- https:\/\/network\.cloudsforge\.online/,
-      'network is now allowlisted at the gateway — delete the cross-origin note on the /chain page',
+      'this surface has been dropped from the gateway CORS allowlist; the chain read fails closed again',
     )
   })
 })

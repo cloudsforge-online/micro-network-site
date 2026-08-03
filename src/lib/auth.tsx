@@ -9,7 +9,7 @@
  * and every one of them is anonymous by the serving service's own decision:
  *
  *   * `GET /v1/chains/:chain/:network/status` — `authoriseRead` returns `null` for a caller with no
- *     token and lets the handler run (`indexer/src/server.ts:708-717`, the branch at `:710`).
+ *     token and lets the handler run (`indexer/src/server.ts:727-736`, the branch at `:710`).
  *   * `GET /v1/faucet`, `POST /v1/drips`, `GET /v1/drips/:id` — unauthenticated, and the service
  *     argues for it: "a testnet faucet whose terms require a credential to read is a faucet nobody
  *     can use" (`faucet/src/server.ts:334-335`).
@@ -29,7 +29,7 @@
  * ── The `/auth/me` shape, re-read for this repository ─────────────────────────────────────────
  *
  * Identity answers `{ user: {...}, session: {...}, organisations: [...] }` — the profile is
- * **NESTED under `user`**. The route is `identity/src/server.ts:891-903` and the body is built by
+ * **NESTED under `user`**. The route is `identity/src/server.ts:954-966` and the body is built by
  * `toPublicUser` at `identity/src/users.ts:52-63`. Both citations were opened and read against the
  * source for this repository rather than carried over from a sibling.
  *

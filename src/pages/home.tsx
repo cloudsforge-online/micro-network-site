@@ -7,7 +7,7 @@
  * that none of this is running has been misled by everything above it.
  *
  * **This page makes no request.** Not because one would be refused — the chain status read is
- * anonymous (`indexer/src/server.ts:708-717`) — but because there is no question on this page that
+ * anonymous (`indexer/src/server.ts:727-736`) — but because there is no question on this page that
  * a service answers. The state of the chain has its own route, and a home page that renders a
  * spinner over a paragraph of prose has made the prose wait for a service that is not needed to
  * display it. `test/render.test.ts` asserts this file imports neither client.

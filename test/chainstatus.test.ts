@@ -85,7 +85,7 @@ const CALLED: ReadonlyArray<{
   handler: number
   gate: 'authoriseRead' | 'authorise'
 }> = [
-  { method: 'GET', path: '/chains/:chain/:network/status', line: 154, handler: 384, gate: 'authoriseRead' },
+  { method: 'GET', path: '/chains/:chain/:network/status', line: 154, handler: 403, gate: 'authoriseRead' },
 ]
 
 /**
@@ -107,7 +107,7 @@ const DECLINED: ReadonlyArray<{
     method: 'GET',
     path: '/addresses/:chain/:network/:address/activity',
     line: 155,
-    handler: 396,
+    handler: 415,
     gate: 'authoriseRead',
     why: 'anonymous and callable; micro-explorer-web is the surface that reads the index record by record',
   },
@@ -115,7 +115,7 @@ const DECLINED: ReadonlyArray<{
     method: 'GET',
     path: '/addresses/:chain/:network/:address/token-balances',
     line: 156,
-    handler: 463,
+    handler: 482,
     gate: 'authoriseRead',
     why: 'anonymous and callable; a balance is an explorer question, and this surface has no address to ask about',
   },
@@ -123,7 +123,7 @@ const DECLINED: ReadonlyArray<{
     method: 'GET',
     path: '/transactions/:chain/:network/:hash',
     line: 157,
-    handler: 412,
+    handler: 431,
     gate: 'authoriseRead',
     why: 'anonymous and callable; the explorer owns record reads',
   },
@@ -131,7 +131,7 @@ const DECLINED: ReadonlyArray<{
     method: 'GET',
     path: '/transactions/:chain/:network/:hash/confirmations',
     line: 158,
-    handler: 437,
+    handler: 456,
     gate: 'authoriseRead',
     why: 'anonymous and callable; a depth verdict is a decision input, and nothing on this surface takes a decision',
   },
@@ -139,7 +139,7 @@ const DECLINED: ReadonlyArray<{
     method: 'GET',
     path: '/tokens/:chain/:network/:address',
     line: 159,
-    handler: 493,
+    handler: 512,
     gate: 'authoriseRead',
     why: 'anonymous and callable; token state belongs to ForgeMint and the explorer, not to a page about the chain',
   },
@@ -147,7 +147,7 @@ const DECLINED: ReadonlyArray<{
     method: 'GET',
     path: '/blocks/:chain/:network/:height',
     line: 160,
-    handler: 514,
+    handler: 533,
     gate: 'authoriseRead',
     why: 'anonymous and callable; a block page here would be a second explorer competing with a tested one',
   },
@@ -155,7 +155,7 @@ const DECLINED: ReadonlyArray<{
     method: 'POST',
     path: '/watch/:chain/:network/:address',
     line: 161,
-    handler: 531,
+    handler: 550,
     gate: 'authorise',
     why: 'indexer:write — enlarging what a shared deployment indexes is not a browser decision',
   },
@@ -163,7 +163,7 @@ const DECLINED: ReadonlyArray<{
     method: 'POST',
     path: '/backfills/:chain/:network',
     line: 162,
-    handler: 553,
+    handler: 572,
     gate: 'authorise',
     why: 'indexer:write — enqueues a range walk, with a cost attached',
   },
@@ -399,7 +399,7 @@ describe('the cited lines are the lines that register the routes', () => {
   it('BOTH spellings really are mounted, which is what makes the /v1 form safe', () => {
     assert.match(server, /const PREFIXES: readonly string\[\] = \['\/v1', ''\]/)
     assert.match(lines[133] ?? '', /\['\/v1', ''\]/, `indexer/src/server.ts:134 is: ${lines[133]}`)
-    assert.match(lines[373] ?? '', /for \(const prefix of PREFIXES\)/)
+    assert.match(lines[392] ?? '', /for \(const prefix of PREFIXES\)/)
   })
 
   /**
@@ -506,14 +506,14 @@ describe('the cited lines are the lines that register the routes', () => {
   })
 
   it('the cited line ranges are the functions this repository says they are', () => {
-    // `:708-717` and `:679-707` appear verbatim across six files here, where a reader is invited to
+    // `:708-717` and `:698-726` appear verbatim across six files here, where a reader is invited to
     // go and check them. A range that has drifted onto the wrong function reads as verified.
-    assert.match(lines[707] ?? '', /^async function authoriseRead\(/, `:708 is: ${lines[707]}`)
-    assert.match(lines[716] ?? '', /^\}/, `:717 is: ${lines[716]}`)
+    assert.match(lines[726] ?? '', /^async function authoriseRead\(/, `:727 is: ${lines[707]}`)
+    assert.match(lines[735] ?? '', /^\}/, `:736 is: ${lines[735]}`)
     assert.match(
-      lines.slice(678, 707).join('\n'),
+      lines.slice(697, 726).join('\n'),
       /Reads are ANONYMOUS, because what they return is already public/,
-      'the doc comment at :679-707 is no longer the one explaining the anonymous reads',
+      'the doc comment at :698-726 is no longer the one explaining the anonymous reads',
     )
   })
 
@@ -589,14 +589,23 @@ describe('the cited lines are the lines that register the routes', () => {
     assert.match(env, /port\(source, 'PORT', 4008\)/, 'the indexer no longer defaults PORT to 4008')
   })
 
-  it('and micro-indexer still sends NO cross-origin headers, which is why this page cannot read it', () => {
-    // The claim `src/lib/hosts.ts` and the `/chain` page both make, checked against the source
-    // rather than remembered. The day the indexer grows CORS, this goes red and the apology in
-    // `CHAIN.crossOrigin` is deleted rather than left to age.
-    assert.doesNotMatch(
+  it('micro-indexer now DOES send cross-origin headers, so a browser here can read it', () => {
+    /*
+     * THIS ASSERTION USED TO BE ITS OWN OPPOSITE, AND THAT IS THE POINT OF IT.
+     *
+     * It read `doesNotMatch(/access-control-allow-origin/)` and its comment said "the day the
+     * indexer grows CORS, this goes red and the apology in `CHAIN.crossOrigin` is deleted rather
+     * than left to age". That day arrived: `micro-indexer` sets the header, and this went red on a
+     * repository nobody had touched — which is exactly the behaviour it was written for, and the
+     * reason `CHAIN.crossOrigin` is gone from the /chain page.
+     *
+     * Flipped rather than deleted, so a regression upstream is still caught. An assertion removed
+     * because it started passing for the right reason leaves nothing watching.
+     */
+    assert.match(
       readFileSync(`${indexerRoot}/src/server.ts`, 'utf8'),
       /access-control-allow-origin/i,
-      'micro-indexer now sets CORS headers — delete the cross-origin note on the /chain page',
+      'micro-indexer has stopped sending CORS headers; a browser on this host can no longer read it',
     )
   })
 })

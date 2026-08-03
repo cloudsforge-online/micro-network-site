@@ -270,16 +270,30 @@ export const CHAIN = {
    * about this estate's plumbing and not about Hearth — and because the day it stops being true,
    * `test/hosts.test.ts` goes red and this paragraph gets deleted rather than quietly ageing.
    */
-  crossOrigin: {
-    title: 'Why this request is refused today',
+  /*
+   * THIS USED TO BE AN APOLOGY, AND THE APOLOGY IS NO LONGER TRUE.
+   *
+   * It read "Why this request is refused today" and named two blockers: micro-indexer sent no
+   * cross-origin headers of its own, and this hostname was absent from the gateway's one CORS
+   * allowlist. Both were reported and both have since been fixed —
+   * `indexer/src/server.ts` sets `access-control-allow-origin` and
+   * `deploy/gateway/dynamic/policy.yml` names `https://network.cloudsforge.online`. The two
+   * assertions in `test/hosts.test.ts` that required those absences went red on a repository
+   * nobody had touched, which is precisely what they were written to do.
+   *
+   * WHAT REPLACES IT SAYS LESS, ON PURPOSE. This page cannot verify that the read now succeeds:
+   * no compose profile serves a frontend behind the gateway (22-browser-journeys.md §8.7), so
+   * nothing in this estate has ever made the request from a browser. Naming a new cause would be
+   * swapping one unverifiable explanation for another. What it says instead is what is true of
+   * every failure — which figures are missing, and the request id that finds the attempt.
+   */
+  unreachable: {
+    title: 'No figures for this scope',
     body:
-      'The chain index is served from the explorer hostname, and this page is served from the ' +
-      "network one. That is a cross-origin read, and the index sends no cross-origin headers of " +
-      'its own — the estate adds them at the gateway, from one allowlist, and this hostname is not ' +
-      'on it. Both are one-line changes in repositories this one does not own, and both are ' +
-      'reported. Until then a browser here cannot read the index, and this page says so rather ' +
-      'than filling the panel in.',
-    source: 'indexer/src/server.ts:794-807, deploy/gateway/dynamic/policy.yml:45-60',
+      'The chain index did not answer, so this panel is showing which figures are missing rather ' +
+      'than filling them in. Quote the request id below and the exact attempt can be found across ' +
+      'every service at once.',
+    source: 'indexer/src/server.ts:153-163',
   },
 
   explorer: {
