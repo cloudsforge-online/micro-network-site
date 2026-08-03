@@ -20,7 +20,7 @@
  * service does not answer, and there is exactly one way to find out.
  */
 import assert from 'node:assert/strict'
-import { assertMounted, open, type Stubs } from './browser.ts'
+import { assertMounted, renderOnlyWithStubbedNetwork, type Stubs } from './browser.ts'
 import {
   assertAxeClean,
   assertKnownStillBroken,
@@ -127,7 +127,7 @@ export const CATALOGUE: readonly Scenario[] = [
         assert.equal(status, 404, `${path} answered ${status}; it must 404`)
       }
 
-      const session = await open(surface.origin, { path: '/blocks/1', stubs: ANONYMOUS })
+      const session = await renderOnlyWithStubbedNetwork(surface.origin, { path: '/blocks/1', stubs: ANONYMOUS })
       try {
         assert.equal(session.status, 404)
         await assertMounted(session)
@@ -144,7 +144,7 @@ export const CATALOGUE: readonly Scenario[] = [
     tier: 1,
     asserts: 'presentation',
     async run(surface) {
-      const session = await open(surface.origin, { stubs: ANONYMOUS })
+      const session = await renderOnlyWithStubbedNetwork(surface.origin, { stubs: ANONYMOUS })
       try {
         await assertMounted(session, { showing: [HOME.what.title, HOME.state.title] })
         // SECOND, not a footnote. A reader who finds out at the bottom of the page that none of
@@ -181,7 +181,7 @@ export const CATALOGUE: readonly Scenario[] = [
     asserts: 'presentation',
     gate: true,
     async run(surface) {
-      const session = await open(surface.origin, { path: '/chain', stubs: CHAIN_UP })
+      const session = await renderOnlyWithStubbedNetwork(surface.origin, { path: '/chain', stubs: CHAIN_UP })
       try {
         const text = await assertMounted(session, { showing: [CHAIN.title] })
         // The read happened, for both scopes the page declares. A page that renders numbers
@@ -202,7 +202,7 @@ export const CATALOGUE: readonly Scenario[] = [
     tier: 1,
     asserts: 'presentation',
     async run(surface) {
-      const session = await open(surface.origin, {
+      const session = await renderOnlyWithStubbedNetwork(surface.origin, {
         path: '/chain',
         stubs: [['GET /v1/chains/*', { abort: true }], ...ANONYMOUS],
       })
@@ -230,7 +230,7 @@ export const CATALOGUE: readonly Scenario[] = [
     tier: 1,
     asserts: 'presentation',
     async run(surface) {
-      const session = await open(surface.origin, { path: '/mine', stubs: ANONYMOUS })
+      const session = await renderOnlyWithStubbedNetwork(surface.origin, { path: '/mine', stubs: ANONYMOUS })
       try {
         const text = await assertMounted(session, {
           showing: [NOT_AN_INCOME, MINE.caveats.title, MINE.start.title],
@@ -301,7 +301,7 @@ export const CATALOGUE: readonly Scenario[] = [
     tier: 1,
     asserts: 'presentation',
     async run(surface) {
-      const session = await open(surface.origin, { path: '/node', stubs: ANONYMOUS })
+      const session = await renderOnlyWithStubbedNetwork(surface.origin, { path: '/node', stubs: ANONYMOUS })
       try {
         const text = await assertMounted(session, { showing: [NODE.title] })
         assert.ok(
@@ -338,7 +338,7 @@ export const CATALOGUE: readonly Scenario[] = [
     asserts: 'presentation',
     gate: true,
     async run(surface) {
-      const session = await open(surface.origin, { path: '/faucet', stubs: FAUCET_UP })
+      const session = await renderOnlyWithStubbedNetwork(surface.origin, { path: '/faucet', stubs: FAUCET_UP })
       try {
         const text = await assertMounted(session, { showing: [FAUCET.title] })
         const read = session.apiCalls().find((c) => c.url.endsWith('/v1/faucet'))
@@ -364,7 +364,7 @@ export const CATALOGUE: readonly Scenario[] = [
 
       // …and with the service answering DIFFERENT numbers, the page shows those instead. This is
       // what separates "renders the response" from "renders a constant that happens to match".
-      const other = await open(surface.origin, {
+      const other = await renderOnlyWithStubbedNetwork(surface.origin, {
         path: '/faucet',
         stubs: [['GET /v1/faucet', { json: { ...TERMS, chainId: 991, requesterLimit: 2 } }], ...ANONYMOUS],
       })
@@ -401,7 +401,7 @@ export const CATALOGUE: readonly Scenario[] = [
       'is that this bundle disables its own form and says the service did not answer, rather than ' +
       'posting into a hole and rendering the network error as though it were a refusal.',
     async run(surface) {
-      const session = await open(surface.origin, {
+      const session = await renderOnlyWithStubbedNetwork(surface.origin, {
         path: '/faucet',
         stubs: [['GET /v1/faucet', { abort: true }], ...ANONYMOUS],
       })
@@ -459,7 +459,7 @@ export const CATALOGUE: readonly Scenario[] = [
     serverRule: 'the faucet ignores any amount a caller names',
     ownedBy: 'faucet/src/server.test.ts#ignores every attempt to name an amount',
     async run(surface) {
-      const session = await open(surface.origin, {
+      const session = await renderOnlyWithStubbedNetwork(surface.origin, {
         path: '/faucet',
         stubs: [
           ['GET /v1/faucet', { json: TERMS }],
@@ -527,7 +527,7 @@ export const CATALOGUE: readonly Scenario[] = [
     ownedBy: 'faucet/src/server.test.ts#address_cooldown',
     async run(surface) {
       const message = 'One drip per address every 90 minutes. Try again at 14:32 UTC.'
-      const session = await open(surface.origin, {
+      const session = await renderOnlyWithStubbedNetwork(surface.origin, {
         path: '/faucet',
         stubs: [
           ['GET /v1/faucet', { json: TERMS }],
@@ -576,7 +576,7 @@ export const CATALOGUE: readonly Scenario[] = [
     tier: 1,
     asserts: 'client-request',
     async run(surface) {
-      const session = await open(surface.origin, {
+      const session = await renderOnlyWithStubbedNetwork(surface.origin, {
         path: '/faucet',
         stubs: [
           ['GET /v1/faucet', { json: TERMS }],
@@ -623,7 +623,7 @@ export const CATALOGUE: readonly Scenario[] = [
       'accessibility tree; no service is asked anything and no rule is involved.',
     async run(surface) {
       // Live: the field and the submit are both reachable and operable with the keyboard alone.
-      const live = await open(surface.origin, { path: '/faucet', stubs: FAUCET_UP })
+      const live = await renderOnlyWithStubbedNetwork(surface.origin, { path: '/faucet', stubs: FAUCET_UP })
       try {
         await assertMounted(live)
         await live.page.locator('#drip-address').focus()
@@ -646,7 +646,7 @@ export const CATALOGUE: readonly Scenario[] = [
 
       // Dead: the disabled state is a PROPERTY, so assistive technology announces it. A control
       // greyed out with CSS and left operable is announced as available and does nothing.
-      const dead = await open(surface.origin, {
+      const dead = await renderOnlyWithStubbedNetwork(surface.origin, {
         path: '/faucet',
         stubs: [['GET /v1/faucet', { abort: true }], ...ANONYMOUS],
       })
@@ -680,7 +680,7 @@ export const CATALOGUE: readonly Scenario[] = [
     tier: 1,
     asserts: 'client-request',
     async run(surface) {
-      const session = await open(surface.origin, {
+      const session = await renderOnlyWithStubbedNetwork(surface.origin, {
         path: '/#cf_code=handoff-code-123',
         stubs: [
           ['POST /auth/handoff/redeem', { json: { accessToken: 'a', refreshToken: 'r' } }],
@@ -708,7 +708,7 @@ export const CATALOGUE: readonly Scenario[] = [
     asserts: 'client-request',
     async run(surface) {
       for (const path of OWNED) {
-        const session = await open(surface.origin, {
+        const session = await renderOnlyWithStubbedNetwork(surface.origin, {
           path,
           stubs: [...CHAIN_UP, ...FAUCET_UP],
         })
@@ -743,7 +743,7 @@ export const CATALOGUE: readonly Scenario[] = [
     async run(surface) {
       const seen = new Set<string>()
       for (const path of [...OWNED, '/nope']) {
-        const session = await open(surface.origin, { path, stubs: [...CHAIN_UP, ...FAUCET_UP] })
+        const session = await renderOnlyWithStubbedNetwork(surface.origin, { path, stubs: [...CHAIN_UP, ...FAUCET_UP] })
         try {
           await assertMounted(session)
           for (const id of await assertAxeClean(session.page, path, KNOWN_A11Y)) seen.add(id)
@@ -761,7 +761,7 @@ export const CATALOGUE: readonly Scenario[] = [
     asserts: 'presentation',
     async run(surface) {
       for (const path of OWNED) {
-        const session = await open(surface.origin, { path, stubs: [...CHAIN_UP, ...FAUCET_UP] })
+        const session = await renderOnlyWithStubbedNetwork(surface.origin, { path, stubs: [...CHAIN_UP, ...FAUCET_UP] })
         try {
           await assertMounted(session)
           await assertLandmarks(session.page, path)
