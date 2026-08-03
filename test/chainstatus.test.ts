@@ -173,7 +173,7 @@ const DECLINED: ReadonlyArray<{
     why:
       'indexer:read, and the only domain GET on this service that takes a token. It is the ' +
       'estate treasury total, gated because it answers about a SET only the platform knows ' +
-      'rather than about something the caller named (indexer/src/server.ts:621-646). A public ' +
+      'rather than about something the caller named (indexer/src/server.ts:556-581). A public ' +
       'marketing surface holds no service token and has nothing to say about the treasury.',
   },
   {
@@ -501,7 +501,7 @@ describe('the cited lines are the lines that register the routes', () => {
     assert.doesNotMatch(fn, /throw new TokenError/, 'authoriseRead has grown a missing-token throw')
   })
 
-  it('the ten handlers are seven anonymous reads, one scoped read and two gated writes', () => {
+  it('the nine handlers are exactly seven anonymous reads and two gated writes, and the TENTH is a read that takes a token', () => {
     // Note what the OLD arithmetic would have done with the custody total: `gated` matched only
     // WRITE_SCOPE, so a READ_SCOPE handler landed in neither bucket, and the closing
     // `anonymous + gated === 9` is the line that would have caught it. That is why the third
