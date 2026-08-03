@@ -66,6 +66,10 @@ const SIBLINGS: readonly string[] = [
   // Cited once, for the OTHER settled answer about a Vite port: micro-worlds-web binds the
   // registry's own number rather than a 517x one, and this repository had to choose between the two.
   'worlds-web',
+  // The browser telemetry sink. `src/lib/obs.ts` cites its record shape — `fromWire`, `RUM_KINDS`
+  // and the migration's CHECK constraint — because that contract is the reason every event this
+  // bundle sent was silently discarded, and a contract quoted from memory is how it went wrong.
+  'lantern',
 ]
 
 // NOTE: `mint-web` is named in prose throughout this repository — the ten invented tokens — and is
