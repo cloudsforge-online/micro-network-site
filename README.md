@@ -58,26 +58,26 @@ imagined; one made every on-chain escrow activation fail with a false diagnosis.
 
 | Method | Path | Gate | Verified at |
 | --- | --- | --- | --- |
-| `GET` | `/v1/chains/:chain/:network/status` | `authoriseRead` — **anonymous** | `indexer/src/server.ts:154`, handler `:384` |
+| `GET` | `/v1/chains/:chain/:network/status` | `authoriseRead` — **anonymous** | `indexer/src/server.ts:164`, handler `:426` |
 
 The six other reads are anonymous and callable, and this surface calls none of them:
 
 | Method | Path | At | Why not |
 | --- | --- | --- | --- |
-| `GET` | `/v1/addresses/:chain/:network/:address/activity` | `:155` | an address feed; this surface has no address to ask about |
-| `GET` | `/v1/addresses/:chain/:network/:address/token-balances` | `:156` | a holding is an explorer question |
-| `GET` | `/v1/transactions/:chain/:network/:hash` | `:157` | a record read, and the explorer owns record reads |
-| `GET` | `/v1/transactions/:chain/:network/:hash/confirmations` | `:158` | a depth **verdict**, which is a decision input. Nothing here takes a decision, and rendering one would invite somebody to |
-| `GET` | `/v1/tokens/:chain/:network/:address` | `:159` | token state belongs to ForgeMint and the explorer |
-| `GET` | `/v1/blocks/:chain/:network/:height` | `:160` | a block page here would be a second explorer competing with a tested one |
-| `POST` | `/v1/watch/:chain/:network/:address` | `:161` | `indexer:write` (`:532`) — enlarging what a shared deployment indexes is not a browser decision |
-| `POST` | `/v1/backfills/:chain/:network` | `:162` | `indexer:write` (`:554`) — enqueues a range walk, which is provider calls, which is money |
+| `GET` | `/v1/addresses/:chain/:network/:address/activity` | `:165` | an address feed; this surface has no address to ask about |
+| `GET` | `/v1/addresses/:chain/:network/:address/token-balances` | `:166` | a holding is an explorer question |
+| `GET` | `/v1/transactions/:chain/:network/:hash` | `:167` | a record read, and the explorer owns record reads |
+| `GET` | `/v1/transactions/:chain/:network/:hash/confirmations` | `:168` | a depth **verdict**, which is a decision input. Nothing here takes a decision, and rendering one would invite somebody to |
+| `GET` | `/v1/tokens/:chain/:network/:address` | `:169` | token state belongs to ForgeMint and the explorer |
+| `GET` | `/v1/blocks/:chain/:network/:height` | `:171` | a block page here would be a second explorer competing with a tested one |
+| `POST` | `/v1/watch/:chain/:network/:address` | `:172` | `indexer:write` (`:616`) — enlarging what a shared deployment indexes is not a browser decision |
+| `POST` | `/v1/backfills/:chain/:network` | `:173` | `indexer:write` (`:638`) — enqueues a range walk, which is provider calls, which is money |
 
-`/livez`, `/readyz` and `/metrics` (`indexer/src/server.ts:340`, `:350`, `:357`) are platform probes
+`/livez`, `/readyz` and `/metrics` (`indexer/src/server.ts:382`, `:392`, `:399`) are platform probes
 and are not wrapped either.
 
 **The reads are anonymous and this client sends no bearer.** `authoriseRead`
-(`indexer/src/server.ts:708-717`) returns `null` for a caller with no token and lets the handler run.
+(`indexer/src/server.ts:773-782`) returns `null` for a caller with no token and lets the handler run.
 `auth: false` is load-bearing rather than an optimisation: a token that IS presented is still
 verified, so an expired one would turn a page needing no session into a 401.
 
@@ -132,7 +132,7 @@ on the page is deleted rather than left to age.
 `https://network.<apex>` (`ui/packages/ui/src/surfaces.ts:192`, `:442`). Two things would have to be
 true for that read to work and neither is:
 
-* **`micro-indexer` sends no CORS headers at all.** `send()` (`indexer/src/server.ts:794-807`)
+* **`micro-indexer` sends no CORS headers at all.** `send()` (`indexer/src/server.ts:859-872`)
   writes `content-type`, `content-length`, `x-request-id` and `cache-control`, and there is no
   `access-control-` anywhere in that repository.
 * **The gateway's allowlist does not name this surface.** The estate's CORS comes from one

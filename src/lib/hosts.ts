@@ -19,13 +19,13 @@
  * and `indexer` is not among them, and `CloudsForgeHosts` is `Record<SurfaceKey, string>`
  * (`ui/packages/ui/src/index.tsx:121`), so a frontend can only name a surface. The one that means
  * "the chain index" is `explorer`, whose devPort is **4008** — the port `micro-indexer` binds
- * (`ui/packages/ui/src/surfaces.ts:456`, `indexer/src/env.ts:295`). That entry was 8080 until
+ * (`ui/packages/ui/src/surfaces.ts:456`, `indexer/src/env.ts:364`). That entry was 8080 until
  * recently and micro-ui has since corrected it, with the reasoning in the comment above it.
  *
  * So `cloudsforgeHosts().explorer` is `https://explorer.<apex>` in production, and this bundle is
  * served from `https://network.<apex>` (`ui/packages/ui/src/surfaces.ts:192`). **Those are
  * different origins, and micro-indexer sends no CORS headers at all.** Its `send()
- * (`indexer/src/server.ts:813-826`) writes `content-type`, `content-length`, `x-request-id` and
+ * (`indexer/src/server.ts:878-891`) writes `content-type`, `content-length`, `x-request-id` and
  * `cache-control` and nothing else, and there is no `access-control-` anywhere in that
  * repository's source. The estate's CORS headers come from the gateway instead — one middleware
  * on the websecure entrypoint (`deploy/compose/docker-compose.gateway.yml:90`,

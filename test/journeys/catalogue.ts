@@ -74,7 +74,7 @@ const TERMS = {
     'Testnet EMBER. It has no value, it is not tradeable, and the chain it funds may be reset without notice.',
 }
 
-/** `GET /v1/chains/ember/:network/status` — `indexer/src/server.ts:154`. */
+/** `GET /v1/chains/ember/:network/status` — `indexer/src/server.ts:164`. */
 const chainStatus = (network: string) => ({
   chain: 'ember',
   network,

@@ -9,19 +9,19 @@
  * this estate were built against a surface somebody imagined; one made every on-chain escrow
  * activation fail with a false diagnosis, and one made every ForgeMint project page read "not yet
  * indexed" permanently. `micro-indexer`'s own route table says so in its header
- * (`indexer/src/server.ts:138-152`) and asks to be parsed rather than paraphrased.
+ * (`indexer/src/server.ts:148-162`) and asks to be parsed rather than paraphrased.
  *
- * The table is `DOMAIN` at `indexer/src/server.ts:153-163`, one entry per line. Both spellings of
- * every path are mounted, because `PREFIXES` is `['/v1', '']` (`indexer/src/server.ts:134`) and
- * `buildRoutes` loops over it (`indexer/src/server.ts:393-397`). This client uses the `/v1` form:
+ * The table is `DOMAIN` at `indexer/src/server.ts:163-174`, one entry per line. Both spellings of
+ * every path are mounted, because `PREFIXES` is `['/v1', '']` (`indexer/src/server.ts:144`) and
+ * `buildRoutes` loops over it (`indexer/src/server.ts:416-420`). This client uses the `/v1` form:
  * it is the estate convention, and the service's own comment at `:130-133` says the bare form
  * exists for the operator runbooks rather than for new callers.
  *
- * ── ONE route is called. EIGHT are declined, each with a reason ────────────────────────────────
+ * ── ONE route is called. NINE are declined, each with a reason ─────────────────────────────────
  *
  * | Method | Path                                                  | Gate                | Verified at               |
  * | ------ | ----------------------------------------------------- | ------------------- | ------------------------- |
- * | GET    | /v1/chains/:chain/:network/status                     | authoriseRead :385  | indexer/src/server.ts:154 |
+ * | GET    | /v1/chains/:chain/:network/status                     | authoriseRead :427  | indexer/src/server.ts:164 |
  *
  * The six other reads are **anonymous and callable**, and this surface calls none of them. That is
  * a decision about what this page IS, not about what it may do: **`micro-explorer-web` is the
@@ -29,46 +29,58 @@
  * (`ui/packages/ui/src/surfaces.ts:437-462`), and a second explorer inside the Network site would
  * be a fork of one that already exists and is already tested. This page links to it.
  *
- *   * `GET /v1/addresses/:chain/:network/:address/activity` (`indexer/src/server.ts:155`,
- *     `authoriseRead` at `:397`) — an address feed. This surface has no address to ask about.
- *   * `GET /v1/addresses/:chain/:network/:address/token-balances` (`indexer/src/server.ts:156`,
- *     `authoriseRead` at `:464`) — a holding is an explorer question.
- *   * `GET /v1/transactions/:chain/:network/:hash` (`indexer/src/server.ts:157`, `authoriseRead`
- *     at `:413`) — a record read, and the explorer owns record reads.
- *   * `GET /v1/transactions/:chain/:network/:hash/confirmations` (`indexer/src/server.ts:158`,
- *     `authoriseRead` at `:438`) — a depth VERDICT, which is a decision input. Nothing on this
+ *   * `GET /v1/addresses/:chain/:network/:address/activity` (`indexer/src/server.ts:165`,
+ *     `authoriseRead` at `:439`) — an address feed. This surface has no address to ask about.
+ *   * `GET /v1/addresses/:chain/:network/:address/token-balances` (`indexer/src/server.ts:166`,
+ *     `authoriseRead` at `:506`) — a holding is an explorer question.
+ *   * `GET /v1/transactions/:chain/:network/:hash` (`indexer/src/server.ts:167`, `authoriseRead`
+ *     at `:455`) — a record read, and the explorer owns record reads.
+ *   * `GET /v1/transactions/:chain/:network/:hash/confirmations` (`indexer/src/server.ts:168`,
+ *     `authoriseRead` at `:480`) — a depth VERDICT, which is a decision input. Nothing on this
  *     surface takes a decision, and a page that rendered one would be inviting somebody to.
- *   * `GET /v1/tokens/:chain/:network/:address` (`indexer/src/server.ts:159`, `authoriseRead` at
- *     `:494`) — token state belongs to ForgeMint and the explorer.
- *   * `GET /v1/blocks/:chain/:network/:height` (`indexer/src/server.ts:160`, `authoriseRead` at
- *     `:515`) — a block page here would be a second explorer competing with a tested one.
+ *   * `GET /v1/tokens/:chain/:network/:address` (`indexer/src/server.ts:169`, `authoriseRead` at
+ *     `:536`) — token state belongs to ForgeMint and the explorer.
+ *   * `GET /v1/blocks/:chain/:network/:height` (`indexer/src/server.ts:171`, `authoriseRead` at
+ *     `:599`) — a block page here would be a second explorer competing with a tested one.
+ *
+ * One further read is declined for a different reason — it is the only domain GET on this service
+ * that takes a token:
+ *
+ *   * `GET /v1/custody/:chain/:network/total` (`indexer/src/server.ts:170`) calls
+ *     `authorise(ctx, deps, READ_SCOPE)` (`indexer/src/server.ts:583`). It is Σ confirmed native
+ *     balance over the estate's custody set — the number `micro-ledger` reconciles its books
+ *     against. The rule that opened the other seven reads is that what they return is already
+ *     public, because each answers about a block, a hash or an address THE CALLER NAMED; this one
+ *     answers about a set only the platform knows, so serving it anonymously would publish the
+ *     treasury's size to anyone who can reach the port (`indexer/src/server.ts:556-581`). A public
+ *     marketing surface holds no service token, and has nothing to say about the treasury.
  *
  * The two writes are refused to a browser and would be declined even if they were not:
  *
- *   * `POST /v1/watch/:chain/:network/:address` (`indexer/src/server.ts:161`) calls
- *     `authorise(ctx, deps, WRITE_SCOPE)` (`indexer/src/server.ts:551`, scope at `:90`). "Watch
+ *   * `POST /v1/watch/:chain/:network/:address` (`indexer/src/server.ts:172`) calls
+ *     `authorise(ctx, deps, WRITE_SCOPE)` (`indexer/src/server.ts:616`, scope at `:100`). "Watch
  *     this address" is an operator or a service decision about what this deployment indexes.
- *   * `POST /v1/backfills/:chain/:network` (`indexer/src/server.ts:162`) takes `indexer:write` too
- *     (`indexer/src/server.ts:573`) and enqueues a range walk — which is provider calls, which is
+ *   * `POST /v1/backfills/:chain/:network` (`indexer/src/server.ts:173`) takes `indexer:write` too
+ *     (`indexer/src/server.ts:638`) and enqueues a range walk — which is provider calls, which is
  *     money.
  *
- * `/livez`, `/readyz` and `/metrics` (`indexer/src/server.ts:359`, `:350`, `:357`) are the platform
+ * `/livez`, `/readyz` and `/metrics` (`indexer/src/server.ts:382`, `:392`, `:399`) are the platform
  * probes and are not wrapped here either. Every declination above is re-enumerated in
  * `test/chainstatus.test.ts` with the line the handler is declared at and the gate it opens with,
  * so a route this app has never read is a red run rather than an omission somebody has to notice.
  *
  * ── THE READ IS ANONYMOUS, AND THIS CLIENT SENDS NO BEARER ────────────────────────────────────
  *
- * `authoriseRead` (`indexer/src/server.ts:727-736`) reads the `authorization` header and, when
- * there is none, **returns `null` and lets the handler run** (`indexer/src/server.ts:729`). The
- * service's reasoning is in the doc comment above it (`indexer/src/server.ts:698-726`): every read
+ * `authoriseRead` (`indexer/src/server.ts:792-801`) reads the `authorization` header and, when
+ * there is none, **returns `null` and lets the handler run** (`indexer/src/server.ts:794`). The
+ * service's reasoning is in the doc comment above it (`indexer/src/server.ts:763-791`): every read
  * answers with a chain fact anyone can obtain by running a Hearth node, this service stores nothing
  * linking an address to a person, and the check that used to sit there was "a lock on a public
  * library".
  *
  * `auth: false` is therefore load-bearing rather than an optimisation. `src/lib/api.ts` attaches a
  * bearer whenever it happens to hold an access token, and **a token that IS presented is still
- * verified**: a service principal without `indexer:read` is a 403 (`indexer/src/server.ts:731-734`)
+ * verified**: a service principal without `indexer:read` is a 403 (`indexer/src/server.ts:796-799`)
  * and a broken or expired one is a 401. A reader whose access token had expired would then get a
  * 401 on a page that needs no session at all.
  *
@@ -176,7 +188,7 @@ export interface ReorgView {
  * **EVERY HEIGHT ON THIS SHAPE IS NULLABLE, AND THE NULL IS THE ANSWER THIS PAGE MOST OFTEN GETS.**
  *
  * `status` reads a checkpoint row and returns `checkpoint?.tipHeight ?? null` and
- * `checkpoint?.height ?? null` (`indexer/src/reads.ts:294-295`). A deployment that has never
+ * `checkpoint?.height ?? null` (`indexer/src/reads.ts:300-301`). A deployment that has never
  * followed `ember:testnet` has no checkpoint row, so it answers **200** with `tipHeight: null`,
  * `indexedHeight: null`, `lagBlocks: null`, `providers: []` and `recentReorgs: []`. That is not a
  * failure and it is not "zero": it is the service saying it has not observed anything.
@@ -291,13 +303,13 @@ function publicRead<T>(path: string, opts: { signal?: AbortSignal } = {}) {
 }
 
 /**
- * `GET /v1/chains/:chain/:network/status` — `indexer/src/server.ts:154`.
+ * `GET /v1/chains/:chain/:network/status` — `indexer/src/server.ts:164`.
  *
- * Authenticates: `authoriseRead(ctx, deps)` at `indexer/src/server.ts:404`. Anonymous is served
- * (`indexer/src/server.ts:729`), and this call presents nothing.
+ * Authenticates: `authoriseRead(ctx, deps)` at `indexer/src/server.ts:427`. Anonymous is served
+ * (`indexer/src/server.ts:794`), and this call presents nothing.
  *
  * A chain this estate does not run is a **404 `unknown_chain`** rather than a 400, and the service
- * says why (`indexer/src/server.ts:599-602`): the path names a resource that does not exist, and a
+ * says why (`indexer/src/server.ts:664-667`): the path names a resource that does not exist, and a
  * caller asking for `/chains/doge/mainnet/status` "has not made a malformed request, it has asked
  * for a chain this estate does not run". `ember` is one of the five it runs
  * (`indexer/src/chains.ts:41`), so this page's own two scopes cannot produce that answer — but a

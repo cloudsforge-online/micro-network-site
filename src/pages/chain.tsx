@@ -5,10 +5,10 @@
  * EVERY NUMBER HERE IS FETCHED AT RENDER TIME OR IS ABSENT. THERE IS NO THIRD OPTION.
  *
  * The panel is built from a `ChainStatus` (`GET /v1/chains/:chain/:network/status`,
- * `indexer/src/server.ts:154`) and every height on that shape is nullable. A deployment that has
+ * `indexer/src/server.ts:164`) and every height on that shape is nullable. A deployment that has
  * never followed `ember:testnet` has no checkpoint row, so the service answers **200** with
  * `tipHeight: null`, `indexedHeight: null` and `lagBlocks: null`
- * (`indexer/src/reads.ts:294-295`, `:300-301`). That is an ANSWER — "I have observed nothing" — and
+ * (`indexer/src/reads.ts:300-301`, `:300-301`). That is an ANSWER — "I have observed nothing" — and
  * it is a different fact from "I could not be asked".
  *
  * So a figure reaches the screen through `<Figure>` and nowhere else, carrying one of four states
@@ -272,7 +272,7 @@ function Figures(props: {
  * The providers the index is reading this chain through.
  *
  * An EMPTY list is a real answer and is worded as one. `listProviderHealth` returns the rows this
- * deployment has (`indexer/src/reads.ts:290`), so no rows means no provider has been configured for
+ * deployment has (`indexer/src/reads.ts:296`), so no rows means no provider has been configured for
  * this scope — which, for a chain with no published endpoint, is exactly what one would expect.
  */
 function Providers({ status }: { status: ChainStatus }) {
@@ -322,7 +322,7 @@ function Providers({ status }: { status: ChainStatus }) {
  *
  * An empty list here is GOOD NEWS and is worded as good news rather than as an absence, because
  * unlike every other empty on this page it is not a gap in what we know: `recentReorgs(exec, scope, 5)`
- * (`indexer/src/reads.ts:291`) returns what the index recorded, and nothing recorded means nothing
+ * (`indexer/src/reads.ts:297`) returns what the index recorded, and nothing recorded means nothing
  * happened as far as it walked. That is the one place on this surface where "none" is a finding.
  */
 function Reorgs({ status }: { status: ChainStatus }) {

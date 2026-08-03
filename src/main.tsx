@@ -11,7 +11,7 @@
  *   3. Render last.
  *
  * Step 2 runs on this surface too, even though **no page here needs a session at all**: the chain
- * read is anonymous (`indexer/src/server.ts:727-736`) and the three faucet routes are
+ * read is anonymous (`indexer/src/server.ts:792-801`) and the three faucet routes are
  * unauthenticated (`faucet/src/server.ts:334-335`), and this bundle sends no bearer to any of them.
  * It runs because the code has to leave the address bar whether or not the page that follows uses
  * it — a hand-off code sitting in a shared link is a hand-off code somebody else can redeem. The

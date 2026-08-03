@@ -11,7 +11,7 @@
  * ── What is different on THIS surface, and it is not a detail ──────────────────────────────────
  *
  * **Nothing this bundle reads needs a session.** The chain-index route it calls is anonymous
- * (`authoriseRead`, `indexer/src/server.ts:727-736`) and the three faucet routes are unauthenticated
+ * (`authoriseRead`, `indexer/src/server.ts:792-801`) and the three faucet routes are unauthenticated
  * by the service's own decision — "a testnet faucet whose terms require a credential to read is a
  * faucet nobody can use" (`faucet/src/server.ts:334-335`). Every one of them is issued with
  * `auth: false`; see `publicRead` in `src/lib/chainstatus.ts` and `publicCall` in
@@ -22,7 +22,7 @@
  *
  * So the rule for this file is narrow and worth stating: **a bearer must never travel to the chain
  * index or to the faucet.** The indexer verifies whatever it is handed rather than ignoring it
- * (`indexer/src/server.ts:730`), so an expired token would turn a public page into a 401 — a
+ * (`indexer/src/server.ts:795`), so an expired token would turn a public page into a 401 — a
  * surface that has quietly made itself depend on a credential. `test/api.test.ts` drives every one
  * of the four public calls with an access token in storage and inspects what `fetch` was handed.
  */
@@ -123,7 +123,7 @@ export class ApiError extends Error {
  * Pull the sentence, the code and the request id out of a service's error body.
  *
  * The estate's envelope is **nested** — `{error: {code, message, requestId}}`, built by
- * `errorReply()` in every service (`indexer/src/server.ts:809-811`,
+ * `errorReply()` in every service (`indexer/src/server.ts:874-876`,
  * `faucet/src/server.ts:281-283`, `identity/src/server.ts:1431`). Every one of those three is
  * checked out in CI, so the shape is verified rather than remembered.
  *
@@ -180,7 +180,7 @@ export interface ErrorNotice {
    *
    * The web template drops it, and dropping it is how `micro-market` and `micro-mint` each
    * rendered a router 404 as a fact about a chain. `micro-indexer` distinguishes "no such
-   * transaction" from "no such route" by code alone and says so at `indexer/src/server.ts:452-454`
+   * transaction" from "no such route" by code alone and says so at `indexer/src/server.ts:475-477`
    * — the status is 404 either way.
    */
   code: string | undefined
@@ -296,8 +296,8 @@ export interface RequestOptions {
    * APIs rather than a style choice.**
    *
    * `micro-indexer` reads exactly one request header on a domain route — `authorization`, in
-   * `authoriseRead` (`indexer/src/server.ts:728`) and `authorise` (`:724`) — plus `x-request-id`
-   * and `host` in the server frame (`indexer/src/server.ts:180`, `:187`). `micro-faucet` reads
+   * `authoriseRead` (`indexer/src/server.ts:793`) and `authorise` (`:808`) — plus `x-request-id`
+   * and `host` in the server frame (`indexer/src/server.ts:202`, `:198`). `micro-faucet` reads
    * `authorization` and `x-faucet-token` on `/metrics` only (`faucet/src/server.ts:499`, `:503`),
    * plus `origin` for CORS (`faucet/src/server.ts:520`) and `x-forwarded-for` for the per-requester
    * limit (`faucet/src/server.ts:484`). **Neither repository contains an `Idempotency-Key`**, and

@@ -249,7 +249,7 @@ export const CHAIN = {
   /**
    * What a null means. This is the most important paragraph on the page.
    *
-   * `indexer/src/reads.ts:294-295` returns `checkpoint?.tipHeight ?? null`, so a deployment that has
+   * `indexer/src/reads.ts:300-301` returns `checkpoint?.tipHeight ?? null`, so a deployment that has
    * never followed this chain answers 200 with nulls rather than failing. That is an answer, and it
    * is a different answer from "we could not ask".
    */
@@ -293,7 +293,7 @@ export const CHAIN = {
       'The chain index did not answer, so this panel is showing which figures are missing rather ' +
       'than filling them in. Quote the request id below and the exact attempt can be found across ' +
       'every service at once.',
-    source: 'indexer/src/server.ts:153-163',
+    source: 'indexer/src/server.ts:163-174',
   },
 
   explorer: {

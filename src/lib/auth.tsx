@@ -9,7 +9,7 @@
  * and every one of them is anonymous by the serving service's own decision:
  *
  *   * `GET /v1/chains/:chain/:network/status` — `authoriseRead` returns `null` for a caller with no
- *     token and lets the handler run (`indexer/src/server.ts:727-736`, the branch at `:710`).
+ *     token and lets the handler run (`indexer/src/server.ts:792-801`, the branch at `:794`).
  *   * `GET /v1/faucet`, `POST /v1/drips`, `GET /v1/drips/:id` — unauthenticated, and the service
  *     argues for it: "a testnet faucet whose terms require a credential to read is a faucet nobody
  *     can use" (`faucet/src/server.ts:334-335`).
