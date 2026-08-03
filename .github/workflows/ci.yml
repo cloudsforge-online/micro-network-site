@@ -327,11 +327,16 @@ jobs:
             exit 1
           }
           out=$(node --import tsx --test test/chainstatus.test.ts 2>&1 || true)
-          if printf '%s\n' "$out" | grep -q 'SKIPPED: no micro-indexer checkout'; then
+          # `grep -q PATTERN <<<"$var"` rather than `printf '%s\n' "$var" | grep -q PATTERN`.
+          # grep -q exits on its first match by design; the producer then writes into a closed pipe,
+          # and `pipefail` promoted that SIGPIPE (exit 141) to a failed step — a gate that failed for
+          # no reason and passed on re-run, which teaches re-running instead of reading. The here-string
+          # is byte-identical input with the same exit status and no pipe, so the rule is unchanged.
+          if grep -q 'SKIPPED: no micro-indexer checkout' <<<"$out"; then
             echo "::error::the route cross-check skipped itself while micro-indexer was present"
             exit 1
           fi
-          printf '%s\n' "$out" | grep -q "is registered at indexer/src/server.ts:${cited}" || {
+          grep -q "is registered at indexer/src/server.ts:${cited}" <<<"$out" || {
             echo "::error::the route cross-check did not run against indexer/src/server.ts"
             exit 1
           }
@@ -388,7 +393,7 @@ jobs:
             exit 1
           }
           out=$(node --import tsx --test test/faucet.test.ts 2>&1 || true)
-          if printf '%s\n' "$out" | grep -q 'SKIPPED: no micro-faucet checkout'; then
+          if grep -q 'SKIPPED: no micro-faucet checkout' <<<"$out"; then
             echo "::error::the faucet cross-check skipped itself while micro-faucet was present"
             exit 1
           fi
@@ -416,7 +421,7 @@ jobs:
             'the three routes this page calls are UNAUTHENTICATED, and still are' \
             '…and /metrics is still gated, which is why it is declined'
           do
-            printf '%s\n' "$out" | grep -qF "$name" || {
+            grep -qF "$name" <<<"$out" || {
               echo "::error::the authority check '$name' did not run"
               exit 1
             }
@@ -441,7 +446,7 @@ jobs:
             echo "::error::only $count of the four public calls were checked for a bearer"
             exit 1
           }
-          printf '%s\n' "$out" | grep -qF 'the stub WOULD have seen one' || {
+          grep -qF 'the stub WOULD have seen one' <<<"$out" || {
             echo "::error::the not-vacuous control did not run; the four checks prove nothing"
             exit 1
           }
@@ -485,7 +490,7 @@ jobs:
             'the module contains no coalesce-to-zero anywhere' \
             'no page renders a height except through Figure'
           do
-            printf '%s\n' "$out" | grep -qF "$name" || {
+            grep -qF "$name" <<<"$out" || {
               echo "::error::the honesty check '$name' did not run"
               exit 1
             }
@@ -517,7 +522,7 @@ jobs:
         run: |
           set -euo pipefail
           out=$(node --import tsx --test test/content.test.ts 2>&1 || true)
-          printf '%s\n' "$out" | grep -qF 'every digit run in every string is a registered value' || {
+          grep -qF 'every digit run in every string is a registered value' <<<"$out" || {
             echo "::error::the content scan did not run"
             exit 1
           }
@@ -551,15 +556,15 @@ jobs:
             exit 1
           }
           out=$(node --import tsx --test test/tokens.test.ts 2>&1 || true)
-          if printf '%s\n' "$out" | grep -q 'SKIPPED: no micro-ui checkout'; then
+          if grep -q 'SKIPPED: no micro-ui checkout' <<<"$out"; then
             echo "::error::the token cross-check skipped itself while micro-ui was present"
             exit 1
           fi
-          printf '%s\n' "$out" | grep -q 'every property this stylesheet reads is declared' || {
+          grep -q 'every property this stylesheet reads is declared' <<<"$out" || {
             echo "::error::the token cross-check did not run against tokens.css"
             exit 1
           }
-          printf '%s\n' "$out" | grep -q 'every cf- CLASS this bundle names is declared' || {
+          grep -q 'every cf- CLASS this bundle names is declared' <<<"$out" || {
             echo "::error::the class cross-check did not run against ui.css"
             exit 1
           }
@@ -643,7 +648,7 @@ jobs:
             echo "::error::a citation in this repository names a line that does not exist"
             exit 1
           }
-          printf '%s\n' "$out" | grep -q 'names a line INSIDE that file' || {
+          grep -q 'names a line INSIDE that file' <<<"$out" || {
             echo "::error::the citation sweep did not run"
             exit 1
           }
@@ -736,7 +741,7 @@ jobs:
             echo "::error::unknown paths must 404; serve the shell through error_page 404 /index.html"
             exit 1
           fi
-          printf '%s\n' "$directives" | grep -q 'error_page 404 /index.html'
+          grep -q 'error_page 404 /index.html' <<<"$directives"
           echo "ok: unknown paths answer 404"
 
       - name: No credential can reach the image
