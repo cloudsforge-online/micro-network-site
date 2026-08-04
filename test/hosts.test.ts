@@ -115,7 +115,7 @@ describe('the faucet devPort names a page, and micro-faucet binds something else
   })
 })
 
-describe('the chain-index read is cross-origin, and nothing today makes it work', () => {
+describe('the chain-index read is cross-origin, and three separate things now make it work', () => {
   it('this surface and the chain index are different subdomains', () => {
     assert.notEqual(surfaceRow(PRODUCT)?.subdomain, surfaceRow(CHAIN_INDEX_SURFACE)?.subdomain)
   })

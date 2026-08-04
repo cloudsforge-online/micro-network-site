@@ -281,11 +281,25 @@ export const CHAIN = {
    * assertions in `test/hosts.test.ts` that required those absences went red on a repository
    * nobody had touched, which is precisely what they were written to do.
    *
-   * WHAT REPLACES IT SAYS LESS, ON PURPOSE. This page cannot verify that the read now succeeds:
-   * no compose profile serves a frontend behind the gateway (22-browser-journeys.md §8.7), so
-   * nothing in this estate has ever made the request from a browser. Naming a new cause would be
-   * swapping one unverifiable explanation for another. What it says instead is what is true of
-   * every failure — which figures are missing, and the request id that finds the attempt.
+   * WHAT REPLACES IT SAYS LESS, ON PURPOSE, AND THAT DECISION HAS NOW PAID FOR ITSELF TWICE.
+   *
+   * When this was written the estate served no frontend behind the gateway, so the read had never
+   * been made from a browser and naming a new cause would have swapped one unverifiable
+   * explanation for another. What it says instead is what is true of EVERY failure — which
+   * figures are missing, and the request id that finds the attempt.
+   *
+   * The estate does serve the bundles now, and this panel was then observed rendering exactly
+   * this copy against a live chain — because a THIRD cause nobody had named was in play:
+   * `explorer.<apex>` had a gateway router for the bundle and none for the chain index, so the
+   * request was answered by explorer-web's own nginx. Had this paragraph guessed at a cause, it
+   * would have blamed CORS and been wrong, and the panel would have taught a reader to stop
+   * looking. It named the missing figures instead, and the request id led to the router.
+   *
+   * That router now exists (`deploy/gateway/dynamic/estate-web.yml`, `cf-api-explorer`), and this
+   * panel has been driven in Chromium against the real gateway with certificate verification on:
+   * `ember:testnet` renders a walked head, a claimed tip, chain id 7,412 and a healthy provider,
+   * while `ember:mainnet` renders "not observed" for every figure a node has never supplied. Both
+   * outcomes are this copy working, which is the point.
    */
   unreachable: {
     title: 'No figures for this scope',

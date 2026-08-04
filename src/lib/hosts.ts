@@ -6,8 +6,8 @@
  * the note in vite.config.ts and `test/no-build-time-config.test.ts`.
  *
  * ══════════════════════════════════════════════════════════════════════════════════════════════
- * THIS SURFACE READS TWO SERVICES, AND THE REGISTRY GIVES A WORKING BASE FOR NEITHER. BOTH GAPS
- * ARE RESOLVED THROUGH THE REGISTRY ANYWAY, NAMED HERE, AND PINNED BY TEST.
+ * THIS SURFACE READS TWO SERVICES, AND THE REGISTRY NAMES A SURFACE FOR NEITHER OF THEM DIRECTLY.
+ * BOTH ARE RESOLVED THROUGH THE REGISTRY ANYWAY, NAMED HERE, AND PINNED BY TEST.
  *
  * A hard-coded host is a second, unversioned copy of the registry, and the copy is the one that
  * goes stale — the conclusion admin-web, mint-web, trade-web, worlds-web and explorer-web each
@@ -23,24 +23,39 @@
  * recently and micro-ui has since corrected it, with the reasoning in the comment above it.
  *
  * So `cloudsforgeHosts().explorer` is `https://explorer.<apex>` in production, and this bundle is
- * served from `https://network.<apex>` (`ui/packages/ui/src/surfaces.ts:192`). **Those are
- * different origins, and micro-indexer sends no CORS headers at all.** Its `send()
- * (`indexer/src/server.ts:878-891`) writes `content-type`, `content-length`, `x-request-id` and
- * `cache-control` and nothing else, and there is no `access-control-` anywhere in that
- * repository's source. The estate's CORS headers come from the gateway instead — one middleware
- * on the websecure entrypoint (`deploy/compose/docker-compose.gateway.yml:90`,
- * `deploy/gateway/dynamic/policy.yml:43-69`) — and **`https://network.cloudsforge.online` is not
- * in that allowlist** (`deploy/gateway/dynamic/policy.yml:45-60` lists the apex, hub, market,
- * mint, trade, worlds, explorer, admin, developers and status).
+ * served from `https://network.<apex>` (`ui/packages/ui/src/surfaces.ts:192`). Those are different
+ * origins, and THIS READ NOW WORKS. Three things had to be true and all three now are; each is
+ * recorded because each was separately absent and each failed in a way that looked like one of
+ * the others.
  *
- * Two of those are the same finding said twice, so state it once: today a browser on this surface
- * cannot read the chain index, and the page says so rather than rendering a number it did not
- * fetch. `test/hosts.test.ts` asserts BOTH the absent allowlist entry and the absent header, so
- * the day either is fixed this file goes red and the apology gets deleted instead of ageing.
+ *   1. **CORS at the service.** `micro-indexer` used to send no `access-control-` header at all.
+ *      It now sets one itself (`indexer/src/server.ts:898`), and answers a preflight
+ *      (`indexer/src/server.ts:207-212`).
+ *   2. **CORS at the gateway.** The estate's headers come from one middleware on the websecure
+ *      entrypoint (`deploy/compose/docker-compose.gateway.yml:117`,
+ *      `deploy/gateway/dynamic/policy.yml`), and `https://network.cloudsforge.online` was the one
+ *      registry product missing from that list — an allowlist that omits an origin fails closed
+ *      and in silence, because the browser refuses the response and nothing server-side records a
+ *      refusal. It is on the list now, under both the production apex and `CF_WEB_APEX`.
+ *   3. **A ROUTER, WHICH WAS THE LAST ONE AND THE ONE NOBODY WAS LOOKING FOR.** With 1 and 2
+ *      fixed, this panel still read "No figures for ember:testnet — Request failed (404)", and
+ *      the reason was not CORS: `https://explorer.<apex>` had a router for the BUNDLE and none
+ *      for the chain index, so every `/v1` read was answered by explorer-web's own nginx.
+ *      `deploy/gateway/dynamic/estate-web.yml` described the missing router in a COMMENT —
+ *      naming `cf-api-explorer` and `cf-svc-indexer` — and never defined either, so the file that
+ *      would know appeared to say it was routed. `cf-api-explorer` now exists, and
+ *      `deploy/scripts/surface-routes.py` gained a check that fails on a cf-* name written in a
+ *      comment and defined nowhere.
  *
- * It resolves through `resolveApiBase` rather than being written absolute, so the day the chain
- * index is also routed behind `network.<apex>` the comparison makes the base `''` and every
- * request goes relative with no edit here.
+ * `test/hosts.test.ts` pins 1 and 2, each as an INVERTED assertion — both used to require the
+ * absence they now forbid — so a regression on either is still caught rather than merely
+ * un-apologised-for. 3 is pinned in micro-deploy, where the router lives.
+ *
+ * The base still resolves through `resolveApiBase` rather than being written absolute, so the day
+ * the chain index is ALSO routed behind `network.<apex>` the comparison makes the base `''` and
+ * every request goes relative with no edit here. That day has not come and does not need to: the
+ * cross-origin read is served, and a second router for the same service on a second hostname
+ * would be a second place for it to drift.
  *
  * ── 2. The faucet. Registry key `faucet`, whose devPort is THIS PAGE ──────────────────────────
  *
