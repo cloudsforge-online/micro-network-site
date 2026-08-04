@@ -140,15 +140,24 @@ export interface Scope {
 /**
  * The two scopes this page asks about, in the order it renders them.
  *
- * **Testnet first, and that ordering is a claim about Hearth rather than a layout preference.**
- * `hearth/MAP.md:39` — "there is no live endpoint, no testnet and no mainnet" — and
- * `hearth/MAP.md:70` records the unpublished row: the testnet runs on `127.0.0.1` and nothing
- * routes it. Neither scope has a chain behind it today, and asking about mainnet first would put
- * the more absent of the two at the top.
+ * **Mainnet first, and that ordering is a claim about Hearth rather than a layout preference.**
+ *
+ * THIS WAS TESTNET-FIRST, AND THE REASON IT WAS HAS INVERTED. The comment here read "neither scope
+ * has a chain behind it today, and asking about mainnet first would put the more absent of the two
+ * at the top", citing `hearth/MAP.md` for "there is no live endpoint, no testnet and no mainnet".
+ * Half of that is now false. `deploy/cloudflared/config.mainnet.public.yml:123` publishes the
+ * mainnet JSON-RPC hostname on the public tunnel and it answers `eth_chainId` from off the estate,
+ * so mainnet is the scope with a chain behind it and testnet is now the more absent of the two.
+ *
+ * Testnet is not merely unpublished — it is unreachable for a reason that has nothing to do with
+ * Hearth: `deploy/gateway/dynamic/tls.yml:76` records that Cloudflare's Universal SSL is one label
+ * deep, so every two-label name under the testnet apex fails its TLS handshake before any request
+ * is made. Asking about it second is the honest ordering, and `test/chainstatus.test.ts` pins it so
+ * a reorder is a decision somebody argues for.
  */
 export const HEARTH_SCOPES: readonly Scope[] = [
-  { chain: HEARTH_CHAIN, network: 'testnet' },
   { chain: HEARTH_CHAIN, network: 'mainnet' },
+  { chain: HEARTH_CHAIN, network: 'testnet' },
 ]
 
 /* ══════════════════════════════ what comes back ══════════════════════════════ */

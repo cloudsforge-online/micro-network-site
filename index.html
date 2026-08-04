@@ -34,13 +34,19 @@
 
       This string is what ends up in a search result and in a link preview, read entirely without
       the page around it — so it is the single easiest place on this surface to imply a running
-      network by omission. `hearth/MAP.md:39` is the fact it must not leave out: "there is no live
-      endpoint, no testnet and no mainnet". test/brand-chrome.test.ts asserts that this description
-      and the og one below both contain the word "no mainnet", so a copy edit cannot quietly drop it.
+      network by omission, and now also the easiest place to imply a TRADED one.
+
+      IT USED TO SAY "no mainnet". That is false: `deploy/cloudflared/config.mainnet.public.yml:123`
+      publishes the mainnet JSON-RPC hostname on the public tunnel and it answers from off the
+      estate. The clause that must never leave is the other one — no EMBER of any monetary value —
+      because a reachable chain is not a traded one and a link preview is exactly where those two
+      get blurred. test/brand-chrome.test.ts asserts that this description and the og one below
+      both carry "no public testnet" and "no monetary value", so a copy edit cannot quietly drop
+      either.
     -->
     <meta
       name="description"
-      content="Hearth is a CPU-mined, ASIC-resistant proof-of-work chain that speaks Ethereum, and its coin is EMBER. It is under construction: no mainnet, no public testnet, and no EMBER of any monetary value."
+      content="Hearth is a CPU-mined, ASIC-resistant proof-of-work chain that speaks Ethereum, and its coin is EMBER. Its mainnet answers on a public endpoint and is new enough to be unproven: no public testnet endpoint, and no EMBER of any monetary value."
     />
 
     <!--
@@ -75,7 +81,7 @@
     <meta property="og:title" content="Forge Network — Hearth and EMBER" />
     <meta
       property="og:description"
-      content="A CPU-mined proof-of-work chain that speaks Ethereum. Under construction: no mainnet, no public testnet, and no EMBER of any monetary value."
+      content="A CPU-mined proof-of-work chain that speaks Ethereum. Its mainnet answers on a public endpoint and is new enough to be unproven: no public testnet endpoint, and no EMBER of any monetary value."
     />
     <meta property="og:image" content="/og-1200x630.png" />
 

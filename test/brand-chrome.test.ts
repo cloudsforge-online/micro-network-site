@@ -10,9 +10,10 @@
  * other four are consumed by things that are not a browser.
  *
  * **2. The description.** This is the one string a search engine and a link preview show WITHOUT
- * the page around it, which makes it the easiest place on this surface to imply a running network
- * by omission. `hearth/MAP.md:39` is the fact it must not leave out, and both the `description` and
- * the `og:description` are required to carry it. A copy edit cannot quietly drop it.
+ * the page around it, which makes it the easiest place on this surface to imply a traded currency
+ * by omission. Mainnet is reachable now, so the fact it must not leave out is no longer "there is
+ * no mainnet" — it is that EMBER has no monetary value and that no public testnet endpoint exists.
+ * Both the `description` and the `og:description` are required to carry both clauses.
  */
 import assert from 'node:assert/strict'
 import { existsSync, readFileSync, readdirSync } from 'node:fs'
@@ -118,18 +119,28 @@ describe('the page names the right accent block', () => {
   })
 })
 
-describe('the description says the network is absent', () => {
+describe('the description says what the network is not', () => {
+  /*
+   * BOTH OF THESE USED TO REQUIRE "no mainnet", AND THAT SENTENCE IS NOW FALSE.
+   *
+   * Mainnet is published on the public tunnel (`deploy/cloudflared/config.mainnet.public.yml:123`)
+   * and answers `eth_chainId` from off the estate, so a guard requiring a description to say there
+   * is no mainnet could only be satisfied by lying in the one string a search engine shows.
+   *
+   * Flipped to the two clauses that did NOT change, and that a link preview is the likeliest place
+   * to blur: EMBER has no monetary value, and there is no reachable public testnet.
+   */
   it('the meta description does', () => {
     const m = /<meta\s+name="description"\s+content="([^"]*)"/.exec(html)
     assert.ok(m, 'index.html has no description')
-    assert.match(m[1] ?? '', /no mainnet/i)
+    assert.match(m[1] ?? '', /no EMBER of any monetary value/i)
     assert.match(m[1] ?? '', /no public testnet/i)
   })
 
   it('and so does the og:description, which is read entirely on its own', () => {
     const m = /<meta\s+property="og:description"\s+content="([^"]*)"/.exec(html)
     assert.ok(m, 'index.html has no og:description')
-    assert.match(m[1] ?? '', /no mainnet/i)
+    assert.match(m[1] ?? '', /no EMBER of any monetary value/i)
     assert.match(m[1] ?? '', /no public testnet/i)
   })
 

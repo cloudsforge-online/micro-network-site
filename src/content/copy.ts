@@ -14,15 +14,34 @@
  * ══════════════════════════════════════════════════════════════════════════════════════════════
  * THE ONE THING THIS SURFACE MUST NOT GET WRONG
  *
- * `hearth/MAP.md:39` — "Nothing has produced an account-model block… there is no live endpoint, no
- * testnet and no mainnet." `hearth/MAP.md:66` puts it in the status table as its own row: public
- * testnet, mainnet and any deployed contract are **unpublished**, "the testnet runs on `127.0.0.1`
- * and nothing routes it; no genesis outlives a `docker compose down -v`".
+ * THIS BLOCK USED TO SAY THERE WAS NO NETWORK AT ALL. HALF OF THAT IS NOW FALSE, AND ONLY HALF.
  *
- * So this site may not say Hearth is live, may not print a price, and may not imply a mining income.
- * What it CAN do is send somebody to a repository where every claim is checkable, and be the first
- * page in the estate that says plainly what state the chain is in — `hearth/README.md:27` puts that
- * section above everything else and calls it "Status, before anything else". This one does the same.
+ * Mainnet is reachable. `deploy/cloudflared/config.mainnet.public.yml:123` publishes
+ * `rpc.<apex>` on the public tunnel, and a POST to it from off the estate answers `eth_chainId`
+ * with `0x1cf3` — 7411, the id this file already carried as merely allocated. Blocks advance
+ * between reads. So the old headline, "there is no public Hearth network yet", is a false
+ * statement about a currency and had to go.
+ *
+ * EVERYTHING ELSE THE OLD WORDING PROTECTED AGAINST IS STILL TRUE, AND IS WORDED MORE CAREFULLY
+ * BECAUSE IT NOW HAS TO SURVIVE NEXT TO GOOD NEWS:
+ *
+ *   * **EMBER has no monetary value.** No market, no listing, no liquidity, no price. A chain
+ *     being reachable is not a chain being traded, and this site may never blur the two.
+ *   * **The chain is new and short.** "Live" here means reachable, not established. Nothing on
+ *     this surface may state a height, an age or a block time it OBSERVED — the /chain page
+ *     fetches those or renders their absence.
+ *   * **There is no publicly reachable testnet endpoint.** Everything under
+ *     `*.testnet.<apex>` fails its TLS handshake: Cloudflare's Universal SSL is one label deep
+ *     (`deploy/gateway/dynamic/tls.yml:76`), so a two-label name has no certificate to present.
+ *     The faucet is on that side of the line. **No testnet URL may be published here.**
+ *   * **The whole estate is one home server behind a Cloudflare Tunnel**
+ *     (`deploy/gateway/dynamic/estate-web.yml:1120`). No second machine, no failover.
+ *
+ * So this site may not print a price, may not imply a mining income, and may not imply that a
+ * reachable endpoint is an established network. What it CAN do is send somebody to a repository
+ * where every claim is checkable, and be the first page in the estate that says plainly what state
+ * the chain is in — `hearth/README.md:27` puts that section above everything else and calls it
+ * "Status, before anything else". This one does the same.
  *
  * A note on where the wording comes from: where Hearth already has a sentence for something, this
  * file uses Hearth's, not a paraphrase. A paraphrase of a caveat is how a caveat gets softer.
@@ -40,13 +59,19 @@ import { fact, grouped } from './facts.ts'
  * spend their whole visit believing there is a network to mine on.
  */
 export const STANDING_STATE = {
-  headline: 'There is no public Hearth network yet.',
+  headline: 'Hearth mainnet is reachable. It is not an established network.',
   body:
-    'No mainnet, no public testnet, and no endpoint anyone outside the project can reach. The node ' +
-    'produces, validates and reorgs blocks on a laptop; every port binds the loopback address and ' +
-    'no chain survives tearing the containers down. EMBER has no price, because there is nowhere ' +
-    'to trade it.',
-  source: 'hearth/MAP.md:39, hearth/MAP.md:66',
+    `A public JSON-RPC endpoint answers on chain id ${fact('chainIdMainnet')} and blocks are ` +
+    'advancing, which is a narrower claim than it sounds and is the only one this site makes. ' +
+    'EMBER has no price, because there is nowhere to trade it: no market, no listing, no ' +
+    'liquidity. The chain is new and short, so a deep reorg is a live risk rather than a ' +
+    'theoretical one. There is still no public testnet endpoint — every name under the testnet ' +
+    'apex fails its TLS handshake, so the faucet cannot be reached from outside either. And the ' +
+    'whole estate runs on one home server behind a tunnel: no second machine, no failover, no ' +
+    'restored backup.',
+  source:
+    'deploy/cloudflared/config.mainnet.public.yml:123, deploy/gateway/dynamic/tls.yml:76, ' +
+    'deploy/gateway/dynamic/estate-web.yml:1120',
 }
 
 /* ══════════════════════════════ home ══════════════════════════════ */
@@ -60,7 +85,7 @@ export const HOME = {
    * headline and inside a length budget.
    */
   blurb:
-    'Hearth is a CPU-mined, ASIC-resistant proof-of-work chain that speaks Ethereum. It is under construction: no mainnet, no public testnet, and no EMBER of any monetary value.',
+    'Hearth is a CPU-mined, ASIC-resistant proof-of-work chain that speaks Ethereum. Its mainnet answers on a public endpoint and is new enough to be unproven; there is no public testnet endpoint, and no EMBER of any monetary value.',
   standfirst:
     'Hearth is a proof-of-work chain built so that the machine you are reading this on is the whole ' +
     'setup. Its coin is EMBER. Its execution layer is an EVM written from scratch and gated on ' +
@@ -119,16 +144,22 @@ export const HOME = {
   coin: {
     title: 'The coin',
     lede:
-      'What you would type into a wallet, if there were a network to point it at. There is not; ' +
-      'these are the values the code carries.',
+      'What you would type into a wallet. These are the values the code carries, and the mainnet ' +
+      'id below is the one a public endpoint answers with.',
     source: 'hearth/README.md:75-79, contracts/packages/chain/src/index.ts:50-62',
     rows: [
       { field: 'Network and coin', value: 'Hearth, and EMBER' },
       {
         field: 'Chain id',
-        value: `${fact('chainIdMainnet')} for mainnet, ${fact('chainIdTestnet')} for the testnet — neither of which is published`,
+        value: `${fact('chainIdMainnet')} for mainnet, which is published and answering, and ${fact('chainIdTestnet')} for the testnet, which has no reachable endpoint`,
       },
-      { field: 'Block time', value: `${fact('blockSeconds')} seconds, retargeted every block` },
+      {
+        field: 'Block time',
+        value:
+          `A ${fact('blockSeconds')}-second TARGET, retargeted every block. It is what the ` +
+          'difficulty algorithm aims at, not a rate this page has measured — what the chain is ' +
+          'actually doing is a runtime figure and belongs on the chain page.',
+      },
       {
         field: 'Smallest unit',
         value:
@@ -145,7 +176,8 @@ export const HOME = {
       {
         field: 'Credited by CloudsForge after',
         value:
-          `${fact('emberConfirmations')} blocks — about ${fact('emberConfirmationMinutes')} minutes — ` +
+          `${fact('emberConfirmations')} blocks — about ${fact('emberConfirmationMinutes')} minutes ` +
+          'at the target block time, and longer whenever the chain is producing slower than that — ' +
           `and a reorg ${fact('emberReorgAlarmDepth')} deep halts crediting entirely. That is this ` +
           "platform's decision about depth, not a rule of the chain.",
       },
@@ -163,9 +195,13 @@ export const HOME = {
   state: {
     title: 'What is built, and what is not',
     lede:
-      "Hearth's own status table, reproduced. Where its README and that table disagree, the table " +
-      'wins — the repository says so itself.',
-    source: 'hearth/MAP.md:42-70',
+      "Hearth's own status table, reproduced — except for the two endpoint rows, which are read " +
+      'off this estate\'s published hostname list rather than off Hearth, because that list is ' +
+      'what actually decides whether a stranger can reach anything. Where the README and the ' +
+      'table disagree, the table wins; the repository says so itself.',
+    source:
+      'hearth/MAP.md:42-70, deploy/cloudflared/config.mainnet.public.yml:123, ' +
+      'deploy/gateway/dynamic/tls.yml:76',
     rows: [
       {
         thing: 'The EVM: interpreter, gas, opcodes, precompiles',
@@ -188,11 +224,21 @@ export const HOME = {
         detail: `Blocks are produced, validated and reorged. ${fact('nodes')} nodes run under docker compose on chain id ${fact('chainIdTestnet')}.`,
       },
       {
-        thing: 'A public testnet, a mainnet, any deployed contract',
+        thing: 'A public mainnet endpoint',
+        state: 'open' as const,
+        detail:
+          `Published and answering: a JSON-RPC endpoint on the public tunnel returns chain id ` +
+          `${fact('chainIdMainnet')} and its height advances between reads. Marked open rather ` +
+          'than built because reachable is not established — it is served from one home server ' +
+          'with no failover, it has no independent peer, and nothing has audited it.',
+      },
+      {
+        thing: 'A public testnet endpoint, any deployed contract',
         state: 'absent' as const,
         detail:
-          'Unpublished. The testnet runs on the loopback address and nothing routes it; no genesis ' +
-          'outlives tearing the volumes down.',
+          'Unreachable. Every name under the testnet apex fails its TLS handshake, because ' +
+          "Cloudflare's Universal SSL covers one label and those names are two deep. The testnet " +
+          'otherwise runs on the loopback address, and no genesis outlives tearing the volumes down.',
       },
       {
         thing: 'The proof of work at the size the documents promised',
@@ -355,9 +401,10 @@ export const MINE = {
       {
         title: 'Low variance, so far',
         body:
-          `A ${fact('blockSeconds')}-second block time means frequent wins even for a small miner, ` +
-          'and the difficulty retargets every block rather than in steps, so it moves smoothly ' +
-          'instead of swinging.',
+          `A ${fact('blockSeconds')}-second TARGET block time means frequent wins even for a ` +
+          'small miner, and the difficulty retargets every block rather than in steps, so it ' +
+          'moves smoothly instead of swinging. That is the design; what a young chain with very ' +
+          'little hashrate on it actually does is a runtime figure, not this one.',
         source: 'hearth/docs/mining.md:69-72',
       },
       {
@@ -457,8 +504,9 @@ export const MINE = {
   start: {
     title: 'How to start',
     lede:
-      'Two ways, both of which run against a chain on your own machine, because there is no other ' +
-      'kind of Hearth chain yet.',
+      'Two ways, both written against a chain on your own machine, which is what the mining ' +
+      'document describes. Mainnet is reachable now, and nothing on this page has been measured ' +
+      'against it — so nothing here is advice about mining on it.',
     steps: [
       {
         title: 'In the browser',
@@ -486,11 +534,12 @@ export const MINE = {
 export const NODE = {
   title: 'Run a node',
   blurb:
-    'Everything runs on one machine, because there is no network to join. Test suites from a clean clone, a local chain in one command, and the RPC surface over a fake chain.',
+    'Test suites from a clean clone, a local chain in one command, and the RPC surface over a fake chain. Everything below runs on your own machine.',
   standfirst:
-    'There is no bootstrap list and no peer to dial: the chain runs on the loopback address and ' +
-    'nothing routes it. What follows is what you can actually do, in the order the project itself ' +
-    'suggests doing it.',
+    'Mainnet answers on a public JSON-RPC endpoint now, so there is something for a wallet to ' +
+    'point at. This page still publishes no bootstrap list and no peer to dial, and the testnet ' +
+    'is unreachable from outside, so what follows is what you can actually do on your own ' +
+    'machine — in the order the project itself suggests doing it.',
 
   steps: [
     {
@@ -523,10 +572,12 @@ export const NODE = {
     {
       title: 'Point your tooling at something',
       body:
-        'There is no endpoint to configure, so the developer kit serves the real JSON-RPC method ' +
-        'surface over a fake chain. Standard Ethereum tooling connects to it and gets correct ' +
-        'encodings and correct errors from a chain that is not producing blocks. A node started ' +
-        `with the account model serves the same surface on port ${fact('evmRpcPort')} instead.`,
+        'The developer kit serves the real JSON-RPC method surface over a fake chain, so standard ' +
+        'Ethereum tooling gets correct encodings and correct errors without a chain behind it. A ' +
+        `node started with the account model serves the same surface on port ` +
+        `${fact('evmRpcPort')} instead. Mainnet is reachable over the public endpoint as well, ` +
+        'and pointing a wallet at a chain whose EMBER cannot be sold is a decision for you rather ' +
+        'than a step in a walkthrough.',
       command: `node tools/rpc-probe/stub.js --port ${fact('probePort')}`,
       source: 'hearth/README.md:198-207',
     },
@@ -557,9 +608,10 @@ export const NODE = {
     body:
       'Hearth is the one public repository behind this platform: MIT licensed, open to outside ' +
       'contributors, and every claim in its inventory cites a path and a line or a command that was ' +
-      'run. The highest-leverage work it names is publishing the testnet, which runs on the loopback ' +
-      'address today and which nothing routes, and finding a proof of work that is memory-hard ' +
-      'without costing a validator more than a block interval to check.',
+      'run. Mainnet is published now; the testnet still is not, because its hostnames are two ' +
+      'labels deep and the wildcard certificate in front of them covers one. That, and finding a ' +
+      'proof of work that is memory-hard without costing a validator more than a block interval ' +
+      'to check, is the highest-leverage work left.',
     source: 'hearth/CONTRIBUTING.md, hearth/README.md:244-253',
   },
 }
@@ -586,11 +638,15 @@ export const FAUCET = {
   reach: {
     title: 'What a drip can and cannot reach',
     body:
-      `The faucet dispenses on chain id ${fact('chainIdTestnet')}, and that chain is not published: ` +
-      'it runs on the loopback address inside whichever machine is running it, and nothing routes ' +
-      'it. A successful drip therefore funds an address on a network you can only reach by running ' +
-      'it yourself. That is worth knowing before you paste an address in.',
-    source: 'hearth/MAP.md:66',
+      `The faucet dispenses on chain id ${fact('chainIdTestnet')}, and that chain has no endpoint ` +
+      'you can reach. Every name under the testnet apex fails its TLS handshake, because ' +
+      "Cloudflare's Universal SSL covers a single label and those names are two deep, so no " +
+      'certificate a browser will accept is ever presented. Underneath that, the testnet runs on ' +
+      'the loopback address inside whichever machine is running it. A successful drip therefore ' +
+      'funds an address on a network you can only reach by running it yourself, and the mainnet ' +
+      `endpoint that IS reachable is a different chain id — ${fact('chainIdMainnet')} — which this ` +
+      'faucet does not and must not pay out on.',
+    source: 'hearth/MAP.md:66, deploy/gateway/dynamic/tls.yml:76',
   },
 
   form: {

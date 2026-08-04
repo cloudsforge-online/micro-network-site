@@ -21,10 +21,21 @@ does **not** reimplement the block explorer, which is `micro-explorer-web` on it
 > property of the module rather than trusting it to review.
 >
 > The second refusal follows from the first: **this site states no price and implies no mining
-> income.** There is no mainnet and no public testnet (`hearth/MAP.md:39`, `hearth/MAP.md:66`), so
-> EMBER is not traded anywhere and any market figure would be invented. A block reward is a
-> consensus constant and is stated as one; what a machine earns from it is a share against a
-> difficulty that moves every block, and no number in this estate expresses that.
+> income.** It used to justify that with "there is no mainnet and no public testnet", and the first
+> half of that is no longer true — `deploy/cloudflared/config.mainnet.public.yml:123` publishes the
+> mainnet JSON-RPC hostname on the public tunnel, and it answers `eth_chainId` with `0x1cf3` from
+> off the estate. **A reachable chain is not a traded one**, and that is the reason now written
+> down: EMBER has no market, no listing and no liquidity, so any price or capitalisation figure
+> would be invented rather than merely unavailable. A block reward is a consensus constant and is
+> stated as one; what a machine earns from it is a share against a difficulty that moves every
+> block, and no number in this estate expresses that.
+>
+> The public **testnet** is still absent, for a reason that has nothing to do with Hearth: every
+> name under `*.testnet.<apex>` fails its TLS handshake because Cloudflare's Universal SSL covers a
+> single label (`deploy/gateway/dynamic/tls.yml:76`). **This site publishes no testnet URL**, and
+> the faucet is on that side of the line. The whole estate is one home server behind a Cloudflare
+> Tunnel (`deploy/gateway/dynamic/estate-web.yml:1120`) — no failover, and the standing notice on
+> every route says so.
 
 ---
 

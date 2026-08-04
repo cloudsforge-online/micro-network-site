@@ -23,10 +23,19 @@
  *
  * ── WHAT IS DELIBERATELY NOT HERE ─────────────────────────────────────────────────────────────
  *
- * **No price, and no market capitalisation.** There is no mainnet and no public testnet
- * (`hearth/MAP.md:39`, `hearth/MAP.md:70`), so EMBER is not traded anywhere and any figure would be
- * invented. `micro-faucet` says the same thing in the string it serves to this page —
- * "Testnet EMBER. It has no value, it is not tradeable" (`faucet/src/server.ts:358-360`).
+ * **No price, and no market capitalisation.** THE PREMISE THIS USED TO REST ON HAS CHANGED AND THE
+ * CONCLUSION HAS NOT. It read "there is no mainnet and no public testnet, so EMBER is not traded
+ * anywhere" — and mainnet is now published and answering
+ * (`deploy/cloudflared/config.mainnet.public.yml:123`). A true statement resting on a false premise
+ * is one edit away from being deleted along with it, so the real reason is written down instead:
+ * **EMBER has no market, no listing and no liquidity.** Nothing quotes it, nothing settles it, and
+ * a reachable chain is not a traded one. Any price or capitalisation figure here would be invented
+ * rather than merely unavailable. `micro-faucet` says the same thing in the string it serves to
+ * this page — "Testnet EMBER. It has no value, it is not tradeable" (`faucet/src/server.ts:358-360`).
+ *
+ * The public testnet is a separate matter and is still absent: every name under
+ * `*.testnet.<apex>` fails its TLS handshake because Cloudflare's Universal SSL covers a single
+ * label (`deploy/gateway/dynamic/tls.yml:76`), so nothing outside the estate can reach it.
  *
  * **No hashrate, no difficulty, no block height, no supply.** Those are facts about a running
  * network, and they belong to the chain index at runtime or nowhere. The `/chain` page fetches
@@ -67,18 +76,20 @@ export const FACTS = {
 
   chainIdMainnet: {
     rendered: '7411',
-    meaning: 'EIP-155 chain id Hearth mainnet will use. There is no mainnet; the id is allocated.',
+    meaning:
+      'EIP-155 chain id of Hearth mainnet. No longer merely allocated: the endpoint published at deploy/cloudflared/config.mainnet.public.yml:123 answers eth_chainId with 0x1cf3, which is this value. The chain being reachable says nothing about it being established, and nothing else in this register may borrow that fact.',
     source: 'contracts/packages/chain/src/index.ts:58 — CHAINS.EMBER.chainId.mainnet',
   },
   chainIdTestnet: {
     rendered: '7412',
     meaning:
-      'EIP-155 chain id of the testnet. It is what the three-node compose stack runs and what the faucet dispenses on, and it is not routed anywhere.',
+      'EIP-155 chain id of the testnet. It is what the three-node compose stack runs and what the faucet dispenses on, and it is not reachable from outside: every name under the testnet apex fails its TLS handshake, because the wildcard in front of them covers a single label (deploy/gateway/dynamic/tls.yml:76).',
     source: 'contracts/packages/chain/src/index.ts:58 — CHAINS.EMBER.chainId.testnet',
   },
   blockSeconds: {
     rendered: '15',
-    meaning: 'Target block time, in seconds. The number the LWMA retarget aims at.',
+    meaning:
+      'TARGET block time, in seconds. The number the LWMA retarget aims at, and never a rate anything here has observed. Mainnet is reachable now, which makes an observed spacing a thing somebody could measure and write down — it must not be written down here, because a measurement is a runtime figure and belongs to the chain index.',
     source: 'hearth/README.md:77 — "Block time: 15 seconds"',
   },
   decimals: {
@@ -105,7 +116,7 @@ export const FACTS = {
   emberConfirmationMinutes: {
     rendered: '15',
     meaning:
-      'The same depth said as a wait: 60 blocks at a 15-second block time. "60 blocks" tells a reader nothing.',
+      'The same depth said as a wait: 60 blocks at the 15-second TARGET. "60 blocks" tells a reader nothing. It is a nominal figure, and the real wait is whatever the chain is producing at, which on a young network is longer.',
     source: 'contracts/packages/chain/src/index.ts:44-46 — the comment above CHAINS',
   },
   emberReorgAlarmDepth: {

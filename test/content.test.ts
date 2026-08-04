@@ -221,14 +221,46 @@ describe('the copy claims nothing it cannot support', () => {
     }
   })
 
-  it('and it DOES say the network is absent, on every route, in the standing notice', () => {
-    // The inverse assertion, and the more important one: a ban list can be satisfied by saying
-    // nothing at all. The standing state must be present and must be unambiguous.
-    assert.match(COPY.STANDING_STATE.headline, /no public Hearth network/i)
-    assert.match(COPY.STANDING_STATE.body, /no mainnet/i)
-    assert.match(COPY.STANDING_STATE.body, /no public testnet/i)
-    assert.match(COPY.STANDING_STATE.body, /no price/i)
-    assert.match(COPY.STANDING_STATE.source, /hearth\/MAP\.md:\d+/)
+  it('and the standing notice still names every limit, on every route', () => {
+    /*
+     * THE INVERSE ASSERTION, AND THE MORE IMPORTANT ONE — a ban list can be satisfied by saying
+     * nothing at all, so the standing state must be present and unambiguous.
+     *
+     * IT USED TO REQUIRE "no public Hearth network" AND "no mainnet". Both became false: mainnet
+     * is published on the public tunnel (`deploy/cloudflared/config.mainnet.public.yml:123`) and
+     * answers `eth_chainId` from off the estate. A guard that requires a false sentence is worse
+     * than no guard, because the only way to pass it is to lie.
+     *
+     * What replaces it is every limit that did NOT change, each pinned separately so a copy edit
+     * cannot drop one while keeping the others. This is the more useful shape anyway: the old
+     * version leaned on one phrase carrying four meanings at once.
+     */
+    const { headline, body, source } = COPY.STANDING_STATE
+
+    // Reachable is not established, and the headline has to say the second half itself — it is
+    // read on its own above the navigation on every route.
+    assert.match(headline, /not an established network/i)
+
+    // EMBER has no monetary value. This is the claim that must survive every edit for ever.
+    assert.match(body, /no price/i)
+    assert.match(body, /no market/i)
+    assert.match(body, /no listing/i)
+    assert.match(body, /no liquidity/i)
+
+    // The testnet is still unreachable, and the notice may not quietly stop saying so.
+    assert.match(body, /no public testnet/i)
+
+    // One home server, no failover. The fact a reader deciding whether to trust this needs.
+    assert.match(body, /one home server/i)
+    assert.match(body, /no failover/i)
+
+    // A reorg on a short chain is a live risk, not a footnote.
+    assert.match(body, /reorg/i)
+
+    // And it is still cited. Into micro-deploy now rather than into hearth: the hostname list and
+    // the TLS note are what actually decide what a stranger can reach, and they are in this
+    // estate's own repository rather than in the chain's.
+    assert.match(source, /deploy\/[A-Za-z0-9_.\-/]+\.yml:\d+/)
   })
 
   it('every block of copy that makes a claim carries a source', () => {

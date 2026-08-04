@@ -1053,11 +1053,20 @@ jobs:
             [ "$code" = "200" ] || { echo "::error::/$asset returned $code from the image"; fail=1; }
           done
 
-          # …and the description in the served HTML still says the network is absent. It is the one
-          # string a search engine and a link preview show without the page around them, which makes
-          # it the easiest place on this surface to imply a running network by omission.
-          curl -s -m 5 http://127.0.0.1:8080/ | grep -q 'no mainnet, no public testnet' \
-            || { echo "::error::the served page no longer states that there is no mainnet"; fail=1; }
+          # …and the description in the served HTML still names the two limits that have NOT
+          # changed. It is the one string a search engine and a link preview show without the page
+          # around them, which makes it the easiest place on this surface to imply a traded
+          # currency by omission.
+          #
+          # THIS USED TO GREP FOR 'no mainnet, no public testnet'. Mainnet is published on the
+          # public tunnel now and answers eth_chainId from off the estate, so that grep could only
+          # be satisfied by serving a false statement about a currency. Narrowed to the two clauses
+          # that are still true, checked separately so one cannot cover for the other.
+          page=$(curl -s -m 5 http://127.0.0.1:8080/)
+          echo "$page" | grep -q 'no public testnet endpoint' \
+            || { echo "::error::the served page no longer states that there is no reachable public testnet"; fail=1; }
+          echo "$page" | grep -q 'no EMBER of any monetary value' \
+            || { echo "::error::the served page no longer states that EMBER has no monetary value"; fail=1; }
 
           docker rm -f ci-network-site >/dev/null 2>&1 || true
           exit $fail
