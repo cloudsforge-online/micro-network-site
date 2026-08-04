@@ -178,6 +178,11 @@ jobs:
           sparse-checkout: |
             gateway
             compose
+            # The tunnel configuration, which is what CAUSES the public hostnames to exist and is
+            # now the source this surface cites for "mainnet is reachable". A sparse checkout is a
+            # silent way to make a citation unresolvable: the file is real, the path is right, and
+            # the checker can still only report that it does not exist.
+            cloudflared
 
       # `/auth/me` nests the profile under `user`. This repository states that as a fact and cites
       # two lines for it; `test/citations.test.ts` checks both are inside the files they name.
