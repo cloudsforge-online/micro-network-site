@@ -613,7 +613,7 @@ describe('the cited lines are the lines that register the routes', () => {
 
   /* ── facts this bundle restates rather than imports ───────────────────────────────────────── */
 
-  it('the five chain ids are the five the service runs', () => {
+  it('the chain ids are the ones the service runs', () => {
     const declared = /export const CHAIN_IDS: readonly ChainId\[\] = Object\.freeze\(\[([^\]]*)\]\)/.exec(chains)
     assert.ok(declared, 'CHAIN_IDS is gone from indexer/src/chains.ts')
     const upstream = (declared[1] ?? '').split(',').map((s) => s.trim().replace(/'/g, '')).filter(Boolean)

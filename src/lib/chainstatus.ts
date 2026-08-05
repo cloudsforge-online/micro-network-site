@@ -99,15 +99,22 @@ import { chainIndex } from './api.ts'
 /* ══════════════════════════════ scope ══════════════════════════════ */
 
 /**
- * The five chains this service runs, as `indexer/src/chains.ts:41` declares them.
+ * The six chains this service runs, as `indexer/src/chains.ts:52` declares them.
  *
  * `shard` is deliberately absent upstream and the reason is at `indexer/src/chains.ts:35-37`:
  * SHARD exists in `CHAINS` only so that record is total, it never exists on a chain, and "an
  * indexer that accepted it would be advertising an endpoint that can only ever answer empty".
  * Restated here rather than imported, because a browser bundle must not depend on a service's
  * source tree; `test/chainstatus.test.ts` reads the real list and fails if this one drifts.
+ *
+ * `ltc` JOINED ON 2026-08-05 and this list did not, which is exactly the drift that test exists
+ * to catch — it went red on the next push rather than at a reader's expense. Litecoin needs no
+ * worker of its own upstream: its spec carries `family: 'bitcoin'` and the indexer selects a
+ * worker by family (`indexer/src/chains.ts:39-40`). Nothing on THIS surface renders the list —
+ * Forge Network is `ember` alone (`HEARTH_CHAIN` below) and the custodied chains belong on the
+ * explorer — so this entry is a restatement of upstream truth and changes no pixel.
  */
-export const CHAIN_IDS = ['ember', 'eth', 'btc', 'sol', 'xrp'] as const
+export const CHAIN_IDS = ['ember', 'eth', 'btc', 'sol', 'xrp', 'ltc'] as const
 export type ChainId = (typeof CHAIN_IDS)[number]
 
 /** `indexer/src/chains.ts:43`. */
