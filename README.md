@@ -30,12 +30,27 @@ does **not** reimplement the block explorer, which is `micro-explorer-web` on it
 > stated as one; what a machine earns from it is a share against a difficulty that moves every
 > block, and no number in this estate expresses that.
 >
-> The public **testnet** is still absent, for a reason that has nothing to do with Hearth: every
-> name under `*.testnet.<apex>` fails its TLS handshake because Cloudflare's Universal SSL covers a
-> single label (`deploy/gateway/dynamic/tls.yml:76`). **This site publishes no testnet URL**, and
-> the faucet is on that side of the line. The whole estate is one home server behind a Cloudflare
-> Tunnel (`deploy/gateway/dynamic/estate-web.yml:1120`) — no failover, and the standing notice on
-> every route says so.
+> **The public testnet now exists, and the hostname shape is the thing to get right.** Every name
+> under `*.testnet.<apex>` fails its TLS handshake because Cloudflare's Universal SSL covers a
+> single label (`deploy/gateway/dynamic/tls.yml:76`) — so testnet surfaces are **single-label**,
+> `<surface>-testnet.<apex>`, and the two-label form is dead. Measured off the estate on
+> 2026-08-05:
+>
+> | | |
+> | --- | --- |
+> | Testnet JSON-RPC | `https://rpc-testnet.cloudsforge.online` — `eth_chainId` → `0x1cf4` (7412) |
+> | Testnet explorer | `https://explorer-testnet.cloudsforge.online` → `200 text/html` |
+> | This site, on testnet | `https://network-testnet.cloudsforge.online` → `200 text/html` |
+> | Testnet faucet API | `https://network-testnet.cloudsforge.online/v1/faucet` → `200` |
+> | Testnet P2P | `wss://p2p-testnet.cloudsforge.online/p2p` — only the `/p2p` path is routed |
+>
+> The site apex `testnet.cloudsforge.online` keeps its name, because it is already one label.
+> Mainnet is `https://rpc.cloudsforge.online`, chain id **7411** (`0x1cf3`) — a distinct id from
+> testnet's 7412, deliberately, so a testnet transaction is not replayable on mainnet.
+>
+> The whole estate is one home server behind a Cloudflare Tunnel
+> (`deploy/gateway/dynamic/estate-web.yml:1120`) — no failover, and the standing notice on every
+> route says so.
 
 ---
 
@@ -176,7 +191,27 @@ Two consequences this repository handles rather than assumes away:
   what the registry asserts and what the gateway therefore has to route. Under `pnpm dev` it is
   `http://localhost:3003`, which is neither this bundle (5190) nor the faucet (4013).
 
-### 3. `micro-faucet`'s CORS example names a hostname that does not exist
+### 3. The `/faucet` page is served on the **mainnet** apex, where no faucet exists
+
+Measured 2026-08-05:
+
+```
+https://network.cloudsforge.online/faucet            -> 200 text/html   (this page)
+https://network.cloudsforge.online/v1/faucet         -> 404             (no service)
+https://network-testnet.cloudsforge.online/v1/faucet -> 200             (the service)
+```
+
+`micro-faucet` is testnet-only in code — its `NETWORK` is an `as const`, not configuration, so
+`NETWORK === 'mainnet'` is a type error rather than a branch a deploy can reach. The estate
+therefore gates the `cf-api-network` router on `CF_EMBER_NETWORK`, and a mainnet estate answers
+`404` — "there is no such service", which is true — instead of the `502` it used to answer.
+
+What is left is this page. On a mainnet estate it renders the drip form **disabled**, saying the
+faucet did not answer, which a reader cannot tell apart from the faucet being down. The honest page
+says there is no mainnet faucet and links to the testnet one. This is ours to fix, and it is the
+open item `micro-faucet`'s README hands to this repository by name.
+
+### 4. `micro-faucet`'s CORS example names a hostname that does not exist
 
 `faucet/.env.example:112` suggests `FAUCET_CORS_ORIGINS=https://faucet.cloudsforge.online`. There is
 no `faucet` subdomain in the registry — the faucet page is a route on `network.<apex>`, so that is
@@ -184,7 +219,7 @@ the browser origin that posts a drip. An allowlist naming a host nobody serves f
 silently, which `deploy/gateway/dynamic/policy.yml:53-56` records having already fixed once for
 `devportal` versus `developers`. Reported to micro-faucet; `test/faucet.test.ts` pins it.
 
-### 4. `micro-explorer-web`'s prose is stale about its own devPort
+### 5. `micro-explorer-web`'s prose is stale about its own devPort
 
 Not this repository's to fix, and recorded because this one resolves the same registry row.
 `explorer-web/src/lib/hosts.ts:23`, `explorer-web/vite.config.ts:37-39`,
