@@ -154,13 +154,23 @@ export interface Scope {
  * at the top", citing `hearth/MAP.md` for "there is no live endpoint, no testnet and no mainnet".
  * Half of that is now false. `deploy/cloudflared/config.mainnet.public.yml:96` publishes the
  * mainnet JSON-RPC hostname on the public tunnel and it answers `eth_chainId` from off the estate,
- * so mainnet is the scope with a chain behind it and testnet is now the more absent of the two.
+ * so mainnet is the scope with a chain behind it.
  *
- * Testnet is not merely unpublished — it is unreachable for a reason that has nothing to do with
- * Hearth: `deploy/gateway/dynamic/tls.yml:76` records that Cloudflare's Universal SSL is one label
- * deep, so every two-label name under the testnet apex fails its TLS handshake before any request
- * is made. Asking about it second is the honest ordering, and `test/chainstatus.test.ts` pins it so
- * a reorder is a decision somebody argues for.
+ * **AND THE SECOND HALF HAS NOW INVERTED TOO, WHICH CHANGES THE REASON WITHOUT CHANGING THE
+ * ORDER.** This paragraph read: "Testnet is not merely unpublished — it is unreachable for a
+ * reason that has nothing to do with Hearth: `deploy/gateway/dynamic/tls.yml:76` records that
+ * Cloudflare's Universal SSL is one label deep, so every two-label name under the testnet apex
+ * fails its TLS handshake before any request is made." The TLS fact is still true and the
+ * conclusion no longer follows from it: testnet hostnames stopped being two labels deep. An
+ * environment is now a SUFFIX inside the first label (`<surface>-testnet.<apex>`,
+ * `ui/packages/ui/src/surfaces.ts:995-1010`), the wildcard covers them, and
+ * `rpc-testnet.cloudsforge.online` answers `eth_chainId` with `0x1cf4` from off the estate.
+ *
+ * So BOTH scopes now have a chain behind them, and "the more absent of the two" is no longer the
+ * argument for this order. The argument that replaces it is about what a reader is looking at:
+ * mainnet is the chain whose balances are permanent, testnet's coin is given away and disposable,
+ * and the permanent one belongs at the top. `test/chainstatus.test.ts` pins the order either way,
+ * so a reorder stays a decision somebody argues for rather than a diff nobody notices.
  */
 export const HEARTH_SCOPES: readonly Scope[] = [
   { chain: HEARTH_CHAIN, network: 'mainnet' },
