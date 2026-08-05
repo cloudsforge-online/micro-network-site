@@ -227,7 +227,7 @@ describe('the copy claims nothing it cannot support', () => {
      * nothing at all, so the standing state must be present and unambiguous.
      *
      * IT USED TO REQUIRE "no public Hearth network" AND "no mainnet". Both became false: mainnet
-     * is published on the public tunnel (`deploy/cloudflared/config.mainnet.public.yml:123`) and
+     * is published on the public tunnel (`deploy/cloudflared/config.mainnet.public.yml:96`) and
      * answers `eth_chainId` from off the estate. A guard that requires a false sentence is worse
      * than no guard, because the only way to pass it is to lie.
      *
@@ -247,8 +247,15 @@ describe('the copy claims nothing it cannot support', () => {
     assert.match(body, /no listing/i)
     assert.match(body, /no liquidity/i)
 
-    // The testnet is still unreachable, and the notice may not quietly stop saying so.
-    assert.match(body, /no public testnet/i)
+    // INVERTED. This used to require "no public testnet", and the testnet is now public — so the
+    // notice may not quietly START saying so again. What replaces it is the claim that actually
+    // protects a reader now that a testnet URL may be published: the standing notice has to say
+    // that testnet EMBER is given away and worth nothing, or a reader has two live networks in
+    // front of them and no stated difference between their coins.
+    assert.doesNotMatch(body, /no public testnet/i)
+    assert.match(body, /testnet/i)
+    assert.match(body, /given away/i)
+    assert.match(body, /worthless/i)
 
     // One home server, no failover. The fact a reader deciding whether to trust this needs.
     assert.match(body, /one home server/i)

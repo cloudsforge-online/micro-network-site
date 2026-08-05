@@ -36,17 +36,28 @@
       the page around it — so it is the single easiest place on this surface to imply a running
       network by omission, and now also the easiest place to imply a TRADED one.
 
-      IT USED TO SAY "no mainnet". That is false: `deploy/cloudflared/config.mainnet.public.yml:123`
+      IT USED TO SAY "no mainnet". That is false: `deploy/cloudflared/config.mainnet.public.yml:96`
       publishes the mainnet JSON-RPC hostname on the public tunnel and it answers from off the
-      estate. The clause that must never leave is the other one — no EMBER of any monetary value —
+      estate.
+
+      IT THEN SAID "no public testnet endpoint". That is ALSO false, as of 2026-08-05, and it was
+      the single most-read false sentence in the estate because a link preview is what a person
+      sees before they see anything else. The testnet is public: chain id 7412, JSON-RPC at
+      `https://rpc-testnet.cloudsforge.online`, verified answering `0x1cf4`. The old wording blamed
+      Cloudflare's one-label Universal SSL, which was the right diagnosis of the WRONG scheme —
+      hostnames moved to `<surface>-testnet.<apex>` (one label) instead of
+      `<surface>.testnet.<apex>` (two), so the certificate covers them and nothing had to be
+      bought. See `ui/packages/ui/src/surfaces.ts:995-1010`.
+
+      The clause that must never leave is the one about VALUE — no EMBER of any monetary value —
       because a reachable chain is not a traded one and a link preview is exactly where those two
-      get blurred. test/brand-chrome.test.ts asserts that this description and the og one below
-      both carry "no public testnet" and "no monetary value", so a copy edit cannot quietly drop
-      either.
+      get blurred. That is now the ONLY clause test/brand-chrome.test.ts pins in this description
+      and the og one below, and it is pinned harder because it is no longer travelling with a
+      second caveat that softened the page.
     -->
     <meta
       name="description"
-      content="Hearth is a CPU-mined, ASIC-resistant proof-of-work chain that speaks Ethereum, and its coin is EMBER. Its mainnet answers on a public endpoint and is new enough to be unproven: no public testnet endpoint, and no EMBER of any monetary value."
+      content="Hearth is a CPU-mined, ASIC-resistant proof-of-work chain that speaks Ethereum, and its coin is EMBER. Its mainnet and testnet both answer on public endpoints and are new enough to be unproven, with no EMBER of any monetary value on either."
     />
 
     <!--
@@ -81,7 +92,7 @@
     <meta property="og:title" content="Forge Network — Hearth and EMBER" />
     <meta
       property="og:description"
-      content="A CPU-mined proof-of-work chain that speaks Ethereum. Its mainnet answers on a public endpoint and is new enough to be unproven: no public testnet endpoint, and no EMBER of any monetary value."
+      content="A CPU-mined proof-of-work chain that speaks Ethereum. Its mainnet and testnet both answer on public endpoints and are new enough to be unproven, with no EMBER of any monetary value on either."
     />
     <meta property="og:image" content="/og-1200x630.png" />
 

@@ -22,7 +22,7 @@ does **not** reimplement the block explorer, which is `micro-explorer-web` on it
 >
 > The second refusal follows from the first: **this site states no price and implies no mining
 > income.** It used to justify that with "there is no mainnet and no public testnet", and the first
-> half of that is no longer true — `deploy/cloudflared/config.mainnet.public.yml:123` publishes the
+> half of that is no longer true — `deploy/cloudflared/config.mainnet.public.yml:96` publishes the
 > mainnet JSON-RPC hostname on the public tunnel, and it answers `eth_chainId` with `0x1cf3` from
 > off the estate. **A reachable chain is not a traded one**, and that is the reason now written
 > down: EMBER has no market, no listing and no liquidity, so any price or capitalisation figure

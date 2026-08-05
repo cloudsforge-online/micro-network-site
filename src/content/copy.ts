@@ -16,7 +16,7 @@
  *
  * THIS BLOCK USED TO SAY THERE WAS NO NETWORK AT ALL. HALF OF THAT IS NOW FALSE, AND ONLY HALF.
  *
- * Mainnet is reachable. `deploy/cloudflared/config.mainnet.public.yml:123` publishes
+ * Mainnet is reachable. `deploy/cloudflared/config.mainnet.public.yml:96` publishes
  * `rpc.<apex>` on the public tunnel, and a POST to it from off the estate answers `eth_chainId`
  * with `0x1cf3` — 7411, the id this file already carried as merely allocated. Blocks advance
  * between reads. So the old headline, "there is no public Hearth network yet", is a false
@@ -30,10 +30,20 @@
  *   * **The chain is new and short.** "Live" here means reachable, not established. Nothing on
  *     this surface may state a height, an age or a block time it OBSERVED — the /chain page
  *     fetches those or renders their absence.
- *   * **There is no publicly reachable testnet endpoint.** Everything under
- *     `*.testnet.<apex>` fails its TLS handshake: Cloudflare's Universal SSL is one label deep
- *     (`deploy/gateway/dynamic/tls.yml:76`), so a two-label name has no certificate to present.
- *     The faucet is on that side of the line. **No testnet URL may be published here.**
+ *   * **The testnet IS publicly reachable, as of 2026-08-05, and this bullet used to say the
+ *     opposite.** It read: "Everything under `*.testnet.<apex>` fails its TLS handshake:
+ *     Cloudflare's Universal SSL is one label deep (`deploy/gateway/dynamic/tls.yml:76`), so a
+ *     two-label name has no certificate to present. The faucet is on that side of the line. No
+ *     testnet URL may be published here." The TLS diagnosis was correct about a scheme that was
+ *     then ABANDONED: an environment is now a suffix inside the FIRST label
+ *     (`<surface>-testnet.<apex>`, `ui/packages/ui/src/surfaces.ts:995-1010`), so every testnet
+ *     name is one label deep and the existing certificate covers it.
+ *
+ *     **So testnet URLs may now be published here, and the faucet is one of them** — it is the
+ *     whole reason this reversal matters, because the faucet is a testnet-only service and the
+ *     old rule made it unlinkable. What replaces the prohibition is a NARROWER one that survives
+ *     the good news: **a testnet URL must never be published without the word testnet next to
+ *     it.** Free coin and mined coin must not be made to look alike.
  *   * **The whole estate is one home server behind a Cloudflare Tunnel**
  *     (`deploy/gateway/dynamic/estate-web.yml:1120`). No second machine, no failover.
  *
@@ -65,12 +75,13 @@ export const STANDING_STATE = {
     'advancing, which is a narrower claim than it sounds and is the only one this site makes. ' +
     'EMBER has no price, because there is nowhere to trade it: no market, no listing, no ' +
     'liquidity. The chain is new and short, so a deep reorg is a live risk rather than a ' +
-    'theoretical one. There is still no public testnet endpoint — every name under the testnet ' +
-    'apex fails its TLS handshake, so the faucet cannot be reached from outside either. And the ' +
+    'theoretical one. A separate public testnet answers on chain id ' +
+    `${fact('chainIdTestnet')}, and its EMBER is given away by the faucet and is worthless by ` +
+    'design — do not confuse the two. And the ' +
     'whole estate runs on one home server behind a tunnel: no second machine, no failover, no ' +
     'restored backup.',
   source:
-    'deploy/cloudflared/config.mainnet.public.yml:123, deploy/gateway/dynamic/tls.yml:76, ' +
+    'deploy/cloudflared/config.mainnet.public.yml:96, ui/packages/ui/src/surfaces.ts:995-1010, ' +
     'deploy/gateway/dynamic/estate-web.yml:1120',
 }
 
@@ -85,7 +96,7 @@ export const HOME = {
    * headline and inside a length budget.
    */
   blurb:
-    'Hearth is a CPU-mined, ASIC-resistant proof-of-work chain that speaks Ethereum. Its mainnet answers on a public endpoint and is new enough to be unproven; there is no public testnet endpoint, and no EMBER of any monetary value.',
+    'Hearth is a CPU-mined, ASIC-resistant proof-of-work chain that speaks Ethereum. Its mainnet and testnet both answer on public endpoints and are new enough to be unproven, and no EMBER on either has any monetary value.',
   standfirst:
     'Hearth is a proof-of-work chain built so that the machine you are reading this on is the whole ' +
     'setup. Its coin is EMBER. Its execution layer is an EVM written from scratch and gated on ' +
@@ -200,7 +211,7 @@ export const HOME = {
       'what actually decides whether a stranger can reach anything. Where the README and the ' +
       'table disagree, the table wins; the repository says so itself.',
     source:
-      'hearth/MAP.md:42-70, deploy/cloudflared/config.mainnet.public.yml:123, ' +
+      'hearth/MAP.md:42-70, deploy/cloudflared/config.mainnet.public.yml:96, ' +
       'deploy/gateway/dynamic/tls.yml:76',
     rows: [
       {
@@ -233,12 +244,23 @@ export const HOME = {
           'with no failover, it has no independent peer, and nothing has audited it.',
       },
       {
-        thing: 'A public testnet endpoint, any deployed contract',
+        thing: 'A public testnet endpoint',
+        state: 'open' as const,
+        detail:
+          `Published and answering on chain id ${fact('chainIdTestnet')}, alongside the faucet ` +
+          'that funds it. This row read "unreachable" until recently, blaming a wildcard that ' +
+          'covers one label for names that were two deep; the names moved into one label instead. ' +
+          'Marked open rather than built because a testnet is disposable by definition — its ' +
+          'EMBER is given away and worth nothing, and no genesis here is promised to outlive the ' +
+          'volumes it sits on.',
+      },
+      {
+        thing: 'Any deployed contract',
         state: 'absent' as const,
         detail:
-          'Unreachable. Every name under the testnet apex fails its TLS handshake, because ' +
-          "Cloudflare's Universal SSL covers one label and those names are two deep. The testnet " +
-          'otherwise runs on the loopback address, and no genesis outlives tearing the volumes down.',
+          'Nothing is deployed on either chain. This was previously stated in the same breath as ' +
+          'the testnet being unreachable, which made one claim look like a consequence of the ' +
+          'other; it is not, and it outlived it.',
       },
       {
         thing: 'The proof of work at the size the documents promised',
@@ -636,17 +658,36 @@ export const FAUCET = {
    * faucet and a demonstration of one.
    */
   reach: {
-    title: 'What a drip can and cannot reach',
+    title: 'This is testnet EMBER, and testnet EMBER is worth nothing',
     body:
-      `The faucet dispenses on chain id ${fact('chainIdTestnet')}, and that chain has no endpoint ` +
-      'you can reach. Every name under the testnet apex fails its TLS handshake, because ' +
-      "Cloudflare's Universal SSL covers a single label and those names are two deep, so no " +
-      'certificate a browser will accept is ever presented. Underneath that, the testnet runs on ' +
-      'the loopback address inside whichever machine is running it. A successful drip therefore ' +
-      'funds an address on a network you can only reach by running it yourself, and the mainnet ' +
-      `endpoint that IS reachable is a different chain id — ${fact('chainIdMainnet')} — which this ` +
-      'faucet does not and must not pay out on.',
-    source: 'hearth/MAP.md:66, deploy/gateway/dynamic/tls.yml:76',
+      `The faucet dispenses on chain id ${fact('chainIdTestnet')} and on nothing else. That is a ` +
+      `different chain from mainnet, which is ${fact('chainIdMainnet')}: the two ids are ` +
+      'deliberately distinct, so a transaction signed on one cannot be replayed on the other. ' +
+      'Coin from this form is given away on request, so it is worth nothing by construction — it ' +
+      'is for testing, and the chain it lives on may be restarted from genesis without notice. ' +
+      'Nothing anywhere gives away mainnet EMBER, and a page that offers to is not this one.',
+    source: 'faucet/src/env.ts:63, faucet/src/index.ts:106-121',
+  },
+
+  /**
+   * Shown INSTEAD of the terms and the form when this page is served from a mainnet origin.
+   *
+   * See the header of `src/lib/hosts.ts` for why an origin check exists at all: no mainnet faucet
+   * can dispense — four independent locks, one of them a compile error — but a faucet page on a
+   * mainnet hostname still teaches a reader to go looking for free mainnet coin.
+   */
+  wrongNetwork: {
+    title: 'You are on mainnet. There is no faucet here.',
+    body:
+      'This page is the TESTNET faucet, and you have reached it on a mainnet address. Mainnet ' +
+      'EMBER is mined and never given away, so no form on this site will ever hand you any — ' +
+      'and no mainnet faucet exists to be found elsewhere, on this estate or off it. The testnet ' +
+      'faucet is the same page on the testnet host, linked below.',
+    source: 'faucet/src/env.ts:63 — NETWORK is the literal testnet, so mainnet is a type error',
+    action: 'Go to the testnet faucet',
+    fallback:
+      'The testnet host is the same name with -testnet on the end of its first label — for ' +
+      'example network-testnet.cloudsforge.online/faucet.',
   },
 
   form: {

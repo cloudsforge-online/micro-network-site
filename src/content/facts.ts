@@ -26,16 +26,20 @@
  * **No price, and no market capitalisation.** THE PREMISE THIS USED TO REST ON HAS CHANGED AND THE
  * CONCLUSION HAS NOT. It read "there is no mainnet and no public testnet, so EMBER is not traded
  * anywhere" — and mainnet is now published and answering
- * (`deploy/cloudflared/config.mainnet.public.yml:123`). A true statement resting on a false premise
+ * (`deploy/cloudflared/config.mainnet.public.yml:96`). A true statement resting on a false premise
  * is one edit away from being deleted along with it, so the real reason is written down instead:
  * **EMBER has no market, no listing and no liquidity.** Nothing quotes it, nothing settles it, and
  * a reachable chain is not a traded one. Any price or capitalisation figure here would be invented
  * rather than merely unavailable. `micro-faucet` says the same thing in the string it serves to
  * this page — "Testnet EMBER. It has no value, it is not tradeable" (`faucet/src/server.ts:358-360`).
  *
- * The public testnet is a separate matter and is still absent: every name under
- * `*.testnet.<apex>` fails its TLS handshake because Cloudflare's Universal SSL covers a single
- * label (`deploy/gateway/dynamic/tls.yml:76`), so nothing outside the estate can reach it.
+ * The public testnet is a separate matter and is **no longer absent**: as of 2026-08-05 it answers
+ * at `rpc-testnet.cloudsforge.online` on chain id 7412. This paragraph used to say it was
+ * unreachable, blaming a single-label wildcard — true of `*.testnet.<apex>`, which is a scheme the
+ * estate abandoned in favour of `<surface>-testnet.<apex>`
+ * (`ui/packages/ui/src/surfaces.ts:995-1010`). None of that touches the price conclusion above:
+ * testnet EMBER is given away and is worthless BY DESIGN, which is a reason it is not traded, not
+ * an exception to it.
  *
  * **No hashrate, no difficulty, no block height, no supply.** Those are facts about a running
  * network, and they belong to the chain index at runtime or nowhere. The `/chain` page fetches
@@ -77,13 +81,13 @@ export const FACTS = {
   chainIdMainnet: {
     rendered: '7411',
     meaning:
-      'EIP-155 chain id of Hearth mainnet. No longer merely allocated: the endpoint published at deploy/cloudflared/config.mainnet.public.yml:123 answers eth_chainId with 0x1cf3, which is this value. The chain being reachable says nothing about it being established, and nothing else in this register may borrow that fact.',
+      'EIP-155 chain id of Hearth mainnet. No longer merely allocated: the endpoint published at deploy/cloudflared/config.mainnet.public.yml:96 answers eth_chainId with 0x1cf3, which is this value. The chain being reachable says nothing about it being established, and nothing else in this register may borrow that fact.',
     source: 'contracts/packages/chain/src/index.ts:58 — CHAINS.EMBER.chainId.mainnet',
   },
   chainIdTestnet: {
     rendered: '7412',
     meaning:
-      'EIP-155 chain id of the testnet. It is what the three-node compose stack runs and what the faucet dispenses on, and it is not reachable from outside: every name under the testnet apex fails its TLS handshake, because the wildcard in front of them covers a single label (deploy/gateway/dynamic/tls.yml:76).',
+      'EIP-155 chain id of the testnet, and what the faucet dispenses on. It IS reachable from outside as of 2026-08-05: rpc-testnet.cloudsforge.online answers eth_chainId with 0x1cf4. This entry used to say the opposite, blaming a single-label wildcard for names that were two labels deep — correct about a scheme since abandoned, because the environment moved into the first label as a suffix (ui/packages/ui/src/surfaces.ts:995-1010). It is a DIFFERENT id from mainnet on purpose: were both 7411, every testnet transaction would replay on mainnet under EIP-155.',
     source: 'contracts/packages/chain/src/index.ts:58 — CHAINS.EMBER.chainId.testnet',
   },
   blockSeconds: {

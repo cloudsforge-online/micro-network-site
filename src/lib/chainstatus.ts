@@ -152,7 +152,7 @@ export interface Scope {
  * THIS WAS TESTNET-FIRST, AND THE REASON IT WAS HAS INVERTED. The comment here read "neither scope
  * has a chain behind it today, and asking about mainnet first would put the more absent of the two
  * at the top", citing `hearth/MAP.md` for "there is no live endpoint, no testnet and no mainnet".
- * Half of that is now false. `deploy/cloudflared/config.mainnet.public.yml:123` publishes the
+ * Half of that is now false. `deploy/cloudflared/config.mainnet.public.yml:96` publishes the
  * mainnet JSON-RPC hostname on the public tunnel and it answers `eth_chainId` from off the estate,
  * so mainnet is the scope with a chain behind it and testnet is now the more absent of the two.
  *

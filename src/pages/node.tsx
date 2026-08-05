@@ -8,7 +8,7 @@
  *
  * MAINNET IS A DIFFERENT MATTER NOW, and the standfirst was rewritten rather than left to age. A
  * public JSON-RPC endpoint is published on the tunnel
- * (`deploy/cloudflared/config.mainnet.public.yml:123`) and answers from off the estate, so "no
+ * (`deploy/cloudflared/config.mainnet.public.yml:96`) and answers from off the estate, so "no
  * endpoint to configure" is false. What has NOT changed is that this page publishes no bootstrap
  * list and no peer to dial, and that the four steps below are all local — so it still offers no
  * "connect to the network" step, because it would be a step nobody here has run.

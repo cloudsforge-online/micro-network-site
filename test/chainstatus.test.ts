@@ -638,7 +638,7 @@ describe('the cited lines are the lines that register the routes', () => {
     //
     // It required 'testnet' at the head, because when it was written neither scope had a chain
     // behind it and testnet was the less absent of the two. Mainnet is now published on the public
-    // tunnel (`deploy/cloudflared/config.mainnet.public.yml:123`) and answers `eth_chainId`, while
+    // tunnel (`deploy/cloudflared/config.mainnet.public.yml:96`) and answers `eth_chainId`, while
     // testnet is unreachable at the TLS layer — Universal SSL is one label deep
     // (`deploy/gateway/dynamic/tls.yml:76`) — so the ordering inverted with the facts. Kept as an
     // assertion so a reorder back is a decision somebody argues for rather than a reflex.

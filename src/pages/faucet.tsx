@@ -42,6 +42,7 @@ import {
   type FaucetTerms,
 } from '../lib/faucet.ts'
 import { dripTone, duration, weiToEmber, when } from '../lib/format.ts'
+import { currentNetwork, testnetFaucetUrl } from '../lib/hosts.ts'
 import { fact } from '../content/facts.ts'
 import { useResource } from '../lib/resource.ts'
 import { Failed, Loading } from '../components/states.tsx'
@@ -57,6 +58,9 @@ import {
 } from '../components/parts.tsx'
 
 export function FaucetPage() {
+  // Read BEFORE the resource is declared, and acted on before anything is fetched: on mainnet
+  // this page asks the faucet nothing at all. See `pageNetwork` in src/lib/hosts.ts.
+  const network = currentNetwork()
   const terms = useResource<FaucetTerms>(
     (signal) => getFaucetTerms(signal),
     // A terms document is never empty: it always carries the chain id and the drip. Returning 1
@@ -65,6 +69,32 @@ export function FaucetPage() {
     'The faucet did not answer.',
     [],
   )
+
+  // ── MAINNET: REFUSE, AND SAY WHERE THE FAUCET IS ───────────────────────────────────────────
+  //
+  // Returned before the form, the terms panel and the refusal/poll sections, so there is no
+  // shape on this page that a reader could mistake for a mainnet drip being available. The
+  // `reach` note is deliberately NOT rendered here: it explains what testnet EMBER is worth to
+  // somebody who is about to request some, and nobody on this branch is.
+  if (network === 'mainnet') {
+    const url = testnetFaucetUrl()
+    return (
+      <Page>
+        <PageHead title={FAUCET.title} standfirst={FAUCET.standfirst} />
+        <Note tone="warn" title={FAUCET.wrongNetwork.title}>
+          <p>{FAUCET.wrongNetwork.body}</p>
+          {url ? (
+            <p className="ns-prose">
+              <a href={url}>{FAUCET.wrongNetwork.action}</a>
+            </p>
+          ) : (
+            <p className="ns-prose">{FAUCET.wrongNetwork.fallback}</p>
+          )}
+          <Cite source={FAUCET.wrongNetwork.source} />
+        </Note>
+      </Page>
+    )
+  }
 
   return (
     <Page>

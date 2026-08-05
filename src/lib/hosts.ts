@@ -89,7 +89,13 @@
  * that happened, and did; the assertion is now inverted, so a regression is still caught.
  * ══════════════════════════════════════════════════════════════════════════════════════════════
  */
-import { cloudsforgeHosts, type CloudsForgeHosts, type SurfaceKey } from '@cloudsforge/ui'
+import {
+  cloudsforgeHosts,
+  envLabel,
+  splitEnvLabel,
+  type CloudsForgeHosts,
+  type SurfaceKey,
+} from '@cloudsforge/ui'
 
 /**
  * The surface this application IS.
@@ -182,6 +188,61 @@ export function isLocal(hostname: string): boolean {
 }
 
 /**
+ * Which network THIS PAGE is being served from.
+ *
+ * ══════════════════════════════════════════════════════════════════════════════════════════════
+ * THE FAUCET IS THE REASON THIS EXISTS, AND IT IS A SAFETY QUESTION RATHER THAN A COSMETIC ONE.
+ *
+ * `/faucet` is a route on this host (`ui/packages/ui/src/surfaces.ts:545-561`), and this host
+ * exists on BOTH networks — so `network.cloudsforge.online/faucet` served a page titled "Testnet
+ * faucet" from a MAINNET origin, measured 200 on 2026-08-05. Nothing could be dispensed by it:
+ * `micro-faucet` pins `NETWORK = 'testnet' as const` (`faucet/src/env.ts:63`) so mainnet is a
+ * COMPILE error, exits at boot on any chain id that is not 7412 (`faucet/src/index.ts:106-121`),
+ * carries `profiles: ["ember-testnet"]` so no mainnet container starts, and its `/v1` router is
+ * rendered only when `CF_EMBER_NETWORK` is testnet (`deploy/gateway/dynamic/estate-web.yml`).
+ * Four independent locks, and `POST /v1/drips` on the mainnet host answers 404.
+ *
+ * But "it cannot pay out" is not the same as "it is harmless". A faucet page on a mainnet
+ * hostname teaches a reader that free mainnet coin is a thing that exists somewhere, and that is
+ * the belief every drained faucet starts from. So the page refuses by ORIGIN, before it asks the
+ * service anything, and sends the reader to the testnet host by name.
+ *
+ * ── WHY THE ENVIRONMENT IS READ OFF THE FIRST LABEL ───────────────────────────────────────────
+ *
+ * `splitEnvLabel` is the registry's own parser (`ui/packages/ui/src/surfaces.ts:1059-1078`): an
+ * environment is a SUFFIX inside the first label, split on the LAST hyphen, so
+ * `network-testnet.cloudsforge.online` is the surface `network` on `testnet`. A bare
+ * `network.cloudsforge.online` has no env label and is therefore mainnet — the unadorned form is
+ * production, which is the one rule that must not be inverted by a parsing mistake.
+ *
+ * The testnet APEX (`testnet.cloudsforge.online`) is the one hostname where the label stands
+ * alone with no subdomain to suffix, so it is matched by name. It is not this bundle's host, but
+ * reading it as mainnet would be exactly the wrong direction to be wrong in.
+ *
+ * Development is `'local'` and is never treated as mainnet: `pnpm dev` runs against a local
+ * testnet node, and refusing the faucet there would make the page untestable.
+ * ══════════════════════════════════════════════════════════════════════════════════════════════
+ */
+export type PageNetwork = 'mainnet' | 'testnet' | 'local'
+
+export function pageNetwork(hostname: string): PageNetwork {
+  if (isLocal(hostname)) return 'local'
+
+  const first = hostname.split('.')[0] ?? ''
+
+  // The apex form, where the environment label has no subdomain to attach to.
+  if (first === 'testnet') return 'testnet'
+
+  const split = splitEnvLabel(first)
+  if (split && split.env === 'testnet') return 'testnet'
+
+  // Anything else that is not local is the unadorned form, and the unadorned form is production.
+  // Deliberately NOT `split === null ? 'mainnet' : ...` with other envs falling through: a
+  // `staging` or `preview` label is not testnet, and treating it as mainnet is the safe error.
+  return 'mainnet'
+}
+
+/**
  * Whether this bundle is being served from an address the surface registry knows.
  *
  * `cloudsforgeHosts()` derives the apex by stripping a KNOWN subdomain prefix
@@ -224,6 +285,29 @@ export function chainIndexBase(): string {
 /** The faucet API's base, with the registry `basePath` dropped. See the header. */
 export function faucetBase(): string {
   return resolveApiBase(pageOrigin(), cloudsforgeHosts(), FAUCET_SURFACE)
+}
+
+/** Which network this page is served from. Read by the faucet route. See `pageNetwork`. */
+export function currentNetwork(): PageNetwork {
+  if (typeof window === 'undefined') return 'local'
+  return pageNetwork(window.location.hostname)
+}
+
+/**
+ * Where the faucet actually is: this same route, on the testnet host.
+ *
+ * Derived rather than written, through the registry's own `envLabel()`
+ * (`ui/packages/ui/src/surfaces.ts:1076-1078`), so it cannot drift from the scheme — and so that
+ * nobody re-introduces the dead `<surface>.testnet.<apex>` form by typing it. Returns `null` when
+ * the apex cannot be derived, and the caller names the host in prose rather than shipping a link
+ * to nowhere.
+ */
+export function testnetFaucetUrl(): string | null {
+  if (typeof window === 'undefined') return null
+  const parts = window.location.hostname.split('.')
+  if (parts.length < 3) return null
+  const apex = parts.slice(1).join('.')
+  return `https://${envLabel(PRODUCT, 'testnet')}.${apex}/faucet`
 }
 
 /** Whether the current address is one the registry knows. Read by the shell. */

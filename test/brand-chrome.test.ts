@@ -12,8 +12,16 @@
  * **2. The description.** This is the one string a search engine and a link preview show WITHOUT
  * the page around it, which makes it the easiest place on this surface to imply a traded currency
  * by omission. Mainnet is reachable now, so the fact it must not leave out is no longer "there is
- * no mainnet" — it is that EMBER has no monetary value and that no public testnet endpoint exists.
- * Both the `description` and the `og:description` are required to carry both clauses.
+ * no mainnet".
+ *
+ * It was then "EMBER has no monetary value AND no public testnet endpoint exists". **The second
+ * half has since become false too** — the testnet is public, at `<surface>-testnet.<apex>` — and a
+ * guard requiring a description to deny that could only be satisfied by lying. It is not deleted:
+ * it is INVERTED, so a regression that re-introduces the sentence is still caught.
+ *
+ * What is left is the one clause that has survived every revision and is the reason this guard
+ * exists at all: **EMBER has no monetary value.** Both the `description` and the `og:description`
+ * are required to carry it, and forbidden to carry the testnet denial.
  */
 import assert from 'node:assert/strict'
 import { existsSync, readFileSync, readdirSync } from 'node:fs'
@@ -123,25 +131,34 @@ describe('the description says what the network is not', () => {
   /*
    * BOTH OF THESE USED TO REQUIRE "no mainnet", AND THAT SENTENCE IS NOW FALSE.
    *
-   * Mainnet is published on the public tunnel (`deploy/cloudflared/config.mainnet.public.yml:123`)
+   * Mainnet is published on the public tunnel (`deploy/cloudflared/config.mainnet.public.yml:96`)
    * and answers `eth_chainId` from off the estate, so a guard requiring a description to say there
    * is no mainnet could only be satisfied by lying in the one string a search engine shows.
    *
-   * Flipped to the two clauses that did NOT change, and that a link preview is the likeliest place
-   * to blur: EMBER has no monetary value, and there is no reachable public testnet.
+   * Flipped to the one clause that has not changed and that a link preview is the likeliest place
+   * to blur: EMBER has no monetary value. The testnet clause that used to sit beside it went the
+   * same way mainnet's did, one revision later, and is now asserted in the negative.
    */
   it('the meta description does', () => {
     const m = /<meta\s+name="description"\s+content="([^"]*)"/.exec(html)
     assert.ok(m, 'index.html has no description')
     assert.match(m[1] ?? '', /no EMBER of any monetary value/i)
-    assert.match(m[1] ?? '', /no public testnet/i)
+    // INVERTED, and deliberately so — see the header. This used to REQUIRE "no public testnet".
+    // The testnet is public now, so the old guard would be satisfied only by a false sentence in
+    // the one string a search engine shows. The assertion is kept, pointing the other way, so
+    // that re-introducing the claim goes red instead of going unnoticed.
+    assert.doesNotMatch(m[1] ?? '', /no public testnet/i)
   })
 
   it('and so does the og:description, which is read entirely on its own', () => {
     const m = /<meta\s+property="og:description"\s+content="([^"]*)"/.exec(html)
     assert.ok(m, 'index.html has no og:description')
     assert.match(m[1] ?? '', /no EMBER of any monetary value/i)
-    assert.match(m[1] ?? '', /no public testnet/i)
+    // INVERTED, and deliberately so — see the header. This used to REQUIRE "no public testnet".
+    // The testnet is public now, so the old guard would be satisfied only by a false sentence in
+    // the one string a search engine shows. The assertion is kept, pointing the other way, so
+    // that re-introducing the claim goes red instead of going unnoticed.
+    assert.doesNotMatch(m[1] ?? '', /no public testnet/i)
   })
 
   it('neither claims a price or a running chain', () => {
