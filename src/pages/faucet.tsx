@@ -10,7 +10,7 @@
  * EVERY NUMBER ON THIS PAGE IS THE FAUCET'S, FETCHED AT RENDER TIME.
  *
  * The drip, the cooldown, the per-requester limit, the window and the remaining budget all come
- * from `GET /v1/faucet` (`faucet/src/server.ts:348`). **There is no fallback set of numbers in this
+ * from `GET /v1/faucet` (`faucet/src/server.ts:341`). **There is no fallback set of numbers in this
  * repository** — `test/content.test.ts` checks the register and the register has no faucet entry —
  * so when that call fails the panel says the faucet did not answer and the form is DISABLED rather
  * than left clickable. A request posted into an unreachable service fails in a way that looks like
@@ -19,12 +19,12 @@
  * ── What this form may not send ───────────────────────────────────────────────────────────────
  *
  * **No amount.** There is no field for one and no parameter that would carry one. The handler reads
- * `address` and `idempotencyKey` and nothing else (`faucet/src/server.ts:379-380`), and
+ * `address` and `idempotencyKey` and nothing else (`faucet/src/server.ts:372-373`), and
  * `faucet/src/requests.ts:126-131` states the rule in the frozen service's words: "every faucet
  * that has ever been drained let the caller influence the amount".
  *
  * **No wording of its own on a refusal.** The message shown is the limiter's, verbatim, because
- * `faucet/src/server.ts:253-255` says what that message is engineered to be: "it names a rule and a
+ * `faucet/src/server.ts:246-248` says what that message is engineered to be: "it names a rule and a
  * number, never a balance, an address the caller did not send, or anything about the funding key."
  * A second wording here would be a second thing to keep true, and the softer of the two is the one
  * a reader would quote.
@@ -150,7 +150,7 @@ export function FaucetPage() {
 /**
  * What the faucet says it will do.
  *
- * The terms STRING is rendered verbatim rather than paraphrased. `faucet/src/server.ts:365-367`
+ * The terms STRING is rendered verbatim rather than paraphrased. `faucet/src/server.ts:358-360`
  * serves "Testnet EMBER. It has no value, it is not tradeable, and the chain it funds may be reset
  * without notice." — which is the disclaimer, written once, by the service that has to honour it.
  * `test/render.test.ts` asserts this page carries no second wording of it.
@@ -204,7 +204,7 @@ function Terms({ terms }: { terms: FaucetTerms }) {
       </dl>
       <Note tone="warn" title="The faucet's own terms">
         <p>{terms.terms}</p>
-        <Cite source="faucet/src/server.ts:365-367" />
+        <Cite source="faucet/src/server.ts:358-360" />
       </Note>
     </Section>
   )
@@ -330,7 +330,7 @@ function DripForm({ terms }: { terms: FaucetTerms | null }) {
 /**
  * A refusal, in the service's own words.
  *
- * A refusal is the limiter WORKING (`faucet/src/server.ts:253-255` logs it at INFO and says so), so
+ * A refusal is the limiter WORKING (`faucet/src/server.ts:246-248` logs it at INFO and says so), so
  * it is not painted in the danger colour unless it is genuinely a fault. `isRefusal` distinguishes
  * the five limiter codes from everything else; anything not in that set — a 500, a network error,
  * an auth status that should be impossible on an unauthenticated route — is a fault and is shown as

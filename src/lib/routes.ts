@@ -48,7 +48,7 @@ export interface AppRoute {
    * **Every route on this surface is public, and every one of them works that way.** The chain read
    * behind `/chain` is anonymous — `authoriseRead` returns `null` for a caller with no token and
    * lets the handler run (`indexer/src/server.ts:792-801`) — and all three faucet routes are
-   * unauthenticated by the service's own decision (`faucet/src/server.ts:341-342`, `:407-409`).
+   * unauthenticated by the service's own decision (`faucet/src/server.ts:334-335`, `:407-409`).
    * This bundle attaches no bearer to any of them.
    *
    * There is no `ProtectedRoute` in this repository, and `test/routes.test.ts` asserts its absence

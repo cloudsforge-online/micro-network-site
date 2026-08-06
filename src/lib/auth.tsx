@@ -12,7 +12,7 @@
  *     token and lets the handler run (`indexer/src/server.ts:792-801`, the branch at `:794`).
  *   * `GET /v1/faucet`, `POST /v1/drips`, `GET /v1/drips/:id` — unauthenticated, and the service
  *     argues for it: "a testnet faucet whose terms require a credential to read is a faucet nobody
- *     can use" (`faucet/src/server.ts:341-342`).
+ *     can use" (`faucet/src/server.ts:334-335`).
  *
  * A gate here would demand a session before showing what a public chain is, and would be the defect
  * `micro-explorer-web` was built around arriving from the client's side —
@@ -29,7 +29,7 @@
  * ── The `/auth/me` shape, re-read for this repository ─────────────────────────────────────────
  *
  * Identity answers `{ user: {...}, session: {...}, organisations: [...] }` — the profile is
- * **NESTED under `user`**. The route is `identity/src/server.ts:1180-1192` and the body is built by
+ * **NESTED under `user`**. The route is `identity/src/server.ts:1000-1012` and the body is built by
  * `toPublicUser` at `identity/src/users.ts:52-63`. Both citations were opened and read against the
  * source for this repository rather than carried over from a sibling.
  *

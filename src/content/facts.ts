@@ -31,7 +31,7 @@
  * **EMBER has no market, no listing and no liquidity.** Nothing quotes it, nothing settles it, and
  * a reachable chain is not a traded one. Any price or capitalisation figure here would be invented
  * rather than merely unavailable. `micro-faucet` says the same thing in the string it serves to
- * this page — "Testnet EMBER. It has no value, it is not tradeable" (`faucet/src/server.ts:365-367`).
+ * this page — "Testnet EMBER. It has no value, it is not tradeable" (`faucet/src/server.ts:358-360`).
  *
  * The public testnet is a separate matter and is **no longer absent**: as of 2026-08-05 it answers
  * at `rpc-testnet.cloudsforge.online` on chain id 7412. This paragraph used to say it was

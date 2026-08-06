@@ -26,7 +26,7 @@ const at = (p: string) => fileURLToPath(new URL(`../${p}`, import.meta.url))
 describe('wei to EMBER, with BigInt only', () => {
   it('survives a value a double cannot represent', () => {
     // 12,345,678,901,234,567,890,123 wei. `Number` would round it and silently lose the low digits,
-    // which is the defect `indexer/src/reads.ts:8-10` and `faucet/src/server.ts:357-358` both put
+    // which is the defect `indexer/src/reads.ts:8-10` and `faucet/src/server.ts:350-351` both put
     // decimal strings on the wire to avoid.
     const wei = '12345678901234567890123'
     assert.equal(weiToEmber(wei, 18), '12,345.678901234567890123')

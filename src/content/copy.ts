@@ -704,7 +704,7 @@ export const FAUCET = {
   /**
    * How a refusal is worded — which is to say, it is not worded here at all.
    *
-   * `faucet/src/server.ts:253-255`: the limiter's message "names a rule and a number, never a
+   * `faucet/src/server.ts:246-248`: the limiter's message "names a rule and a number, never a
    * balance, an address the caller did not send, or anything about the funding key". This page
    * shows that message verbatim. A second wording would be a second thing to keep true.
    */
@@ -726,7 +726,7 @@ export const FAUCET = {
       'transaction is signed by the custody service, its bytes are committed before it is ' +
       'broadcast, and it is followed to a pinned confirmation depth. This page polls until it ' +
       'settles, and every state it passes through is a state the service actually records.',
-    source: 'faucet/src/server.ts:372-377',
+    source: 'faucet/src/server.ts:365-370',
   },
 
   /** Shown when the terms could not be fetched. Never a default set of numbers. */

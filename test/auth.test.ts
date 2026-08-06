@@ -1,7 +1,7 @@
 /**
  * THE `/auth/me` SHAPE, AND THE ABSENCE OF A GATE.
  *
- * The profile is **nested under `user`** (`identity/src/server.ts:1180-1192`, built by `toPublicUser`
+ * The profile is **nested under `user`** (`identity/src/server.ts:1000-1012`, built by `toPublicUser`
  * at `identity/src/users.ts:52-63`). The web template used to declare `interface Me { handle?, roles? }`
  * and read both off the TOP level, where they are not; four frontends inherited it, `roles` was then
  * always null, `isAdmin` in the shared bar was always false, and the switcher hid every `adminOnly`
@@ -90,10 +90,10 @@ describe('the /auth/me citation is a line that exists', () => {
       return
     }
     const lines = readFileSync(`${root}/src/server.ts`, 'utf8').split('\n')
-    // `identity/src/server.ts:1180-1192`, cited in four files here. Read the range rather than a
+    // `identity/src/server.ts:1000-1012`, cited in four files here. Read the range rather than a
     // single line, because a range that has drifted onto a different handler reads as verified.
-    const cited = lines.slice(1179, 1192).join('\n')
-    assert.match(cited, /\/auth\/me/, `identity/src/server.ts:1180-1192 is:\n${cited.slice(0, 200)}`)
+    const cited = lines.slice(999, 1012).join('\n')
+    assert.match(cited, /\/auth\/me/, `identity/src/server.ts:1000-1012 is:\n${cited.slice(0, 200)}`)
   })
 
   it('and the body really is built nested', () => {

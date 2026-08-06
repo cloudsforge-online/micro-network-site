@@ -73,7 +73,7 @@
  *
  *   * **The basePath must be stripped before a request path is appended.** `${hosts.faucet}/v1/faucet`
  *     is `/faucet/v1/faucet`, which `micro-faucet` does not serve — its table is at
- *     `faucet/src/server.ts:308-444` and every path there starts `/v1`. `faucetBase()` below takes
+ *     `faucet/src/server.ts:301-437` and every path there starts `/v1`. `faucetBase()` below takes
  *     the ORIGIN and drops the path, and `test/hosts.test.ts` pins that.
  *   * **In production the origin is this page's**, so the base is `''` and the drip request is
  *     relative — which is what the registry asserts and what the gateway therefore has to route.
@@ -163,7 +163,7 @@ export function resolveApiBase(
  *
  * This is not tidying. `hosts.faucet` is `https://network.<apex>/faucet`, and appending an API
  * path to it produces `/faucet/v1/drips` — a path `micro-faucet` does not serve
- * (`faucet/src/server.ts:308-444`; every entry begins `/v1`). A 404 from a path shape nobody
+ * (`faucet/src/server.ts:301-437`; every entry begins `/v1`). A 404 from a path shape nobody
  * serves is indistinguishable from a service that is down, which is exactly the class of defect
  * this estate keeps shipping.
  */

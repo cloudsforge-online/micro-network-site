@@ -53,7 +53,7 @@ const SIGNIN_STANDIN = {
 }
 
 /**
- * What `GET /v1/faucet` answers, in the shape `faucet/src/server.ts:348` serves.
+ * What `GET /v1/faucet` answers, in the shape `faucet/src/server.ts:341` serves.
  *
  * Every value is deliberately NOT a round or plausible default. If any of them appears on screen
  * when the service has not answered, the bundle is carrying a fallback set — which is the thing

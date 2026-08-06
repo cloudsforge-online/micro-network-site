@@ -13,7 +13,7 @@
  * **Nothing this bundle reads needs a session.** The chain-index route it calls is anonymous
  * (`authoriseRead`, `indexer/src/server.ts:792-801`) and the three faucet routes are unauthenticated
  * by the service's own decision — "a testnet faucet whose terms require a credential to read is a
- * faucet nobody can use" (`faucet/src/server.ts:341-342`). Every one of them is issued with
+ * faucet nobody can use" (`faucet/src/server.ts:334-335`). Every one of them is issued with
  * `auth: false`; see `publicRead` in `src/lib/chainstatus.ts` and `publicCall` in
  * `src/lib/faucet.ts`.
  *
@@ -124,7 +124,7 @@ export class ApiError extends Error {
  *
  * The estate's envelope is **nested** — `{error: {code, message, requestId}}`, built by
  * `errorReply()` in every service (`indexer/src/server.ts:874-876`,
- * `faucet/src/server.ts:288-290`, `identity/src/server.ts:1970`). Every one of those three is
+ * `faucet/src/server.ts:281-283`, `identity/src/server.ts:1431`). Every one of those three is
  * checked out in CI, so the shape is verified rather than remembered.
  *
  * This function used to read the envelope as FLAT, assigning `data.error` — an object — straight to
@@ -298,11 +298,11 @@ export interface RequestOptions {
    * `micro-indexer` reads exactly one request header on a domain route — `authorization`, in
    * `authoriseRead` (`indexer/src/server.ts:793`) and `authorise` (`:808`) — plus `x-request-id`
    * and `host` in the server frame (`indexer/src/server.ts:202`, `:198`). `micro-faucet` reads
-   * `authorization` and `x-faucet-token` on `/metrics` only (`faucet/src/server.ts:519`, `:503`),
-   * plus `origin` for CORS (`faucet/src/server.ts:540`) and `x-forwarded-for` for the per-requester
-   * limit (`faucet/src/server.ts:502`). **Neither repository contains an `Idempotency-Key`**, and
+   * `authorization` and `x-faucet-token` on `/metrics` only (`faucet/src/server.ts:499`, `:503`),
+   * plus `origin` for CORS (`faucet/src/server.ts:520`) and `x-forwarded-for` for the per-requester
+   * limit (`faucet/src/server.ts:484`). **Neither repository contains an `Idempotency-Key`**, and
    * the faucet's own idempotency is a FIELD IN THE BODY — `idempotencyKey`
-   * (`faucet/src/server.ts:393-395`) — not a header. Sending the header would be ignored; sending
+   * (`faucet/src/server.ts:386-388`) — not a header. Sending the header would be ignored; sending
    * the field is required. Copying `trade-web`'s client here would have got it exactly backwards,
    * and copying this one to `trade` would fail every write with a 400
    * (`trade/src/server.ts:840-848`).

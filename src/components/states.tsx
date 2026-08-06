@@ -12,7 +12,7 @@
  *
  * **There is no `Refused` here and there must not be one.** Every route this bundle calls is
  * anonymous — the chain read by the service's own decision (`indexer/src/server.ts:792-801`), the
- * three faucet routes by theirs (`faucet/src/server.ts:341-342`, `:407-409`) — and this bundle
+ * three faucet routes by theirs (`faucet/src/server.ts:334-335`, `:407-409`) — and this bundle
  * presents no credential, so nothing it sends can be refused for lacking one. A 401 or a 403
  * arriving anyway means a service re-gated a route or something in front of it injected a
  * credential, and `Failed` is the honest screen for both: a message, an id to quote, and no
