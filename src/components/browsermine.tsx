@@ -50,6 +50,11 @@ export function BrowserMine({ rpc }: { rpc: string }) {
   const [found, setFound] = useState<readonly Found[]>([])
   const [notice, setNotice] = useState<string | null>(null)
   const [paste, setPaste] = useState('')
+  // Polite by default: on battery the miner runs at zero duty so it does not flatten someone's
+  // laptop. That is the right default and it was also invisible — you pressed Start, nine workers
+  // span up, and the rate sat at zero with nothing on screen to say why.
+  const [onBattery, setOnBattery] = useState(false)
+  const [mineOnBattery, setMineOnBattery] = useState(false)
   const miner = useRef<{ start: () => Promise<void>; stop: () => void } | null>(null)
 
   // Stop mining if the reader navigates away. A worker pool left running in a detached component
@@ -77,11 +82,15 @@ export function BrowserMine({ rpc }: { rpc: string }) {
     setNotice(null)
     try {
       const { Miner } = await import('../mining/miner.js')
-      const m = new Miner({ rpc, key })
+      const m = new Miner({ rpc, key, pauseOnBattery: !mineOnBattery })
       miner.current = m
       m.addEventListener('state', (e) => setRunning(Boolean((e as CustomEvent).detail.running)))
       m.addEventListener('hashrate', (e) => setHashrate((e as CustomEvent).detail.hashrate))
       m.addEventListener('template', (e) => setHeight((e as CustomEvent).detail.height))
+      m.addEventListener('duty', (e) => {
+        const d = (e as CustomEvent).detail as { effective: number; onPower: boolean; powerKnown: boolean }
+        setOnBattery(d.powerKnown && !d.onPower && d.effective === 0)
+      })
       m.addEventListener('accepted', (e) => {
         const d = (e as CustomEvent).detail as Found
         setFound((prev) => [d, ...prev].slice(0, 8))
@@ -94,7 +103,7 @@ export function BrowserMine({ rpc }: { rpc: string }) {
     } catch (err) {
       setNotice(err instanceof Error ? err.message : 'mining could not start')
     }
-  }, [running, key, rpc])
+  }, [running, key, rpc, mineOnBattery])
 
   return (
     <section className="ns-mine">
@@ -172,11 +181,28 @@ export function BrowserMine({ rpc }: { rpc: string }) {
             >
               {running ? 'Stop mining' : 'Start mining'}
             </button>
-            {running && <span className="ns-mine__rate cf-num">{rate(hashrate)}</span>}
+            {running && !onBattery && <span className="ns-mine__rate cf-num">{rate(hashrate)}</span>}
             {height !== null && (
               <span className="ns-mine__height">working on block {height.toLocaleString()}</span>
             )}
           </div>
+
+          {running && onBattery && (
+            <Note tone="warn" title="Paused — this machine is on battery">
+              <p>
+                Mining is held at zero while you are unplugged, so it cannot flatten your battery
+                without asking. Plug in and it starts on its own.
+              </p>
+              <label className="ns-mine__ack">
+                <input
+                  type="checkbox"
+                  checked={mineOnBattery}
+                  onChange={(e) => setMineOnBattery(e.target.checked)}
+                />
+                <span>Mine on battery anyway</span>
+              </label>
+            </Note>
+          )}
 
           {found.length > 0 && (
             <div className="ns-mine__found">
