@@ -28,6 +28,14 @@ interface MiningKey {
   readonly privHex: string
 }
 
+/** Only the parts of the Miner this panel drives. */
+interface MinerHandle extends EventTarget {
+  start(): Promise<void>
+  stop(): void
+  pauseOnBattery: boolean
+  _applyDuty(): void
+}
+
 interface Found {
   readonly height: number
   readonly reward?: string
@@ -55,7 +63,7 @@ export function BrowserMine({ rpc }: { rpc: string }) {
   // span up, and the rate sat at zero with nothing on screen to say why.
   const [onBattery, setOnBattery] = useState(false)
   const [mineOnBattery, setMineOnBattery] = useState(false)
-  const miner = useRef<{ start: () => Promise<void>; stop: () => void } | null>(null)
+  const miner = useRef<MinerHandle | null>(null)
 
   // Stop mining if the reader navigates away. A worker pool left running in a detached component
   // keeps every core busy and there is no longer anything on screen to turn it off.
@@ -197,7 +205,17 @@ export function BrowserMine({ rpc }: { rpc: string }) {
                 <input
                   type="checkbox"
                   checked={mineOnBattery}
-                  onChange={(e) => setMineOnBattery(e.target.checked)}
+                  onChange={(e) => {
+                    const allow = e.target.checked
+                    setMineOnBattery(allow)
+                    // The miner reads `pauseOnBattery` when it computes duty, not only when it is
+                    // constructed, so this takes effect on a pool that is already spun up. Without
+                    // pushing it through, ticking the box changed a label and nothing else.
+                    if (miner.current) {
+                      miner.current.pauseOnBattery = !allow
+                      miner.current._applyDuty()
+                    }
+                  }}
                 />
                 <span>Mine on battery anyway</span>
               </label>

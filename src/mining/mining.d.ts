@@ -44,6 +44,10 @@ declare module '*/mining/miner.js' {
     readonly running: boolean
     readonly hashrate: number
     readonly accepted: number
+    /** Writable: the duty calculation reads it live, so it can be changed on a running pool. */
+    pauseOnBattery: boolean
+    /** Recomputes duty and pushes it to every worker. Call after changing `pauseOnBattery`. */
+    _applyDuty(): void
   }
   export const POW_SIG_FORM: string
   export function proofSignature(digestHex: string, priv: Uint8Array): string
