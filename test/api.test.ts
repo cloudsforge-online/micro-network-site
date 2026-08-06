@@ -94,9 +94,9 @@ describe('the public calls send no credential', () => {
   it('no public call sets any request header beyond accept and content-type', () => {
     // Neither service reads one. `micro-indexer` reads `authorization` on a domain route and
     // nothing else (`indexer/src/server.ts:793`); `micro-faucet` reads `authorization` and
-    // `x-faucet-token` on /metrics only (`faucet/src/server.ts:499`, `:503`). An `Idempotency-Key`
+    // `x-faucet-token` on /metrics only (`faucet/src/server.ts:519`, `:503`). An `Idempotency-Key`
     // in particular would be silently ignored — the faucet's is a BODY FIELD
-    // (`faucet/src/server.ts:386-388`).
+    // (`faucet/src/server.ts:393-395`).
     signedIn()
     stub = installFetch(() => json(200, {}))
     return requestDrip({ address: '0x0000000000000000000000000000000000000001', idempotencyKey: 'k' }).then(
@@ -140,7 +140,7 @@ describe('the request URLs are the ones the registry resolves', () => {
 
   it('…and the basePath is not in the path, which would be a route nobody serves', () => {
     // `${hosts.faucet}/v1/faucet` would be `/faucet/v1/faucet`. Every path micro-faucet serves
-    // begins `/v1` (`faucet/src/server.ts:301-437`).
+    // begins `/v1` (`faucet/src/server.ts:308-444`).
     signedIn()
     stub = installFetch(() => json(200, {}))
     return getFaucetTerms().then(() => {
