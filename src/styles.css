@@ -59,8 +59,11 @@
  * `test/contrast.test.ts` does not exist here; and a screenshot would have shown it to anybody who
  * took one. It took running the bundle and asking axe.
  *
- * `color-scheme: dark` so the browser's own furniture — form controls, scrollbars, the space
- * outside the page — follows the substrate rather than sitting light against a dark page.
+ * `color-scheme` is NOT declared here any more, and its removal is the fix. It was `dark`, on
+ * `body`, which beats the per-scheme declaration tokens.css sets on `<html>` — so with
+ * `data-cf-scheme="auto"` the page's own colours would follow the reader into a light palette while
+ * every native control the browser draws stayed dark against it. The faucet page is a text input
+ * and a button, so that is not cosmetic. The token layer owns the answer now.
  */
 body {
   margin: 0;
@@ -69,7 +72,6 @@ body {
   font-family: var(--cf-font-sans);
   font-size: var(--cf-text-md);
   line-height: 1.6;
-  color-scheme: dark;
 }
 
 .ns-skip {

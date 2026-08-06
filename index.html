@@ -17,11 +17,39 @@
 
   'warm' is the ash ramp every product frontend in the estate uses.
 -->
-<html lang="en-GB" data-cf-product="network" data-cf-substrate="warm">
+<html lang="en-GB" data-cf-product="network" data-cf-substrate="warm" data-cf-scheme="auto"><!--
+  data-cf-scheme arrived with @cloudsforge/ui 1.1: `auto` follows the reader's operating system,
+  `light` and `dark` force one. Set here rather than by React, because a theme flash is worse than
+  a theme nobody asked for.
+
+  This surface carried BOTH of the light-mode blockers the design system was written to find, which
+  is why it stayed dark while every other surface moved. They are fixed together because each one
+  alone still leaves the page wrong: `src/styles.css` declared `color-scheme: dark` on `body`, and a
+  declaration on `body` beats the per-scheme one tokens.css sets on `<html>`.
+-->
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <meta name="colour-scheme" content="dark" />
+    <!--
+      `color-scheme`, spelled the way the standard spells it. This was `colour-scheme` — correct
+      British English and completely INERT: it is not a registered meta name, no browser has ever
+      read it, and the declaration meant to tell the browser which form controls and scrollbars to
+      draw did nothing at all. The faucet page is made of a text input and a button, so on this
+      surface that is not cosmetic.
+
+      Both schemes, not only `dark`, because `data-cf-scheme="auto"` above lets the token layer
+      resolve whichever palette the reader's system asks for.
+    -->
+    <meta name="color-scheme" content="dark light" />
+
+    <!--
+      The Google Analytics property. Nothing is loaded and no cookie is set until the reader presses
+      Accept on the consent gate — `initAnalytics()` in src/main.tsx primes Consent Mode with every
+      category DENIED before anything else runs. An absent or empty value means analytics is simply
+      off, which is what a local `pnpm dev` gets and is a supported mode rather than a
+      misconfiguration.
+    -->
+    <meta name="cf-analytics" content="G-NB8DNLTKZQ" />
     <!--
       The build that produced this bundle. Stamped by the Dockerfile, read by src/lib/obs.ts, and
       the reason an error report can be pinned to the deploy that introduced it. It is an identity

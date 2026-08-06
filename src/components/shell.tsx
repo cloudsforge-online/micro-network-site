@@ -39,7 +39,7 @@
  * notice that is absent for every reader who has been here before, which is precisely the reader
  * most likely to have formed the wrong impression.
  */
-import { CloudsForgeBar, Mark } from '@cloudsforge/ui'
+import { CloudsForgeBar, CookieBanner, Mark } from '@cloudsforge/ui'
 import { NavLink, Outlet } from 'react-router-dom'
 import { STANDING_STATE } from '../content/copy.ts'
 import { useSession } from '../lib/auth.tsx'
