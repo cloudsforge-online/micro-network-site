@@ -703,3 +703,71 @@ body {
     animation-duration: 3s;
   }
 }
+
+/* ── Mining in the browser ────────────────────────────────────────────────────
+ *
+ * The panel sits at the top of "Start mining" because it is the only path that
+ * needs nothing installed. Everything here is token-driven; no literal colour,
+ * for the reason the header of this file gives.
+ */
+.ns-mine {
+  border: 1px solid var(--cf-line-strong);
+  border-radius: var(--cf-radius-lg);
+  padding: var(--cf-space-lg);
+  margin-bottom: var(--cf-space-xl);
+  background: var(--cf-surface);
+}
+
+.ns-mine h3 {
+  margin-top: 0;
+}
+
+.ns-mine__setup {
+  display: flex;
+  flex-direction: column;
+  gap: var(--cf-space-sm);
+  align-items: flex-start;
+}
+
+.ns-mine__import summary {
+  cursor: pointer;
+  color: var(--cf-fg-mute);
+}
+
+.ns-mine__controls {
+  display: flex;
+  align-items: center;
+  gap: var(--cf-space-md);
+  flex-wrap: wrap;
+  margin-top: var(--cf-space-md);
+}
+
+.ns-mine__rate {
+  font-size: var(--cf-text-lg);
+}
+
+.ns-mine__height,
+.ns-mine__ack {
+  color: var(--cf-fg-mute);
+}
+
+.ns-mine__ack {
+  display: flex;
+  align-items: center;
+  gap: var(--cf-space-2xs);
+  margin-top: var(--cf-space-sm);
+}
+
+/* The key is long and must be selectable in one gesture — a reader copying 63 of
+   64 characters loses the address and everything paid to it. */
+.ns-mine__key {
+  display: block;
+  overflow-wrap: anywhere;
+  user-select: all;
+  padding: var(--cf-space-2xs) 0;
+}
+
+.ns-mine__found ul {
+  list-style: none;
+  padding: 0;
+}
