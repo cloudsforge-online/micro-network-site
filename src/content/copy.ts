@@ -686,8 +686,8 @@ export const FAUCET = {
     source: 'faucet/src/env.ts:63 — NETWORK is the literal testnet, so mainnet is a type error',
     action: 'Go to the testnet faucet',
     fallback:
-      'The testnet host is the same name with -testnet on the end of its first label — for ' +
-      'example network-testnet.cloudsforge.online/faucet.',
+      'The testnet host is this same name with -testnet on the end of its first label, ' +
+      'and the faucet is at /faucet on it.',
   },
 
   form: {

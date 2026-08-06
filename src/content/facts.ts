@@ -87,7 +87,7 @@ export const FACTS = {
   chainIdTestnet: {
     rendered: '7412',
     meaning:
-      'EIP-155 chain id of the testnet, and what the faucet dispenses on. It IS reachable from outside as of 2026-08-05: rpc-testnet.cloudsforge.online answers eth_chainId with 0x1cf4. This entry used to say the opposite, blaming a single-label wildcard for names that were two labels deep — correct about a scheme since abandoned, because the environment moved into the first label as a suffix (ui/packages/ui/src/surfaces.ts:995-1010). It is a DIFFERENT id from mainnet on purpose: were both 7411, every testnet transaction would replay on mainnet under EIP-155.',
+      'EIP-155 chain id of the testnet, and what the faucet dispenses on. It IS reachable from outside as of 2026-08-05: the public testnet JSON-RPC endpoint answers eth_chainId with 0x1cf4. This entry used to say the opposite, blaming a single-label wildcard for names that were two labels deep — correct about a scheme since abandoned, because the environment moved into the first label as a suffix (ui/packages/ui/src/surfaces.ts:995-1010). It is a DIFFERENT id from mainnet on purpose: were both 7411, every testnet transaction would replay on mainnet under EIP-155.',
     source: 'contracts/packages/chain/src/index.ts:58 — CHAINS.EMBER.chainId.testnet',
   },
   blockSeconds: {
