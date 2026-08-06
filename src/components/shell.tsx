@@ -108,6 +108,12 @@ export function AppShell({ unregistered = false }: { unregistered?: boolean }) {
         </Note>
         <Outlet />
       </main>
+      {/*
+        Last in the DOM so it is last in the tab order: the gate is a decision about this visit, not
+        a barrier in front of the page, and a reader who never touches it has still read everything.
+        It draws nothing until `initAnalytics()` reports no stored answer.
+      */}
+      <CookieBanner />
     </>
   )
 }
