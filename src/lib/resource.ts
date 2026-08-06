@@ -11,11 +11,12 @@
  * The template has a fifth state, `forbidden`, entered on a 403. This file used to have a wider
  * one, `refused`, entered on 401 OR 403, because every `micro-indexer` read demanded a scope this
  * browser could not hold. `micro-indexer` made its seven reads anonymous
- * (`authoriseRead`, `indexer/src/server.ts:792-801`), so that state was the machinery of a
+ * (`authoriseRead`, `indexer/src/server.ts`), so that state was the machinery of a
  * restriction that no longer exists and it has been deleted rather than left to apologise.
  *
  * A 401 or a 403 from the chain index is now a genuine fault — this bundle presents no credential
- * at all (`publicRead` in src/lib/indexer.ts), so nothing it sends can be refused for lacking one.
+ * at all (`publicRead` in `src/lib/chainstatus.ts`), so nothing it sends can be refused for
+ * lacking one.
  * If one arrives it means the service re-gated a read or something in front of it injected a
  * credential, and `failed` is the honest screen for both: a message, a request id to quote, and no
  * sentence pretending the reader could have done anything differently.

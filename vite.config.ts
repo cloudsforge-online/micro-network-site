@@ -34,18 +34,18 @@ export default defineConfig({
   // 5190 IS A VITE PORT. THE REGISTRY'S NUMBER FOR THIS SURFACE IS 3003, AND THEY ARE DIFFERENT
   // ON PURPOSE — WITH A COST THAT IS WRITTEN DOWN RATHER THAN HIDDEN.
   //
-  // `ui/packages/ui/src/surfaces.ts:193` gives `network` devPort **3003**, and
-  // `ui/packages/ui/src/surfaces.ts:373` gives `faucet` the same 3003 with `basePath: '/faucet'`
+  // `ui/packages/ui/src/surfaces.ts` gives `network` devPort **3003**, and
+  // `ui/packages/ui/src/surfaces.ts` gives `faucet` the same 3003 with `basePath: '/faucet'`
   // — the faucet is a ROUTE on this site rather than a host of its own, and
-  // `ui/packages/ui/src/surfaces.test.ts:329` names the pair `faucet+network` in `CO_HOSTED` so
+  // `ui/packages/ui/src/surfaces.test.ts` names the pair `faucet+network` in `CO_HOSTED` so
   // the collision guard treats it as deliberate. That is correct and this repository does not
   // "fix" it.
   //
   // The estate has two settled answers for a Vite port and this file takes the second:
   //
-  //   * micro-worlds-web binds the registry's own number (`worlds-web/vite.config.ts:53`, 3001),
+  //   * micro-worlds-web binds the registry's own number (`worlds-web/vite.config.ts`, 3001),
   //     because `worlds` devPort names where that bundle is SERVED.
-  //   * micro-site binds 5170 (`site/vite.config.ts:43`) while its registry devPort is 3000, and
+  //   * micro-site binds 5170 (`site/vite.config.ts`) while its registry devPort is 3000, and
   //     its comment gives the reason: a Vite port is a developer convenience, "not the port the
   //     site is served on in production, and nothing in the bundle knows about it".
   //

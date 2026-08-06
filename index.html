@@ -6,10 +6,10 @@
   colour.
 
   'network' — and unlike the explorer, this surface's own key is the right one. tokens.css declares
-  `[data-cf-product='network']` at `ui/packages/ui/src/tokens.css:340-345`, carrying #d6412f, which
-  is the exact accent the registry gives this surface (`ui/packages/ui/src/surfaces.ts:194`).
+  `[data-cf-product='network']` at `ui/packages/ui/src/tokens.css`, carrying #d6412f, which
+  is the exact accent the registry gives this surface (`ui/packages/ui/src/surfaces.ts`).
 
-  It was checked rather than assumed. tokens.css says at `:389-396` that "every key an app may set
+  It was checked rather than assumed. tokens.css says that "every key an app may set
   is declared", precisely so a surface cannot fall through to the company ember in silence — which
   is what platform/apps/admin/index.html did for as long as nobody looked. `explorer` is still the
   key with no block of its own; this one has had one since the ramp was written.
@@ -36,7 +36,7 @@
       the page around it — so it is the single easiest place on this surface to imply a running
       network by omission, and now also the easiest place to imply a TRADED one.
 
-      IT USED TO SAY "no mainnet". That is false: `deploy/cloudflared/config.mainnet.public.yml:96`
+      IT USED TO SAY "no mainnet". That is false: `deploy/cloudflared/config.mainnet.public.yml`
       publishes the mainnet JSON-RPC hostname on the public tunnel and it answers from off the
       estate.
 
@@ -47,7 +47,7 @@
       Cloudflare's one-label Universal SSL, which was the right diagnosis of the WRONG scheme —
       hostnames moved to `<surface>-testnet.<apex>` (one label) instead of
       `<surface>.testnet.<apex>` (two), so the certificate covers them and nothing had to be
-      bought. See `ui/packages/ui/src/surfaces.ts:995-1010`.
+      bought. See `ui/packages/ui/src/surfaces.ts`.
 
       The clause that must never leave is the one about VALUE — no EMBER of any monetary value —
       because a reachable chain is not a traded one and a link preview is exactly where those two
@@ -64,14 +64,14 @@
       Brand chrome for the `network` surface, from micro-brand's assets/network/ set, copied
       byte-identical — test/brand-chrome.test.ts compares the bytes in both directions.
 
-      `network` is entitled to the FULL set of eight files (`brand/README.md:36`) and all eight
+      `network` is entitled to the FULL set of eight files (`brand/README.md`) and all eight
       exist in `brand/assets/network/`. Four of them are shipped here, and the choice is the same
       one every frontend in the estate makes: the favicons and the og card are BROWSER CHROME that a
       hostname cannot inherit, and the mark, the wordmark, the as-delivered og source and the social
       banner are not requested by a browser at all.
 
       The mark is still rendered, and it is rendered as SVG by `<Mark>` from the design system
-      (`ui/packages/ui/src/index.tsx:453`, drawing at `:330`) rather than as one of these PNGs — so
+      (`ui/packages/ui/src/index.tsx`,) rather than as one of these PNGs — so
       it wears `--cf-accent`, stays crisp at any size, and costs no request. `brand/assets/network/`
       keeps the raster copies for the places a browser is not the consumer.
     -->

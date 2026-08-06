@@ -11,9 +11,9 @@
  * ── What is different on THIS surface, and it is not a detail ──────────────────────────────────
  *
  * **Nothing this bundle reads needs a session.** The chain-index route it calls is anonymous
- * (`authoriseRead`, `indexer/src/server.ts:792-801`) and the three faucet routes are unauthenticated
+ * (`authoriseRead`, `indexer/src/server.ts`) and the three faucet routes are unauthenticated
  * by the service's own decision — "a testnet faucet whose terms require a credential to read is a
- * faucet nobody can use" (`faucet/src/server.ts:341-342`). Every one of them is issued with
+ * faucet nobody can use" (`faucet/src/server.ts`). Every one of them is issued with
  * `auth: false`; see `publicRead` in `src/lib/chainstatus.ts` and `publicCall` in
  * `src/lib/faucet.ts`.
  *
@@ -22,7 +22,7 @@
  *
  * So the rule for this file is narrow and worth stating: **a bearer must never travel to the chain
  * index or to the faucet.** The indexer verifies whatever it is handed rather than ignoring it
- * (`indexer/src/server.ts:795`), so an expired token would turn a public page into a 401 — a
+ * (`indexer/src/server.ts`), so an expired token would turn a public page into a 401 — a
  * surface that has quietly made itself depend on a credential. `test/api.test.ts` drives every one
  * of the four public calls with an access token in storage and inspects what `fetch` was handed.
  */
@@ -123,8 +123,8 @@ export class ApiError extends Error {
  * Pull the sentence, the code and the request id out of a service's error body.
  *
  * The estate's envelope is **nested** — `{error: {code, message, requestId}}`, built by
- * `errorReply()` in every service (`indexer/src/server.ts:874-876`,
- * `faucet/src/server.ts:288-290`, `identity/src/server.ts:1970`). Every one of those three is
+ * `errorReply()` in every service (`indexer/src/server.ts`,
+ * `faucet/src/server.ts`, `identity/src/server.ts`). Every one of those three is
  * checked out in CI, so the shape is verified rather than remembered.
  *
  * This function used to read the envelope as FLAT, assigning `data.error` — an object — straight to
@@ -180,7 +180,7 @@ export interface ErrorNotice {
    *
    * The web template drops it, and dropping it is how `micro-market` and `micro-mint` each
    * rendered a router 404 as a fact about a chain. `micro-indexer` distinguishes "no such
-   * transaction" from "no such route" by code alone and says so at `indexer/src/server.ts:475-477`
+   * transaction" from "no such route" by code alone and says so at `indexer/src/server.ts`
    * — the status is 404 either way.
    */
   code: string | undefined
@@ -296,16 +296,16 @@ export interface RequestOptions {
    * APIs rather than a style choice.**
    *
    * `micro-indexer` reads exactly one request header on a domain route — `authorization`, in
-   * `authoriseRead` (`indexer/src/server.ts:793`) and `authorise` (`:808`) — plus `x-request-id`
-   * and `host` in the server frame (`indexer/src/server.ts:202`, `:198`). `micro-faucet` reads
-   * `authorization` and `x-faucet-token` on `/metrics` only (`faucet/src/server.ts:519`, `:503`),
-   * plus `origin` for CORS (`faucet/src/server.ts:540`) and `x-forwarded-for` for the per-requester
-   * limit (`faucet/src/server.ts:502`). **Neither repository contains an `Idempotency-Key`**, and
+   * `authoriseRead` (`indexer/src/server.ts`) and `authorise` — plus `x-request-id`
+   * and `host` in the server frame (`indexer/src/server.ts`). `micro-faucet` reads
+   * `authorization` and `x-faucet-token` on `/metrics` only (`faucet/src/server.ts`),
+   * plus `origin` for CORS (`faucet/src/server.ts`) and `x-forwarded-for` for the per-requester
+   * limit (`faucet/src/server.ts`). **Neither repository contains an `Idempotency-Key`**, and
    * the faucet's own idempotency is a FIELD IN THE BODY — `idempotencyKey`
-   * (`faucet/src/server.ts:393-395`) — not a header. Sending the header would be ignored; sending
+   * (`faucet/src/server.ts`) — not a header. Sending the header would be ignored; sending
    * the field is required. Copying `trade-web`'s client here would have got it exactly backwards,
    * and copying this one to `trade` would fail every write with a 400
-   * (`trade/src/server.ts:840-848`).
+   * (`trade/src/server.ts`).
    *
    * The parameter is kept rather than deleted because it is the template's and because deleting it
    * would make the next writer add it back without the note.
@@ -402,7 +402,7 @@ async function request<T>(base: string, path: string, opts: RequestOptions = {})
     // without a session is the route saying it needs authentication rather than a session ending —
     // and expiring one that never existed dispatches `cf:auth-expired`, which signs a user out of
     // a session they never had. This line is the template's
-    // (`web-template/src/lib/api.ts:344`), not a fork of it, and `test/api.test.ts` checks the two
+    // (`web-template/src/lib/api.ts`), not a fork of it, and `test/api.test.ts` checks the two
     // agree. It is not what keeps this surface quiet — every public call passes `auth: false` and
     // never reaches this branch — but it is still right for `/auth/me`, and a client that is only
     // correct because of where it happens to be called is a client waiting to be moved.
@@ -442,7 +442,7 @@ export const nimbus = <T,>(path: string, opts?: RequestOptions): Promise<T> =>
  * is a session and no screen flashes signed-out and then signed-in.
  *
  * The strip-then-exchange ordering inside `consumeAuthCallback` is load-bearing and is documented
- * where it is implemented (`ui/packages/ui/src/index.tsx:202-208`): the code leaves the address bar
+ * where it is implemented (`ui/packages/ui/src/index.tsx`): the code leaves the address bar
  * before it goes over the wire, so it is never in the history, in a referrer, or in a screenshot
  * taken while the request is in flight. Nothing here may reorder that, and nothing here may
  * re-read `location.hash` afterwards.

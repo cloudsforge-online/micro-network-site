@@ -3,7 +3,7 @@
  *
  * `micro-faucet` does not have a module-level route table the way `micro-indexer` does. Its routes
  * are `define(method, path, handler)` calls inside `buildRoutes()`
- * (`faucet/src/server.ts:305-445`), so the line a route is "registered at" is the `define` line
+ * (`faucet/src/server.ts`), so the line a route is "registered at" is the `define` line
  * itself. This file reads those lines out of the service and matches the method and the path
  * against each citation — the same check `test/chainstatus.test.ts` runs against the indexer's
  * `DOMAIN`, adapted to the shape this service actually has rather than to the shape it would be
@@ -39,37 +39,41 @@ const faucetRoot = FAUCET_CANDIDATES.find((p) => existsSync(`${p}/src/server.ts`
 
 const client = readFileSync(here('src/lib/faucet.ts'), 'utf8')
 
-/** The three routes this bundle calls, with the `define` line each was read from. */
-const CALLED: ReadonlyArray<{ method: string; path: string; line: number }> = [
-  { method: 'GET', path: '/v1/faucet', line: 348 },
-  { method: 'POST', path: '/v1/drips', line: 382 },
-  { method: 'GET', path: '/v1/drips/:id', line: 418 },
+/**
+ * The three routes this bundle calls.
+ *
+ * NO LINE NUMBERS. Each entry used to carry the line its `define(` was read from, and micro-faucet
+ * changing its requester hashing moved every route below line 69 by seven — so all three citations
+ * broke at once while nothing in this repository was wrong. Nothing runs this suite when that
+ * service is edited, so it surfaced during a release. Each route is FOUND by searching for its
+ * `define(` instead; see {@link indexOfRoute}.
+ */
+const CALLED: ReadonlyArray<{ method: string; path: string }> = [
+  { method: 'GET', path: '/v1/faucet' },
+  { method: 'POST', path: '/v1/drips' },
+  { method: 'GET', path: '/v1/drips/:id' },
 ]
 
 /** Every route the faucet serves that this bundle does not call, with the reason it does not. */
-const DECLINED: ReadonlyArray<{ method: string; path: string; line: number; why: string }> = [
+const DECLINED: ReadonlyArray<{ method: string; path: string; why: string }> = [
   {
     method: 'OPTIONS',
     path: '/v1/drips',
-    line: 439,
     why: 'the CORS preflight, issued by the browser rather than by application code; calling it explicitly would be a second, pointless request',
   },
   {
     method: 'GET',
     path: '/metrics',
-    line: 322,
     why: 'gated on purpose — an open /metrics publishes the remaining budget, and a browser bundle holds no operator credential and must not',
   },
   {
     method: 'GET',
     path: '/livez',
-    line: 315,
     why: 'a platform probe; rendering it would report that a process is up, which is not a fact about the faucet',
   },
   {
     method: 'GET',
     path: '/readyz',
-    line: 317,
     why: 'a platform probe; Beacon owns the question of whether a service is in the balancer',
   },
 ]
@@ -116,13 +120,19 @@ describe('the faucet client calls only routes it has cited', () => {
     }
   })
 
-  it('cites a line for every route, called and declined', () => {
+  it('names every route it calls or declines, and says which file it read', () => {
+    // This required the client's header to repeat the LINE from the table beside it. micro-faucet
+    // changed its requester hashing, every route below line 69 moved by seven, and all three
+    // citations broke at once — so what is asserted now is that the route is written down where
+    // the REASON for calling or declining it lives, which is the fact this check was standing in for.
     for (const route of [...CALLED, ...DECLINED]) {
-      assert.ok(
-        client.includes(`faucet/src/server.ts:${route.line}`),
-        `${route.method} ${route.path} has no citation in src/lib/faucet.ts`,
-      )
+      const named = new RegExp(`${route.method}[^\\n]*?${route.path}(?![\\w:/-])`)
+      assert.match(client, named, `${route.method} ${route.path} is not written down in src/lib/faucet.ts`)
     }
+    assert.ok(
+      client.includes('faucet/src/server.ts'),
+      'src/lib/faucet.ts no longer says which service source its surface was read from',
+    )
   })
 
   it('gives every declined route a real reason', () => {
@@ -153,7 +163,7 @@ describe('the faucet client calls only routes it has cited', () => {
   })
 
   it('sends no amount, anywhere, under any name', () => {
-    // The rule `faucet/src/requests.ts:126-131` states in the frozen service's words: "every faucet
+    // The rule `faucet/src/requests.ts` states in the frozen service's words: "every faucet
     // that has ever been drained let the caller influence the amount". Asserted as an ABSENCE over
     // the whole client and the page that drives it, because the reflex is to add a field.
     const page = readFileSync(here('src/pages/faucet.tsx'), 'utf8')
@@ -190,8 +200,8 @@ describe('the faucet client calls only routes it has cited', () => {
 
   it('sends the idempotency key as a BODY FIELD and never as a header', () => {
     // `micro-trade` requires an `Idempotency-Key` HEADER on every mutation
-    // (`trade/src/server.ts:840-848`) and `micro-faucet` reads a body field
-    // (`faucet/src/server.ts:393-395`). Two clients that look alike and are not interchangeable is
+    // (`trade/src/server.ts`) and `micro-faucet` reads a body field
+    // (`faucet/src/server.ts`). Two clients that look alike and are not interchangeable is
     // exactly the shape this estate keeps shipping, so both halves are asserted.
     const code = client.replace(/\/\*[\s\S]*?\*\//g, '')
     assert.match(code, /idempotencyKey: input\.idempotencyKey/, 'the key is no longer a body field')
@@ -229,13 +239,29 @@ describe('the cited lines are the lines that define the routes', () => {
     assert.equal(defined.length, 7, `expected seven define() calls, found ${defined.length}`)
   })
 
+  /**
+   * WHERE THE SERVICE REGISTERS A ROUTE — found by what the line SAYS, never by a number here.
+   *
+   * This is what replaced the `line:` in the two tables above. A line number names a position in a
+   * file micro-faucet owns and is free to edit: it changed its requester hashing, every route below
+   * line 69 moved by seven, and all sixty-five citations in this repository broke while nothing
+   * here had changed. The search costs one pass over a file already in memory, cannot go stale, and
+   * still fails — loudly — when a route is DELETED or renamed, which is the fact worth having.
+   */
+  const indexOfRoute = (method: string, path: string): number => {
+    const re = new RegExp(`define\\('${method}', '${path.replace(/[/:]/g, '\\$&')}'`)
+    const found = lines.reduce<number[]>((acc, l, i) => (re.test(l) ? [...acc, i] : acc), [])
+    // Exactly one, or the answer is a guess. Two matches means the anchor is ambiguous and a body
+    // read from the first would be somebody else's handler.
+    assert.equal(found.length, 1, `${method} ${path} matches ${found.length} define() lines, not one`)
+    return found[0] ?? -1
+  }
+
   for (const route of [...CALLED, ...DECLINED]) {
-    it(`${route.method} ${route.path} is defined at faucet/src/server.ts:${route.line}`, () => {
-      const line = lines[route.line - 1] ?? ''
-      assert.match(
-        line,
-        new RegExp(`define\\('${route.method}', '${route.path.replace(/[/:]/g, '\\$&')}'`),
-        `faucet/src/server.ts:${route.line} is:\n  ${line.trim()}`,
+    it(`${route.method} ${route.path} is registered in faucet/src/server.ts`, () => {
+      assert.ok(
+        indexOfRoute(route.method, route.path) >= 0,
+        `${route.method} ${route.path} is not registered by micro-faucet at all`,
       )
     })
   }
@@ -262,8 +288,8 @@ describe('the cited lines are the lines that define the routes', () => {
    * counter over TypeScript with template literals in it is a parser, and a wrong one would read
    * the next handler's `authorise` call as this one's.
    */
-  const bodyOf = (line: number): string => {
-    const start = line - 1
+  const bodyOf = (route: { method: string; path: string }): string => {
+    const start = indexOfRoute(route.method, route.path)
     let end = lines.length
     for (let i = start + 1; i < lines.length; i++) {
       if (/^\s{4}define\('/.test(lines[i] ?? '')) {
@@ -280,7 +306,7 @@ describe('the cited lines are the lines that define the routes', () => {
     // thing and would otherwise be invisible here.
     for (const route of CALLED) {
       assert.doesNotMatch(
-        bodyOf(route.line),
+        bodyOf(route),
         /await authorise\(ctx, deps\)/,
         `${route.method} ${route.path} has been GATED — this page calls it with no credential`,
       )
@@ -291,7 +317,7 @@ describe('the cited lines are the lines that define the routes', () => {
     const metrics = DECLINED.find((r) => r.path === '/metrics')
     assert.ok(metrics)
     assert.match(
-      bodyOf(metrics.line),
+      bodyOf(metrics),
       /await authorise\(ctx, deps\)/,
       '/metrics is no longer gated — the budget is now public, which is a finding for micro-faucet',
     )
@@ -301,7 +327,7 @@ describe('the cited lines are the lines that define the routes', () => {
     const preflight = DECLINED.find((r) => r.method === 'OPTIONS')
     assert.ok(preflight)
     assert.match(
-      bodyOf(preflight.line),
+      bodyOf(preflight),
       /if \(!origin \|\| !deps\.corsOrigins\.includes\(origin\)\) return \{ status: 403 \}/,
       'the preflight no longer checks the allowlist',
     )
@@ -310,7 +336,7 @@ describe('the cited lines are the lines that define the routes', () => {
   it('the drip handler still reads ONLY address and idempotencyKey', () => {
     const drip = CALLED.find((r) => r.method === 'POST')
     assert.ok(drip)
-    const body = bodyOf(drip.line)
+    const body = bodyOf(drip)
     const reads = [...body.matchAll(/payload\['([a-zA-Z]+)'\]/g)].map((m) => m[1]).sort()
     assert.deepEqual(
       [...new Set(reads)],

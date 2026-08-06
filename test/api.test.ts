@@ -93,10 +93,10 @@ describe('the public calls send no credential', () => {
 
   it('no public call sets any request header beyond accept and content-type', () => {
     // Neither service reads one. `micro-indexer` reads `authorization` on a domain route and
-    // nothing else (`indexer/src/server.ts:793`); `micro-faucet` reads `authorization` and
-    // `x-faucet-token` on /metrics only (`faucet/src/server.ts:519`, `:503`). An `Idempotency-Key`
+    // nothing else (`indexer/src/server.ts`); `micro-faucet` reads `authorization` and
+    // `x-faucet-token` on /metrics only (`faucet/src/server.ts`). An `Idempotency-Key`
     // in particular would be silently ignored — the faucet's is a BODY FIELD
-    // (`faucet/src/server.ts:393-395`).
+    // (`faucet/src/server.ts`).
     signedIn()
     stub = installFetch(() => json(200, {}))
     return requestDrip({ address: '0x0000000000000000000000000000000000000001', idempotencyKey: 'k' }).then(
@@ -140,7 +140,7 @@ describe('the request URLs are the ones the registry resolves', () => {
 
   it('…and the basePath is not in the path, which would be a route nobody serves', () => {
     // `${hosts.faucet}/v1/faucet` would be `/faucet/v1/faucet`. Every path micro-faucet serves
-    // begins `/v1` (`faucet/src/server.ts:308-444`).
+    // begins `/v1` (`faucet/src/server.ts`).
     signedIn()
     stub = installFetch(() => json(200, {}))
     return getFaucetTerms().then(() => {
@@ -213,7 +213,7 @@ describe('the 401 guard is the template’s, not a fork of it', () => {
   it('does not expire a session that never existed', () => {
     // `auth` means "attach a bearer IF we hold one", not "we hold one". Expiring a session that
     // never existed dispatches `cf:auth-expired` and signs a user out of nothing. Reported by
-    // micro-explorer-web and fixed upstream at `web-template/src/lib/api.ts:344`.
+    // micro-explorer-web and fixed upstream at `web-template/src/lib/api.ts`.
     installWindow('https://network.cloudsforge.online/chain')
     installStorage({})
     stub = installFetch(() => json(401, { error: { code: 'unauthenticated', message: 'no' } }))

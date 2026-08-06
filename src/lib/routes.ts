@@ -22,10 +22,10 @@
  *
  * ── `/faucet` IS A ROUTE HERE BECAUSE THE REGISTRY SAYS IT IS ─────────────────────────────────
  *
- * `ui/packages/ui/src/surfaces.ts:365-380` gives the `faucet` surface `subdomain: 'network'` and
+ * `ui/packages/ui/src/surfaces.ts` gives the `faucet` surface `subdomain: 'network'` and
  * `basePath: '/faucet'`, with the reason on the line above the key: "A route on the Network site
  * rather than a host of its own: a faucet is one form on one page and does not warrant a
- * certificate." `cloudsforgeHosts()` appends that basePath (`ui/packages/ui/src/index.tsx:127-131`),
+ * certificate." `cloudsforgeHosts()` appends that basePath (`ui/packages/ui/src/index.tsx`),
  * so every surface in the estate that links to the faucet resolves `https://network.<apex>/faucet`.
  *
  * A Network site without that route would make every one of those links a 404 — and this bundle's
@@ -47,13 +47,13 @@ export interface AppRoute {
    *
    * **Every route on this surface is public, and every one of them works that way.** The chain read
    * behind `/chain` is anonymous — `authoriseRead` returns `null` for a caller with no token and
-   * lets the handler run (`indexer/src/server.ts:792-801`) — and all three faucet routes are
-   * unauthenticated by the service's own decision (`faucet/src/server.ts:341-342`, `:407-409`).
+   * lets the handler run (`indexer/src/server.ts`) — and all three faucet routes are
+   * unauthenticated by the service's own decision (`faucet/src/server.ts`).
    * This bundle attaches no bearer to any of them.
    *
    * There is no `ProtectedRoute` in this repository, and `test/routes.test.ts` asserts its absence
    * so that adding one is a decision somebody has to argue for. A gate on this surface would demand
-   * a session before showing what a public chain is — and `docs/ecosystem/15-monetisation-model.md:50`
+   * a session before showing what a public chain is — and `docs/ecosystem/15-monetisation-model.md`
    * settles the neighbouring case in one line: "A public chain whose explorer is paywalled is not a
    * public chain."
    */
@@ -99,7 +99,7 @@ export const DEEP_LINK_PATH = '/faucet'
  * Where the record-by-record chain explorer lives.
  *
  * A KEY, not a URL. `micro-explorer-web` is the surface that reads the chain index block by block
- * (`ui/packages/ui/src/surfaces.ts:437-462`), and this site links to it rather than reimplementing
+ * (`ui/packages/ui/src/surfaces.ts`), and this site links to it rather than reimplementing
  * it — see the declination list in `src/lib/chainstatus.ts`. Naming the registry key keeps the
  * hostname out of this bundle; the `rules` job in CI greps `src` for a literal `cloudsforge.online`
  * and fails on one.

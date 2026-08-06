@@ -3,25 +3,25 @@
  *
  * The bar is `CloudsForgeBar` from @cloudsforge/ui and is never reimplemented. It is passed
  * `PRODUCT` — 'network' — so the switcher resolves this surface's entry and marks it as current.
- * `network` is `inSwitcher: true` (`ui/packages/ui/src/surfaces.ts:198`), which is correct: it is
+ * `network` is `inSwitcher: true` (`ui/packages/ui/src/surfaces.ts`), which is correct: it is
  * one of the six products a person chooses between, unlike the explorer.
  *
  * ── The mark IS rendered here, and that is the difference from the explorer ────────────────────
  *
- * `network` carries `markId: 'mark-network'` (`ui/packages/ui/src/surfaces.ts:196`) and
- * `brand/README.md:36` gives it the **full** set of eight files, all of which exist in
+ * `network` carries `markId: 'mark-network'` (`ui/packages/ui/src/surfaces.ts`) and
+ * `brand/README.md` gives it the **full** set of eight files, all of which exist in
  * `brand/assets/network/`. That is not true of every surface: `explorer` and `status` carry
  * `markId: null` deliberately, because "an explorer is part of Forge Network" and neither claims a
- * mark of its own (`brand/README.md:62-67`), and `micro-explorer-web`'s CI asserts the absence of
+ * mark of its own (`brand/README.md`), and `micro-explorer-web`'s CI asserts the absence of
  * one in its own repository. This surface is the one they belong to.
  *
  * The mark is drawn by the shared `<Mark>` component from the design system rather than by
  * shipping the PNG into the page: it takes a `surface` KEY rather than a `markId`
- * (`ui/packages/ui/src/index.tsx:433-446`), reads `--cf-accent` so it wears this surface's molten
+ * (`ui/packages/ui/src/index.tsx`), reads `--cf-accent` so it wears this surface's molten
  * red without a second copy of the colour, and stays crisp at every size. `hasMark('network')` is
- * true because `MARK_DRAWINGS` has a `network` entry (`ui/packages/ui/src/index.tsx:330`), and
+ * true because `MARK_DRAWINGS` has a `network` entry (`ui/packages/ui/src/index.tsx`), and
  * `test/brand-chrome.test.ts` checks that rather than assuming it — `Mark` renders NOTHING for a
- * surface it has no drawing for (`ui/packages/ui/src/index.tsx:455`), silently, which is exactly
+ * surface it has no drawing for (`ui/packages/ui/src/index.tsx`), silently, which is exactly
  * the shape of failure this estate keeps shipping.
  *
  * The PNGs in `public/` are the browser chrome — the favicons and the Open Graph card — which is
@@ -31,7 +31,7 @@
  *
  * `STANDING_STATE` sits above the page on all five routes rather than only on the home page. A
  * reader arriving on `/mine` from a search result has not read the home page, and would otherwise
- * spend their whole visit believing there is a network to mine on. `hearth/README.md:27` puts the
+ * spend their whole visit believing there is a network to mine on. `hearth/README.md` puts the
  * same section above everything else in its own repository and calls it "Status, before anything
  * else"; this is the same decision, applied to a surface where a reader can arrive anywhere.
  *

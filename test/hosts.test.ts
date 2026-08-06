@@ -189,7 +189,7 @@ describe('a base is resolved by comparing origins', () => {
   it('DROPS a basePath, because a page URL is not an API base', () => {
     // The trap this function exists for: `${hosts.faucet}/v1/drips` is `/faucet/v1/drips`, which
     // micro-faucet does not serve. Every path in its table begins `/v1`
-    // (`faucet/src/server.ts:308-444`).
+    // (`faucet/src/server.ts`).
     const h = hosts({ faucet: 'https://network.example.test/faucet' })
     assert.equal(resolveApiBase('https://other.example.test', h, 'faucet'), 'https://network.example.test')
     assert.equal(resolveApiBase('https://network.example.test', h, 'faucet'), '')

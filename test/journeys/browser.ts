@@ -42,7 +42,7 @@
  * step and no workflow change. The frozen legacy estate reached the same conclusion and recorded
  * it in the `stack` tree, at `infra/beacon/src/browser.js`, lines 9-11.
  *
- * (Written without the usual `file.js:9` suffix on purpose. Several repositories in this estate
+ * (Written without the usual `file.js` suffix on purpose. Several repositories in this estate
  * run a `citations.test.ts` that sweeps for exactly that form and resolves it against a SIBLING
  * checkout; the frozen estate is a different tree, so a citation in that shape is reported as a
  * broken one. Saying where it really lives is the honest fix, not silencing the sweep.)

@@ -9,85 +9,83 @@
  * this estate were built against a surface somebody imagined; one made every on-chain escrow
  * activation fail with a false diagnosis, and one made every ForgeMint project page read "not yet
  * indexed" permanently. `micro-indexer`'s own route table says so in its header
- * (`indexer/src/server.ts:148-162`) and asks to be parsed rather than paraphrased.
+ * (`indexer/src/server.ts`) and asks to be parsed rather than paraphrased.
  *
- * The table is `DOMAIN` at `indexer/src/server.ts:163-174`, one entry per line. Both spellings of
- * every path are mounted, because `PREFIXES` is `['/v1', '']` (`indexer/src/server.ts:144`) and
- * `buildRoutes` loops over it (`indexer/src/server.ts:416-420`). This client uses the `/v1` form:
- * it is the estate convention, and the service's own comment at `:130-133` says the bare form
+ * The table is `DOMAIN` at `indexer/src/server.ts`, one entry per line. Both spellings of
+ * every path are mounted, because `PREFIXES` is `['/v1', '']` (`indexer/src/server.ts`) and
+ * `buildRoutes` loops over it (`indexer/src/server.ts`). This client uses the `/v1` form:
+ * it is the estate convention, and the service's own comment says the bare form
  * exists for the operator runbooks rather than for new callers.
  *
  * ── ONE route is called. NINE are declined, each with a reason ─────────────────────────────────
  *
  * | Method | Path                                                  | Gate                | Verified at               |
  * | ------ | ----------------------------------------------------- | ------------------- | ------------------------- |
- * | GET    | /v1/chains/:chain/:network/status                     | authoriseRead :427  | indexer/src/server.ts:164 |
+ * | GET    | /v1/chains/:chain/:network/status | authoriseRead, in `chainStatus` | indexer/src/server.ts |
  *
  * The six other reads are **anonymous and callable**, and this surface calls none of them. That is
  * a decision about what this page IS, not about what it may do: **`micro-explorer-web` is the
  * surface that reads the chain index record by record**, it is registered separately
- * (`ui/packages/ui/src/surfaces.ts:437-462`), and a second explorer inside the Network site would
+ * (`ui/packages/ui/src/surfaces.ts`), and a second explorer inside the Network site would
  * be a fork of one that already exists and is already tested. This page links to it.
  *
- *   * `GET /v1/addresses/:chain/:network/:address/activity` (`indexer/src/server.ts:165`,
- *     `authoriseRead` at `:439`) — an address feed. This surface has no address to ask about.
- *   * `GET /v1/addresses/:chain/:network/:address/token-balances` (`indexer/src/server.ts:166`,
- *     `authoriseRead` at `:506`) — a holding is an explorer question.
- *   * `GET /v1/transactions/:chain/:network/:hash` (`indexer/src/server.ts:167`, `authoriseRead`
- *     at `:455`) — a record read, and the explorer owns record reads.
- *   * `GET /v1/transactions/:chain/:network/:hash/confirmations` (`indexer/src/server.ts:168`,
- *     `authoriseRead` at `:480`) — a depth VERDICT, which is a decision input. Nothing on this
+ *   * `GET /v1/addresses/:chain/:network/:address/activity` (`indexer/src/server.ts`,
+ *     `authoriseRead`) — an address feed. This surface has no address to ask about.
+ *   * `GET /v1/addresses/:chain/:network/:address/token-balances` (`indexer/src/server.ts`,
+ *     `authoriseRead`) — a holding is an explorer question.
+ *   * `GET /v1/transactions/:chain/:network/:hash` (`indexer/src/server.ts`, `authoriseRead`) — a record read, and the explorer owns record reads.
+ *   * `GET /v1/transactions/:chain/:network/:hash/confirmations` (`indexer/src/server.ts`,
+ *     `authoriseRead`) — a depth VERDICT, which is a decision input. Nothing on this
  *     surface takes a decision, and a page that rendered one would be inviting somebody to.
- *   * `GET /v1/tokens/:chain/:network/:address` (`indexer/src/server.ts:169`, `authoriseRead` at
- *     `:536`) — token state belongs to ForgeMint and the explorer.
- *   * `GET /v1/blocks/:chain/:network/:height` (`indexer/src/server.ts:171`, `authoriseRead` at
- *     `:599`) — a block page here would be a second explorer competing with a tested one.
+ *   * `GET /v1/tokens/:chain/:network/:address` (`indexer/src/server.ts`, `authoriseRead`) — token state belongs to ForgeMint and the explorer.
+ *   * `GET /v1/blocks/:chain/:network/:height` (`indexer/src/server.ts`, `authoriseRead`) — a block page here would be a second explorer competing with a tested one.
  *
  * One further read is declined for a different reason — it is the only domain GET on this service
  * that takes a token:
  *
- *   * `GET /v1/custody/:chain/:network/total` (`indexer/src/server.ts:170`) calls
- *     `authorise(ctx, deps, READ_SCOPE)` (`indexer/src/server.ts:583`). It is Σ confirmed native
+ *   * `GET /v1/custody/:chain/:network/total` (`indexer/src/server.ts`) calls
+ *     `authorise(ctx, deps, READ_SCOPE)` (`indexer/src/server.ts`). It is Σ confirmed native
  *     balance over the estate's custody set — the number `micro-ledger` reconciles its books
  *     against. The rule that opened the other seven reads is that what they return is already
  *     public, because each answers about a block, a hash or an address THE CALLER NAMED; this one
  *     answers about a set only the platform knows, so serving it anonymously would publish the
- *     treasury's size to anyone who can reach the port (`indexer/src/server.ts:556-581`). A public
+ *     treasury's size to anyone who can reach the port (`indexer/src/server.ts`). A public
  *     marketing surface holds no service token, and has nothing to say about the treasury.
  *
  * The two writes are refused to a browser and would be declined even if they were not:
  *
- *   * `POST /v1/watch/:chain/:network/:address` (`indexer/src/server.ts:172`) calls
- *     `authorise(ctx, deps, WRITE_SCOPE)` (`indexer/src/server.ts:616`, scope at `:100`). "Watch
+ *   * `POST /v1/watch/:chain/:network/:address` (`indexer/src/server.ts`) calls
+ *     `authorise(ctx, deps, WRITE_SCOPE)`, whose scope constant is `WRITE_SCOPE` in the same
+ *     file. "Watch
  *     this address" is an operator or a service decision about what this deployment indexes.
- *   * `POST /v1/backfills/:chain/:network` (`indexer/src/server.ts:173`) takes `indexer:write` too
- *     (`indexer/src/server.ts:638`) and enqueues a range walk — which is provider calls, which is
+ *   * `POST /v1/backfills/:chain/:network` (`indexer/src/server.ts`) takes `indexer:write` too
+ *     (`indexer/src/server.ts`) and enqueues a range walk — which is provider calls, which is
  *     money.
  *
- * `/livez`, `/readyz` and `/metrics` (`indexer/src/server.ts:382`, `:392`, `:399`) are the platform
+ * `/livez`, `/readyz` and `/metrics` (`indexer/src/server.ts`) are the platform
  * probes and are not wrapped here either. Every declination above is re-enumerated in
  * `test/chainstatus.test.ts` with the line the handler is declared at and the gate it opens with,
  * so a route this app has never read is a red run rather than an omission somebody has to notice.
  *
  * ── THE READ IS ANONYMOUS, AND THIS CLIENT SENDS NO BEARER ────────────────────────────────────
  *
- * `authoriseRead` (`indexer/src/server.ts:792-801`) reads the `authorization` header and, when
- * there is none, **returns `null` and lets the handler run** (`indexer/src/server.ts:794`). The
- * service's reasoning is in the doc comment above it (`indexer/src/server.ts:763-791`): every read
+ * `authoriseRead` (`indexer/src/server.ts`) reads the `authorization` header and, when
+ * there is none, **returns `null` and lets the handler run** (`indexer/src/server.ts`). The
+ * service's reasoning is in the doc comment above it (`indexer/src/server.ts`): every read
  * answers with a chain fact anyone can obtain by running a Hearth node, this service stores nothing
  * linking an address to a person, and the check that used to sit there was "a lock on a public
  * library".
  *
  * `auth: false` is therefore load-bearing rather than an optimisation. `src/lib/api.ts` attaches a
  * bearer whenever it happens to hold an access token, and **a token that IS presented is still
- * verified**: a service principal without `indexer:read` is a 403 (`indexer/src/server.ts:796-799`)
+ * verified**: a service principal without `indexer:read` is a 403 (`indexer/src/server.ts`)
  * and a broken or expired one is a 401. A reader whose access token had expired would then get a
  * 401 on a page that needs no session at all.
  *
  * ── The amounts rule, inherited even though this file reads no amount ──────────────────────────
  *
  * `reads.ts` puts every amount on the wire as a decimal string and says why in its header
- * (`indexer/src/reads.ts:8-10`): `JSON.stringify` cannot serialise a `bigint` at all, and
+ * (`indexer/src/reads.ts`): `JSON.stringify` cannot serialise a `bigint` at all, and
  * `Number(amount)` silently loses the low digits of any 18-decimal value above about 9 ETH.
  * `ChainStatus` carries no amount — every field on it is a height, a depth, a count or a
  * timestamp — but nothing here parses one with `Number` either, and `src/lib/format.ts` never
@@ -99,9 +97,9 @@ import { chainIndex } from './api.ts'
 /* ══════════════════════════════ scope ══════════════════════════════ */
 
 /**
- * The six chains this service runs, as `indexer/src/chains.ts:52` declares them.
+ * The six chains this service runs, as `indexer/src/chains.ts` declares them.
  *
- * `shard` is deliberately absent upstream and the reason is at `indexer/src/chains.ts:35-37`:
+ * `shard` is deliberately absent upstream and the reason is at `indexer/src/chains.ts`:
  * SHARD exists in `CHAINS` only so that record is total, it never exists on a chain, and "an
  * indexer that accepted it would be advertising an endpoint that can only ever answer empty".
  * Restated here rather than imported, because a browser bundle must not depend on a service's
@@ -110,22 +108,22 @@ import { chainIndex } from './api.ts'
  * `ltc` JOINED ON 2026-08-05 and this list did not, which is exactly the drift that test exists
  * to catch — it went red on the next push rather than at a reader's expense. Litecoin needs no
  * worker of its own upstream: its spec carries `family: 'bitcoin'` and the indexer selects a
- * worker by family (`indexer/src/chains.ts:39-40`). Nothing on THIS surface renders the list —
+ * worker by family (`indexer/src/chains.ts`). Nothing on THIS surface renders the list —
  * Forge Network is `ember` alone (`HEARTH_CHAIN` below) and the custodied chains belong on the
  * explorer — so this entry is a restatement of upstream truth and changes no pixel.
  */
 export const CHAIN_IDS = ['ember', 'eth', 'btc', 'sol', 'xrp', 'ltc'] as const
 export type ChainId = (typeof CHAIN_IDS)[number]
 
-/** `indexer/src/chains.ts:43`. */
+/** `indexer/src/chains.ts`. */
 export const NETWORKS = ['mainnet', 'testnet'] as const
 export type Network = (typeof NETWORKS)[number]
 
 /**
  * The chain this surface is about.
  *
- * Forge Network is Hearth, and Hearth's asset is EMBER — `indexer/src/chains.ts:84-90` maps the
- * `ember` slug to the `EMBER` asset code, and `contracts/packages/chain/src/index.ts:50-62` is the
+ * Forge Network is Hearth, and Hearth's asset is EMBER — `indexer/src/chains.ts` maps the
+ * `ember` slug to the `EMBER` asset code, and `contracts/packages/chain/src/index.ts` is the
  * spec it reads. The other four chains the indexer runs are chains this platform CUSTODIES, not
  * chains it operates, so they belong on the explorer and not here.
  */
@@ -134,8 +132,8 @@ export const HEARTH_CHAIN: ChainId = 'ember'
 /**
  * The unit every route is scoped by.
  *
- * `indexer/src/chains.ts:106-114` says there is no function in that repository that takes a chain
- * without a network, and `indexer/src/chains.ts:12-19` says why: XRP has no network binding today,
+ * `indexer/src/chains.ts` says there is no function in that repository that takes a chain
+ * without a network, and `indexer/src/chains.ts` says why: XRP has no network binding today,
  * so the same seed and the same address exist on testnet and mainnet and a signed Payment is
  * submittable on either. Every request from this app carries both segments for the same reason.
  */
@@ -152,18 +150,18 @@ export interface Scope {
  * THIS WAS TESTNET-FIRST, AND THE REASON IT WAS HAS INVERTED. The comment here read "neither scope
  * has a chain behind it today, and asking about mainnet first would put the more absent of the two
  * at the top", citing `hearth/MAP.md` for "there is no live endpoint, no testnet and no mainnet".
- * Half of that is now false. `deploy/cloudflared/config.mainnet.public.yml:96` publishes the
+ * Half of that is now false. `deploy/cloudflared/config.mainnet.public.yml` publishes the
  * mainnet JSON-RPC hostname on the public tunnel and it answers `eth_chainId` from off the estate,
  * so mainnet is the scope with a chain behind it.
  *
  * **AND THE SECOND HALF HAS NOW INVERTED TOO, WHICH CHANGES THE REASON WITHOUT CHANGING THE
  * ORDER.** This paragraph read: "Testnet is not merely unpublished — it is unreachable for a
- * reason that has nothing to do with Hearth: `deploy/gateway/dynamic/tls.yml:76` records that
+ * reason that has nothing to do with Hearth: `deploy/gateway/dynamic/tls.yml` records that
  * Cloudflare's Universal SSL is one label deep, so every two-label name under the testnet apex
  * fails its TLS handshake before any request is made." The TLS fact is still true and the
  * conclusion no longer follows from it: testnet hostnames stopped being two labels deep. An
  * environment is now a SUFFIX inside the first label (`<surface>-testnet.<apex>`,
- * `ui/packages/ui/src/surfaces.ts:995-1010`), the wildcard covers them, and
+ * `ui/packages/ui/src/surfaces.ts`), the wildcard covers them, and
  * `rpc-testnet.cloudsforge.online` answers `eth_chainId` with `0x1cf4` from off the estate.
  *
  * So BOTH scopes now have a chain behind them, and "the more absent of the two" is no longer the
@@ -179,7 +177,7 @@ export const HEARTH_SCOPES: readonly Scope[] = [
 
 /* ══════════════════════════════ what comes back ══════════════════════════════ */
 
-/** `indexer/src/reads.ts:60-72`. */
+/** `indexer/src/reads.ts`. */
 export interface ProviderView {
   readonly provider: string
   readonly host: string
@@ -194,7 +192,7 @@ export interface ProviderView {
   readonly rateLimitedUntil: string | null
 }
 
-/** One recorded reorg, as `status` reports it (`indexer/src/reads.ts:91-100`, `:326-335`). */
+/** One recorded reorg, as `status` reports it (`indexer/src/reads.ts`). */
 export interface ReorgView {
   readonly id: string
   readonly detectedAt: string
@@ -208,18 +206,18 @@ export interface ReorgView {
 }
 
 /**
- * The state of one chain, as `status` builds it (`indexer/src/reads.ts:74-101`, `:288-337`).
+ * The state of one chain, as `status` builds it (`indexer/src/reads.ts`).
  *
  * ══════════════════════════════════════════════════════════════════════════════════════════════
  * **EVERY HEIGHT ON THIS SHAPE IS NULLABLE, AND THE NULL IS THE ANSWER THIS PAGE MOST OFTEN GETS.**
  *
  * `status` reads a checkpoint row and returns `checkpoint?.tipHeight ?? null` and
- * `checkpoint?.height ?? null` (`indexer/src/reads.ts:300-301`). A deployment that has never
+ * `checkpoint?.height ?? null` (`indexer/src/reads.ts`). A deployment that has never
  * followed `ember:testnet` has no checkpoint row, so it answers **200** with `tipHeight: null`,
  * `indexedHeight: null`, `lagBlocks: null`, `providers: []` and `recentReorgs: []`. That is not a
  * failure and it is not "zero": it is the service saying it has not observed anything.
  *
- * `indexer/src/reads.ts:87` states the rule for one of them in the service's own words — "Null
+ * `indexer/src/reads.ts` states the rule for one of them in the service's own words — "Null
  * when no tip has ever been observed; a lag of zero would be a lie, not a default" — and this file
  * applies it to all of them. `figureOf()` below is the only way a number reaches the screen, and
  * it cannot return one from a null. Nothing in this bundle writes `?? 0` against a height.
@@ -227,7 +225,7 @@ export interface ReorgView {
  *
  * `indexedHeight` and `tipHeight` are different numbers and the difference is the whole point.
  * `indexedHeight` is the highest canonical block this service has walked and would have detected a
- * reorg in; `tipHeight` is what a provider last claimed. `indexer/src/reads.ts:24-27` says counting
+ * reorg in; `tipHeight` is what a provider last claimed. `indexer/src/reads.ts` says counting
  * against the second "over-reports depth, and over-reporting depth credits early". This app renders
  * both, always, and never one without the other.
  */
@@ -236,7 +234,7 @@ export interface ChainStatus {
   readonly network: string
   readonly family: string
   readonly asset: string
-  /** Ember mainnet is 7411, testnet 7412 (`contracts/packages/chain/src/index.ts:58`). */
+  /** Ember mainnet is 7411, testnet 7412 (`contracts/packages/chain/src/index.ts`). */
   readonly chainId: number | null
   readonly requiredConfirmations: number
   readonly reorgAlarmDepth: number
@@ -258,8 +256,8 @@ export interface ChainStatus {
 /**
  * WHY A NUMBER ON THIS PAGE IS A TAGGED UNION RATHER THAN `number | null`.
  *
- * `docs/ecosystem/01-product-vision.md:126` is principle 5, "Honest copy", and the estate's status
- * page turned it into a structural property rather than a habit: `status-web/src/lib/degrade.ts:24-26`
+ * `docs/ecosystem/01-product-vision.md` is principle 5, "Honest copy", and the estate's status
+ * page turned it into a structural property rather than a habit: `status-web/src/lib/degrade.ts`
  * records that **no branch of its failure reducer can produce `operational`**, so green-on-unknown
  * is unreachable rather than merely unlikely.
  *
@@ -303,7 +301,7 @@ export const PENDING: Figure = { state: 'pending' }
  * Each path is written out SEGMENT BY SEGMENT, with no helper standing for `chain/network`.
  *
  * `micro-market`'s guard learned this the expensive way and wrote it down
- * (`market/src/indexerclient.test.ts:251-259`): a `${scope}` holding `chain/network` is ONE
+ * (`market/src/indexerclient.test.ts`): a `${scope}` holding `chain/network` is ONE
  * template segment, so `/transactions/${scope}/${hash}/confirmations` collapses to five segments —
  * which is exactly the shape of `/transactions/:chain/:network/:hash`, a DIFFERENT route. The
  * checker then matched it against the wrong pattern and reported it fine. A shape check can only
@@ -329,16 +327,16 @@ function publicRead<T>(path: string, opts: { signal?: AbortSignal } = {}) {
 }
 
 /**
- * `GET /v1/chains/:chain/:network/status` — `indexer/src/server.ts:164`.
+ * `GET /v1/chains/:chain/:network/status` — `indexer/src/server.ts`.
  *
- * Authenticates: `authoriseRead(ctx, deps)` at `indexer/src/server.ts:427`. Anonymous is served
- * (`indexer/src/server.ts:794`), and this call presents nothing.
+ * Authenticates: `authoriseRead(ctx, deps)` at `indexer/src/server.ts`. Anonymous is served
+ * (`indexer/src/server.ts`), and this call presents nothing.
  *
  * A chain this estate does not run is a **404 `unknown_chain`** rather than a 400, and the service
- * says why (`indexer/src/server.ts:664-667`): the path names a resource that does not exist, and a
+ * says why (`indexer/src/server.ts`): the path names a resource that does not exist, and a
  * caller asking for `/chains/doge/mainnet/status` "has not made a malformed request, it has asked
  * for a chain this estate does not run". `ember` is one of the five it runs
- * (`indexer/src/chains.ts:41`), so this page's own two scopes cannot produce that answer — but a
+ * (`indexer/src/chains.ts`), so this page's own two scopes cannot produce that answer — but a
  * 404 arriving anyway would mean the chain list changed under this bundle, and `src/pages/chain.tsx`
  * branches on the CODE rather than on the status for exactly that reason.
  */

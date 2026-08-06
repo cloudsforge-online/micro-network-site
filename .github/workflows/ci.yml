@@ -46,13 +46,13 @@
 #
 # Re-checked against micro-org rather than believed:
 #
-#   * the single checkout is fixed. web-ci.yml:88-115 checks the app out into `app/`, micro-ui into
+#   * the single checkout is fixed. web-ci.yml checks the app out into `app/`, micro-ui into
 #     `ui/` beside it, and installs THE SIBLING FIRST, because `link:` resolves to the sibling's own
 #     node_modules — the shape of the `check:` job below. micro-ui is public now, so even the
 #     `estate_token` fallback to `github.token` resolves.
-#   * the deep-route probe is fixed, and inverted. web-ci.yml:290-297 REQUIRES an unknown path to
+#   * the deep-route probe is fixed, and inverted. web-ci.yml REQUIRES an unknown path to
 #     answer 404 and names `try_files $uri /index.html` as the thing not to do; the 200 is now asked
-#     only of the optional `deep-link-path` input (:299-309), a route the app really has.
+#     only of the optional `deep-link-path` input, a route the app really has.
 #
 # So the two things that made a bespoke `check:` and `image:` unavoidable are gone. This file is
 # still not deleted, because what remains is not a workaround: `rules:` (line 711 below) was
@@ -107,10 +107,10 @@ jobs:
       # THE TWO SERVICES THIS CLIENT IS BUILT AGAINST, CHECKED OUT SO THE CITATIONS CAN BE VERIFIED.
       #
       # `test/chainstatus.test.ts` reads `indexer/src/server.ts`, `reads.ts`, `chains.ts` and
-      # `env.ts` and requires that every route this bundle calls OR DECLINES is registered at the
-      # line its citation names, that each of the nine domain routes still opens with the gate this
-      # app believes, and that `status` still returns null rather than zero for an unobserved
-      # height — which is the fact the whole `Figure` union rests on.
+      # `env.ts` and requires that every route this bundle calls OR DECLINES is registered by the
+      # service — found by searching its DOMAIN table, never by line — that each of the ten domain
+      # routes still opens with the gate this app believes, and that `status` still returns null
+      # rather than zero for an unobserved height, which is the fact the `Figure` union rests on.
       #
       # `test/faucet.test.ts` does the same against `faucet/src/server.ts`, whose routes are
       # `define()` calls rather than a table, so the checker had to be written for the shape that
@@ -343,19 +343,13 @@ jobs:
             echo "::error::micro-indexer was not checked out; the route citations were never verified"
             exit 1
           }
-          # ── The line is READ out of the test, never written down here ──────────────────────────
+          # ── THERE IS NO LINE NUMBER TO READ ANY MORE, AND THAT IS THE POINT ────────────────────
           #
-          # Hardcoding `154` in this file makes it a THIRD copy of a citation that already lives in
-          # two places, and the copy is the one that goes stale. micro-mint-web hardcoded exactly
-          # this: when the service's table moved, its sed matched nothing, the suite passed
-          # UNMUTATED, and the step failed with the diagnosis "the cross-check is not reading the
-          # service" — which was false, and sent the reader to the wrong repository.
-          cited=$(grep -oE "path: '/chains/:chain/:network/status', line: [0-9]+" test/chainstatus.test.ts \
-                  | grep -oE '[0-9]+$')
-          [ -n "${cited:-}" ] || {
-            echo "::error::no citation for GET /chains/:chain/:network/status in test/chainstatus.test.ts; the surface table has changed shape"
-            exit 1
-          }
+          # This pulled the cited line for GET /chains/:chain/:network/status out of the test and
+          # grepped the output for it. The line number was itself the defect: it named a position in
+          # a file micro-indexer owns, so an edit that only MOVED its route table turned this
+          # repository red while nothing here was wrong. The suite now finds each route in the
+          # service's own DOMAIN table and follows it to the handler the service wires it to.
           out=$(node --import tsx --test test/chainstatus.test.ts 2>&1 || true)
           # `grep -q PATTERN <<<"$var"` rather than `printf '%s\n' "$var" | grep -q PATTERN`.
           # grep -q exits on its first match by design; the producer then writes into a closed pipe,
@@ -366,11 +360,11 @@ jobs:
             echo "::error::the route cross-check skipped itself while micro-indexer was present"
             exit 1
           fi
-          grep -q "is registered at indexer/src/server.ts:${cited}" <<<"$out" || {
+          grep -q "is registered in indexer/src/server.ts" <<<"$out" || {
             echo "::error::the route cross-check did not run against indexer/src/server.ts"
             exit 1
           }
-          # One called route plus eight declined ones, each asserted against its own line.
+          # One called route plus nine declined ones, each looked up in the service.
           #
           # DEDUPED before counting. node:test names each subtest twice — once as it runs and once
           # in the summary — so a raw `grep -c` reports double. The threshold would still pass, so
@@ -378,14 +372,14 @@ jobs:
           # whole repository is built to avoid. (micro-trade-web found and fixed this in its own
           # workflow.)
           count=$(printf '%s\n' "$out" \
-                  | grep -oE 'is registered at indexer/src/server\.ts:[0-9]+' | sort -u | wc -l | tr -d ' ')
-          [ "$count" -ge 9 ] || {
-            echo "::error::only $count route citations were verified; the indexer surface has nine"
+                  | grep -oE '[A-Z]+ /[^ ]+ is registered in indexer/src/server\.ts' | sort -u | wc -l | tr -d ' ')
+          [ "$count" -ge 10 ] || {
+            echo "::error::only $count routes were checked against the service; the indexer surface has ten"
             exit 1
           }
-          echo "ok: $count cited indexer routes verified against the service that serves them"
+          echo "ok: $count indexer routes verified against the service that serves them"
 
-      - name: …and it would have noticed a wrong citation
+      - name: …and it would have noticed a route the service does not serve
         working-directory: network-site
         run: |
           set -euo pipefail
@@ -393,26 +387,30 @@ jobs:
           restore() { cp "$RUNNER_TEMP/chainstatus.test.ts.orig" test/chainstatus.test.ts; }
           trap restore EXIT
 
-          # Read the cited line and bend THAT, rather than naming a number here. A `sed` that names
-          # a line the file no longer carries is a silent no-op: the suite then passes UNCHANGED and
-          # this step reports "the cross-check passed a citation off by one line", accusing a
-          # correct test of being fake. micro-mint-web shipped precisely that. Deriving the number
-          # makes the mutation real, and the `cmp` below makes "the mutation happened" a CHECKED
-          # FACT rather than an assumption.
-          cited=$(grep -oE "path: '/chains/:chain/:network/status', line: [0-9]+" test/chainstatus.test.ts \
-                  | grep -oE '[0-9]+$')
-          [ -n "${cited:-}" ] || { echo "::error::no citation to bend"; exit 1; }
-          bent=$((cited + 1))
-          sed -i "s|path: '/chains/:chain/:network/status', line: ${cited}|path: '/chains/:chain/:network/status', line: ${bent}|" test/chainstatus.test.ts
+          # THE MUTATION IS A PATH NOW, NOT A LINE. Bending a line number tested that the suite read
+          # a particular POSITION in the service; bending a path tests that it read the service at
+          # all, which is the property worth having and the only one that survives micro-indexer
+          # being edited. /chains/:chain/:network/status is a route the service really registers, so
+          # renaming it to one it does not must turn this suite red.
+          #
+          # The mutation is asserted to have HAPPENED before its effect is judged. micro-mint-web
+          # shipped a sed that matched nothing: the suite then passed UNMUTATED and the step
+          # reported "the cross-check is not reading the service", which was false and sent the
+          # reader to the wrong repository.
+          grep -q "path: '/chains/:chain/:network/status'" test/chainstatus.test.ts || {
+            echo "::error::GET /chains/:chain/:network/status is not in the surface table; it has changed shape"
+            exit 1
+          }
+          sed -i "s|path: '/chains/:chain/:network/status'|path: '/chains/:chain/:network/status-that-does-not-exist'|" test/chainstatus.test.ts
           if cmp -s test/chainstatus.test.ts "$RUNNER_TEMP/chainstatus.test.ts.orig"; then
             echo "::error::the mutation changed nothing, so this step proves nothing"
             exit 1
           fi
           if node --import tsx --test test/chainstatus.test.ts >/dev/null 2>&1; then
-            echo "::error::the cross-check passed with the status route cited at ${bent} instead of ${cited} — it is not reading the service"
+            echo "::error::the cross-check passed with a route micro-indexer does not serve — it is not reading the service"
             exit 1
           fi
-          echo "ok: moving one citation from ${cited} to ${bent} turns the suite red, so a pass is evidence"
+          echo "ok: naming a route the service does not serve turns the suite red, so a pass is evidence"
 
       - name: The faucet citations were checked against the real service
         working-directory: network-site
@@ -428,12 +426,12 @@ jobs:
             exit 1
           fi
           count=$(printf '%s\n' "$out" \
-                  | grep -oE 'is defined at faucet/src/server\.ts:[0-9]+' | sort -u | wc -l | tr -d ' ')
+                  | grep -oE '[A-Z]+ /[^ ]+ is registered in faucet/src/server\.ts' | sort -u | wc -l | tr -d ' ')
           [ "$count" -ge 7 ] || {
-            echo "::error::only $count faucet route citations were verified; the surface has seven"
+            echo "::error::only $count faucet routes were checked against the service; the surface has seven"
             exit 1
           }
-          echo "ok: $count cited faucet routes verified against the service that serves them"
+          echo "ok: $count faucet routes verified against the service that serves them"
 
       # ── The authority contract must be a CHECKED fact, not a paragraph ───────────────────────
       #
@@ -806,8 +804,8 @@ jobs:
 
       - name: Nothing is gated behind a session
         # Every route this bundle calls is anonymous — the chain read through `authoriseRead`
-        # (indexer/src/server.ts:708-717) and the three faucet routes by that service's own
-        # decision (faucet/src/server.ts:334-335). Asserted as an ABSENCE, because the reflex is to
+        # (indexer/src/server.ts) and the three faucet routes by that service's own
+        # decision (faucet/src/server.ts). Asserted as an ABSENCE, because the reflex is to
         # add one back.
         #
         # COMMENTS STRIPPED FIRST. app.tsx, auth.tsx and routes.ts all NAME the thing they refuse
@@ -824,20 +822,35 @@ jobs:
           done
           echo "ok: every route renders for everybody, with no session and no bearer"
 
-      - name: Every route this client calls cites the line that serves it
+      - name: Every route this client calls names the file that serves it
         # The rule the two route tests enforce, restated so that deleting them does not delete it.
-        # Every `/v1/...` path must live in a file that also carries a `<service>/src/server.ts:<line>`
-        # citation, and no page may call one directly.
+        # No page may call a `/v1/...` path directly; every call goes through a client module that
+        # says which service source its surface was read from.
+        #
+        # IT USED TO COUNT `<service>/src/server.ts:<line>` CITATIONS AND REQUIRE NINE AND SEVEN.
+        # That made a line number a condition of the build — a position in a file micro-indexer and
+        # micro-faucet own and edit without ever running this workflow. micro-faucet changing its
+        # requester hashing moved every route below line 69 by seven and broke all of them at once.
+        # What replaces it counts ROUTES named in the client, which is what the citation was
+        # standing in for and what a reader actually needs.
         run: |
           set -uo pipefail
-          indexer=$(grep -coE 'indexer/src/server\.ts:[0-9]+' src/lib/chainstatus.ts || true)
+          grep -q 'indexer/src/server.ts' src/lib/chainstatus.ts || {
+            echo "::error::src/lib/chainstatus.ts no longer says which service source its surface was read from"
+            exit 1
+          }
+          indexer=$(grep -coE '/v1/(chains|addresses|transactions|tokens|blocks|custody|watch|backfills)/' src/lib/chainstatus.ts || true)
           if [ "${indexer:-0}" -lt 9 ]; then
-            echo "::error::src/lib/chainstatus.ts carries ${indexer:-0} route citations; the indexer surface has nine"
+            echo "::error::src/lib/chainstatus.ts names ${indexer:-0} indexer routes; the surface has ten"
             exit 1
           fi
-          faucet=$(grep -coE 'faucet/src/server\.ts:[0-9]+' src/lib/faucet.ts || true)
+          grep -q 'faucet/src/server.ts' src/lib/faucet.ts || {
+            echo "::error::src/lib/faucet.ts no longer says which service source its surface was read from"
+            exit 1
+          }
+          faucet=$(grep -coE '/v1/(faucet|drips)|/(metrics|livez|readyz)\b' src/lib/faucet.ts || true)
           if [ "${faucet:-0}" -lt 7 ]; then
-            echo "::error::src/lib/faucet.ts carries ${faucet:-0} route citations; the faucet surface has seven"
+            echo "::error::src/lib/faucet.ts names ${faucet:-0} faucet routes; the surface has seven"
             exit 1
           fi
           if grep -rn --include='*.tsx' -E "(chainIndex|faucet)<[^>]*>\(\s*[\`'\"]/v1/" src; then
@@ -849,7 +862,7 @@ jobs:
       - name: The scope is always two path segments
         # A helper standing for `chain/network` hides a segment, and a path one segment short of the
         # route it means can silently match a DIFFERENT route — measured in
-        # market/src/indexerclient.test.ts:328-341.
+        # market/src/indexerclient.test.ts.
         #
         # COMMENTS STRIPPED FIRST. src/lib/chainstatus.ts QUOTES `${scope}` in order to explain why
         # it is banned, so a raw grep matches the explanation and fails a correct file. A rule that
@@ -930,7 +943,7 @@ jobs:
 
       - name: This surface uses the shared form controls, not a local copy
         # `.cf-input`, `.cf-select` and the `--mono` modifier exist upstream now
-        # (ui/packages/ui/src/ui.css:174-192). Five frontends each wrote their own before that, and
+        # (ui/packages/ui/src/ui.css). Five frontends each wrote their own before that, and
         # two had already drifted. A local copy here would be the sixth.
         run: |
           set -uo pipefail
@@ -1052,7 +1065,7 @@ jobs:
           # The brand chrome is SERVED by the image, not merely committed to the repository. The web
           # template's Dockerfile once did not copy public/ into the build context, so four frontends
           # shipped an image with no icon in it while their own brand test passed. Fixed upstream at
-          # micro-web-template/Dockerfile:39; this probe is what would have caught it.
+          # micro-web-template/Dockerfile; this probe is what would have caught it.
           for asset in favicon-32x32.png favicon-192x192.png favicon-512x512.png og-1200x630.png; do
             code=$(curl -s -m 5 -o /dev/null -w '%{http_code}' "http://127.0.0.1:8080/$asset" || true)
             [ "$code" = "200" ] || { echo "::error::/$asset returned $code from the image"; fail=1; }
@@ -1094,12 +1107,12 @@ jobs:
   # already drifted:
   #
   #   generator  `cfctl release` pins one image per deployable, the name from
-  #              org/tools/registry.ts:367-369 (`ghcr.io/<org>/<repo.repo>`, which is why the package
+  #              org/tools/registry.ts (`ghcr.io/<org>/<repo.repo>`, which is why the package
   #              is micro-<app> and not <app>) and the tag from that repository's package.json
-  #              version, org/tools/cfctl.ts:962-968.
+  #              version, org/tools/cfctl.ts.
   #   verifier   `cfctl release --verify` runs `docker manifest inspect` on EVERY entry and returns
-  #              non-zero if one cannot be pulled, org/tools/cfctl.ts:997-1038.
-  #   deployer   deploy/scripts/release-deploy.sh:99-124 refuses to change anything while any image
+  #              non-zero if one cannot be pulled, org/tools/cfctl.ts.
+  #   deployer   deploy/scripts/release-deploy.sh refuses to change anything while any image
   #              is missing.
   #
   # A frontend with no producer was therefore a manifest entry that could never verify.

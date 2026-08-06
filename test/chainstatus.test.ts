@@ -12,7 +12,7 @@
  * **1. WHOLE PATH SHAPES, NEVER PREFIXES AND NEVER A SEGMENT COUNT.** `micro-market`'s first guard
  * matched `path.startsWith(servedPrefix)` and judged zero of two genuinely dead paths as unserved,
  * because both began with a prefix the indexer really does serve
- * (`market/src/indexerclient.test.ts:229-239`). Its segment helper then collapsed
+ * (`market/src/indexerclient.test.ts`). Its segment helper then collapsed
  * `/transactions/${scope}/${hash}/confirmations` to five segments — exactly the shape of a
  * DIFFERENT route — and reported it fine. The corrected `matches` is copied from that file rather
  * than invented a third time.
@@ -94,12 +94,8 @@ type Gate = 'authoriseRead' | 'authorise:READ_SCOPE' | 'authorise:WRITE_SCOPE'
 const CALLED: ReadonlyArray<{
   method: string
   path: string
-  line: number
-  handler: number
   gate: Gate
-}> = [
-  { method: 'GET', path: '/chains/:chain/:network/status', line: 164, handler: 426, gate: 'authoriseRead' },
-]
+}> = [{ method: 'GET', path: '/chains/:chain/:network/status', gate: 'authoriseRead' }]
 
 /**
  * Every route the indexer serves that this bundle does NOT call, each with the reason.
@@ -111,84 +107,65 @@ const CALLED: ReadonlyArray<{
 const DECLINED: ReadonlyArray<{
   method: string
   path: string
-  line: number
-  handler: number
   gate: Gate
   why: string
 }> = [
   {
     method: 'GET',
     path: '/addresses/:chain/:network/:address/activity',
-    line: 165,
-    handler: 438,
     gate: 'authoriseRead',
     why: 'anonymous and callable; micro-explorer-web is the surface that reads the index record by record',
   },
   {
     method: 'GET',
     path: '/addresses/:chain/:network/:address/token-balances',
-    line: 166,
-    handler: 505,
     gate: 'authoriseRead',
     why: 'anonymous and callable; a balance is an explorer question, and this surface has no address to ask about',
   },
   {
     method: 'GET',
     path: '/transactions/:chain/:network/:hash',
-    line: 167,
-    handler: 454,
     gate: 'authoriseRead',
     why: 'anonymous and callable; the explorer owns record reads',
   },
   {
     method: 'GET',
     path: '/transactions/:chain/:network/:hash/confirmations',
-    line: 168,
-    handler: 479,
     gate: 'authoriseRead',
     why: 'anonymous and callable; a depth verdict is a decision input, and nothing on this surface takes a decision',
   },
   {
     method: 'GET',
     path: '/tokens/:chain/:network/:address',
-    line: 169,
-    handler: 535,
     gate: 'authoriseRead',
     why: 'anonymous and callable; token state belongs to ForgeMint and the explorer, not to a page about the chain',
   },
   {
     method: 'GET',
     path: '/blocks/:chain/:network/:height',
-    line: 171,
-    handler: 598,
     gate: 'authoriseRead',
     why: 'anonymous and callable; a block page here would be a second explorer competing with a tested one',
   },
   {
     method: 'GET',
     path: '/custody/:chain/:network/total',
-    line: 170,
-    handler: 582,
     gate: 'authorise:READ_SCOPE',
     why:
       'indexer:read, and the only domain GET on this service that takes a token. It is the ' +
       'estate treasury total, gated because it answers about a SET only the platform knows ' +
-      'rather than about something the caller named (indexer/src/server.ts:556-581). A public ' +
+      'rather than about something the caller named (see custodyTotal in ' +
+      'indexer/src/server.ts). A public ' +
       'marketing surface holds no service token and has nothing to say about the treasury.',
   },
   {
     method: 'POST',
     path: '/watch/:chain/:network/:address',
-    line: 172,
-    handler: 615,
     gate: 'authorise:WRITE_SCOPE',
     why: 'indexer:write — enlarging what a shared deployment indexes is not a browser decision',
   },
   {
     method: 'POST',
     path: '/backfills/:chain/:network',
-    line: 173,
-    handler: 637,
     gate: 'authorise:WRITE_SCOPE',
     why: 'indexer:write — enqueues a range walk, with a cost attached',
   },
@@ -201,7 +178,7 @@ const BOTH_SPELLINGS = [...CALLED, ...DECLINED].flatMap((r) => [r.path, `/v1${r.
  * Does a requested path match a served pattern? Same segment count, and every segment agrees.
  *
  * **Segment counts, never prefixes**, and copied verbatim from
- * `market/src/indexerclient.test.ts:241-249` rather than written again. The version that shipped
+ * `market/src/indexerclient.test.ts` rather than written again. The version that shipped
  * first there matched by prefix and passed both of the dead paths it existed to catch.
  */
 function matches(requested: string, pattern: string): boolean {
@@ -219,7 +196,7 @@ function matches(requested: string, pattern: string): boolean {
  *
  * So a helper standing for two — a `${scope}` holding `chain/network` — produces a path one segment
  * short of every pattern and is refused rather than guessed at
- * (`market/src/indexerclient.test.ts:251-259`).
+ * (`market/src/indexerclient.test.ts`).
  */
 const placeholder = (path: string): string => path.replace(/\$\{[^}]*\}/g, 'x')
 
@@ -244,13 +221,22 @@ describe('the client calls only the route it has cited', () => {
     assert.deepEqual(unserved, [], `not served by micro-indexer: ${unserved.join(', ')}`)
   })
 
-  it('cites a line for every route, called and declined, in the client itself', () => {
+  it('names every route it calls or declines in the client itself, and says which file it read', () => {
+    // This required the client's header to repeat the LINE from the table beside it — a third copy
+    // of a number that micro-indexer moves, and the copies are what go stale. What is worth having
+    // is that every route is written down where the REASON for calling or declining it lives.
     for (const route of [...CALLED, ...DECLINED]) {
-      assert.ok(
-        client.includes(`indexer/src/server.ts:${route.line}`),
-        `${route.method} ${route.path} has no citation in src/lib/chainstatus.ts`,
+      const named = new RegExp(`${route.method}[^\\n]*?(?:/v1)?${route.path}(?![\\w:/-])`)
+      assert.match(
+        client,
+        named,
+        `${route.method} ${route.path} is not written down in src/lib/chainstatus.ts`,
       )
     }
+    assert.ok(
+      client.includes('indexer/src/server.ts'),
+      'src/lib/chainstatus.ts no longer says which service source its surface was read from',
+    )
   })
 
   it('gives every declined route a REASON, not just an absence', () => {
@@ -295,7 +281,7 @@ describe('the client calls only the route it has cited', () => {
 
 describe('the shape check can say no', () => {
   it('refuses every dead path this estate has actually shipped, including served PREFIXES', () => {
-    // Copied from `market/src/indexerclient.test.ts:309-319`, plus this repository's own
+    // Copied from `market/src/indexerclient.test.ts`, plus this repository's own
     // near-misses. The first entry is the exact path `micro-mint` shipped, and it BEGINS with
     // `/v1/chains/`, which the indexer really does serve. A prefix test calls it fine.
     const dead = [
@@ -397,16 +383,40 @@ describe('the cited lines are the lines that register the routes', () => {
     assert.equal(entries.length, 10, `expected the indexer's ten DOMAIN entries, found ${entries.length}`)
   })
 
+  /**
+   * The `DOMAIN` row that registers a route, FOUND by what it says.
+   *
+   * This used to be a `line:` in the two tables above, and the line number is why this repository
+   * kept going red for edits made in another one: micro-indexer inserting a route or a header moved
+   * every entry below it, and nothing runs this suite when micro-indexer is edited, so it surfaced
+   * whenever somebody next tried to build.
+   *
+   * Exactly one row must match, or the answer is a guess.
+   */
+  const rowOfRoute = (method: string, path: string): string => {
+    const re = new RegExp(`^\\s{2}\\['${method}',\\s*'${path.replace(/[/:]/g, '\\$&')}',`)
+    const found = lines.filter((l) => re.test(l))
+    assert.equal(found.length, 1, `${method} ${path} matches ${found.length} DOMAIN rows, not one`)
+    return found[0] ?? ''
+  }
+
+  /**
+   * The HANDLER a route is wired to, read out of the service's own table rather than written here.
+   *
+   * Strictly stronger than the `handler:` line number it replaces. That number said "the handler is
+   * at line 426"; this says "the handler is whatever `DOMAIN` points this route at" — so a route
+   * rewired to a different function fails the gate checks below instead of grading the function
+   * that happens to still sit at 426.
+   */
+  const handlerNameOf = (route: { method: string; path: string }): string => {
+    const name = /,\s*(\w+)\],?\s*$/.exec(rowOfRoute(route.method, route.path))?.[1]
+    assert.ok(name, `${route.method} ${route.path} names no handler in the DOMAIN table`)
+    return name as string
+  }
+
   for (const route of [...CALLED, ...DECLINED]) {
-    it(`${route.method} ${route.path} is registered at indexer/src/server.ts:${route.line}`, () => {
-      // 1-indexed citation, 0-indexed array. The number comes from the table above and appears
-      // nowhere else in this file.
-      const line = lines[route.line - 1] ?? ''
-      assert.match(
-        line,
-        new RegExp(`\\['${route.method}',\\s*'${route.path.replace(/[/:]/g, '\\$&')}'`),
-        `indexer/src/server.ts:${route.line} is:\n  ${line.trim()}`,
-      )
+    it(`${route.method} ${route.path} is registered in indexer/src/server.ts`, () => {
+      assert.ok(rowOfRoute(route.method, route.path).length > 0)
     })
   }
 
@@ -430,8 +440,11 @@ describe('the cited lines are the lines that register the routes', () => {
 
   it('BOTH spellings really are mounted, which is what makes the /v1 form safe', () => {
     assert.match(server, /const PREFIXES: readonly string\[\] = \['\/v1', ''\]/)
-    assert.match(lines[143] ?? '', /\['\/v1', ''\]/, `indexer/src/server.ts:154 is: ${lines[143]}`)
-    assert.match(lines[415] ?? '', /for \(const prefix of PREFIXES\)/)
+    // The mount loop, found rather than read out of a line this repository wrote down.
+    assert.ok(
+      lines.some((l) => /for \(const prefix of PREFIXES\)/.test(l)),
+      'indexer/src/server.ts no longer mounts the table under both prefixes',
+    )
   })
 
   /**
@@ -441,8 +454,10 @@ describe('the cited lines are the lines that register the routes', () => {
    * TypeScript with template literals in it is a parser, and a wrong parser here would read the
    * next handler's `authorise` call as this one's.
    */
-  const bodyOf = (line: number): string => {
-    const start = line - 1
+  const bodyOf = (route: { method: string; path: string }): string => {
+    const name = handlerNameOf(route)
+    const start = lines.findIndex((l) => new RegExp(`^async function ${name}\\(`).test(l))
+    assert.ok(start >= 0, `indexer/src/server.ts declares no handler called ${name}`)
     let end = lines.length
     for (let i = start + 1; i < lines.length; i++) {
       if (/^async function /.test(lines[i] ?? '') || /^\/\* -+ parameters/.test(lines[i] ?? '')) {
@@ -455,11 +470,11 @@ describe('the cited lines are the lines that register the routes', () => {
 
   it('every route opens with the gate this repository believes, and no other', () => {
     for (const route of [...CALLED, ...DECLINED]) {
-      const body = bodyOf(route.handler)
+      const body = bodyOf(route)
       assert.match(
         body,
         /^async function \w+\(ctx: RequestContext, deps: ServerDeps\)/,
-        `indexer/src/server.ts:${route.handler} is not a handler declaration: ${lines[route.handler - 1]}`,
+        `${route.method} ${route.path} is wired to ${handlerNameOf(route)}, which is not a handler declaration`,
       )
       if (route.gate === 'authoriseRead') {
         assert.match(
@@ -508,7 +523,7 @@ describe('the cited lines are the lines that register the routes', () => {
     // bucket is named here rather than folded into one of the other two.
     const handlers = [...CALLED, ...DECLINED]
     assert.equal(handlers.length, 10, 'the tables no longer cover all ten domain routes')
-    const bodies = new Map(handlers.map((r) => [r, bodyOf(r.handler)] as const))
+    const bodies = new Map(handlers.map((r) => [r, bodyOf(r)] as const))
     const anonymous = handlers.filter((r) =>
       /await authoriseRead\(ctx, deps\)/.test(bodies.get(r) ?? ''),
     )
@@ -556,19 +571,26 @@ describe('the cited lines are the lines that register the routes', () => {
     )
   })
 
-  it('the cited line ranges are the functions this repository says they are', () => {
-    // `:792-801` and `:763-791` appear verbatim across six files here, where a reader is invited
-    // to go and check them. A range that has drifted onto the wrong function reads as verified.
+  it('the thing six files here send a reader to is still there to be read', () => {
+    // ── THIS USED TO PIN TWO LINE RANGES, AND THAT IS WHY IT KEPT GOING RED ────────────────────
     //
-    // They were `:727-736` and `:698-726` until f9344de inserted the custody total and its header
-    // above them. Every one of those still named a line that EXISTED, which is why the
-    // repository-wide existence sweep stayed green and only this check could tell.
-    assert.match(lines[791] ?? '', /^async function authoriseRead\(/, `:792 is: ${lines[791]}`)
-    assert.match(lines[800] ?? '', /^\}/, `:801 is: ${lines[800]}`)
+    // Six files cited `authoriseRead` by a line range so a reader could go and check it. The ranges
+    // were one pair of ranges until micro-indexer inserted the custody total above them, another
+    // after the next edit, and every one of the stale ones still named a line
+    // that EXISTED — so the repository-wide existence sweep stayed green and only this check could
+    // tell. What it told was that a DIFFERENT repository had been edited, which is not a fact about
+    // this one and cannot be fixed here.
+    //
+    // So the citations name the FUNCTION, and this finds it. It still fails when the function or
+    // the paragraph explaining it is deleted, which is the failure worth catching; it no longer
+    // fails when something above them grows.
+    const at = server.indexOf('async function authoriseRead(')
+    assert.ok(at > 0, 'indexer/src/server.ts no longer declares authoriseRead — six files here cite it')
+    const header = server.slice(0, at)
     assert.match(
-      lines.slice(762, 791).join('\n'),
+      header.slice(header.lastIndexOf('/**')),
       /Reads are ANONYMOUS, because what they return is already public/,
-      'the doc comment at :763-791 is no longer the one explaining the anonymous reads',
+      'the doc comment above authoriseRead is no longer the one explaining the anonymous reads',
     )
   })
 
@@ -638,9 +660,9 @@ describe('the cited lines are the lines that register the routes', () => {
     //
     // It required 'testnet' at the head, because when it was written neither scope had a chain
     // behind it and testnet was the less absent of the two. Mainnet is now published on the public
-    // tunnel (`deploy/cloudflared/config.mainnet.public.yml:96`) and answers `eth_chainId`, while
+    // tunnel (`deploy/cloudflared/config.mainnet.public.yml`) and answers `eth_chainId`, while
     // testnet is unreachable at the TLS layer — Universal SSL is one label deep
-    // (`deploy/gateway/dynamic/tls.yml:76`) — so the ordering inverted with the facts. Kept as an
+    // (`deploy/gateway/dynamic/tls.yml`) — so the ordering inverted with the facts. Kept as an
     // assertion so a reorder back is a decision somebody argues for rather than a reflex.
     assert.equal(HEARTH_SCOPES[0]?.network, 'mainnet')
     assert.equal(HEARTH_SCOPES[1]?.network, 'testnet')

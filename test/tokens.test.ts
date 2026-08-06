@@ -159,7 +159,7 @@ describe('the stylesheet names only tokens that exist', () => {
     })
 
     it('this surface’s own accent block exists, so nothing falls through to the company ember', () => {
-      // index.html sets `data-cf-product="network"`. tokens.css says at `:389-396` that "every key
+      // index.html sets `data-cf-product="network"`. tokens.css says that "every key
       // an app may set is declared", precisely so a surface cannot fall through in silence — which
       // is what `admin` did. Checked rather than assumed.
       assert.match(tokens, /\[data-cf-product='network'\]/)
@@ -197,7 +197,7 @@ describe('the stylesheet names only tokens that exist', () => {
       assert.doesNotMatch(CSS, /\.ns-select\b/, 'a local form control is back')
 
       // …and the faucet form really does use them, including the mono modifier that this class of
-      // surface is the reason for (`ui/packages/ui/src/ui.css:168-172`).
+      // surface is the reason for (`ui/packages/ui/src/ui.css`).
       const page = readFileSync(at('src/pages/faucet.tsx'), 'utf8')
       assert.match(page, /className="cf-input cf-input--mono"/)
       assert.match(page, /className="cf-btn cf-btn--ember"/)
@@ -224,7 +224,7 @@ describe('the stylesheet names only tokens that exist', () => {
 
     it('the mark this shell renders is one the design system can actually draw', () => {
       // `Mark` returns NULL for a surface it has no drawing for
-      // (`ui/packages/ui/src/index.tsx:455`) — silently. So the shell would render nothing and
+      // (`ui/packages/ui/src/index.tsx`) — silently. So the shell would render nothing and
       // nobody would see why.
       const index = readFileSync(`${UI_ROOT}/packages/ui/src/index.tsx`, 'utf8')
       assert.match(index, /const MARK_DRAWINGS: Record<MarkKey, \(\) => ReactNode> = \{\n\s*network:/)

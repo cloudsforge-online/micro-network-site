@@ -2,18 +2,18 @@
  * Running a node.
  *
  * Everything on this page runs on one machine, and the page says so at the top rather than at the
- * bottom. The testnet "runs on `127.0.0.1` and nothing routes it" (`hearth/MAP.md:66`) and is not
- * reachable from outside at all — `deploy/gateway/dynamic/tls.yml:76` records why: Universal SSL
+ * bottom. The testnet "runs on `127.0.0.1` and nothing routes it" (`hearth/MAP.md`) and is not
+ * reachable from outside at all — `deploy/gateway/dynamic/tls.yml` records why: Universal SSL
  * is one label deep, so every two-label name under the testnet apex fails its TLS handshake.
  *
  * MAINNET IS A DIFFERENT MATTER NOW, and the standfirst was rewritten rather than left to age. A
  * public JSON-RPC endpoint is published on the tunnel
- * (`deploy/cloudflared/config.mainnet.public.yml:96`) and answers from off the estate, so "no
+ * (`deploy/cloudflared/config.mainnet.public.yml`) and answers from off the estate, so "no
  * endpoint to configure" is false. What has NOT changed is that this page publishes no bootstrap
  * list and no peer to dial, and that the four steps below are all local — so it still offers no
  * "connect to the network" step, because it would be a step nobody here has run.
  *
- * The four steps are Hearth's own, in Hearth's own order (`hearth/README.md:168-207`, "Try it now"),
+ * The four steps are Hearth's own, in Hearth's own order (`hearth/README.md`, "Try it now"),
  * because that order was chosen by somebody who had run them. Each carries the command as text a
  * reader copies rather than as a screenshot, and each cites the line it came from.
  */

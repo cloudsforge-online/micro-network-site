@@ -53,7 +53,7 @@ const SIGNIN_STANDIN = {
 }
 
 /**
- * What `GET /v1/faucet` answers, in the shape `faucet/src/server.ts:348` serves.
+ * What `GET /v1/faucet` answers, in the shape `faucet/src/server.ts` serves.
  *
  * Every value is deliberately NOT a round or plausible default. If any of them appears on screen
  * when the service has not answered, the bundle is carrying a fallback set — which is the thing
@@ -74,7 +74,7 @@ const TERMS = {
     'Testnet EMBER. It has no value, it is not tradeable, and the chain it funds may be reset without notice.',
 }
 
-/** `GET /v1/chains/ember/:network/status` — `indexer/src/server.ts:164`. */
+/** `GET /v1/chains/ember/:network/status` — `indexer/src/server.ts`. */
 const chainStatus = (network: string) => ({
   chain: 'ember',
   network,
