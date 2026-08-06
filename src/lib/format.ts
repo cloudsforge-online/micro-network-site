@@ -5,7 +5,7 @@
  * THREE RULES, EACH OF WHICH THIS ESTATE HAS BROKEN SOMEWHERE.
  *
  * **1. Nothing here converts an amount with `Number`.** `indexer/src/reads.ts:8-10` and
- * `faucet/src/server.ts:350-351` both put amounts on the wire as decimal strings for the same
+ * `faucet/src/server.ts:357-358` both put amounts on the wire as decimal strings for the same
  * reason: `JSON.stringify` cannot serialise a `bigint`, and `Number("1e19 wei")` silently loses the
  * low digits of any 18-decimal value above about 9 EMBER. `weiToEmber` below is `BigInt` division
  * and string padding, start to finish. `test/format.test.ts` drives it with a value that a double
@@ -110,7 +110,7 @@ export function weiToEmber(wei: string, decimals: number): string {
 /**
  * A duration in seconds, said the way a person would.
  *
- * The faucet's cooldowns and windows arrive as seconds (`faucet/src/server.ts:353-357`) and "86400"
+ * The faucet's cooldowns and windows arrive as seconds (`faucet/src/server.ts:360-364`) and "86400"
  * is not a thing anybody reads. The largest whole unit only — "1 day", not "1 day 0 hours" — because
  * a cooldown is a rule of thumb and a second unit implies a precision the limiter does not promise.
  */
@@ -160,7 +160,7 @@ export interface Tone {
 /**
  * What a dispense's status means to somebody watching a drip.
  *
- * The six are the service's (`faucet/src/server.ts:458`). `confirmed` is the only `good`, and
+ * The six are the service's (`faucet/src/server.ts:465`). `confirmed` is the only `good`, and
  * everything before it is `idle` rather than `warn`: **waiting is the normal condition of a young
  * dispense**, and painting it amber would make it look like something had gone wrong — which is the
  * exact misreading that made a marketplace tell every seller their escrow had failed

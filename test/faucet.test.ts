@@ -3,7 +3,7 @@
  *
  * `micro-faucet` does not have a module-level route table the way `micro-indexer` does. Its routes
  * are `define(method, path, handler)` calls inside `buildRoutes()`
- * (`faucet/src/server.ts:298-438`), so the line a route is "registered at" is the `define` line
+ * (`faucet/src/server.ts:305-445`), so the line a route is "registered at" is the `define` line
  * itself. This file reads those lines out of the service and matches the method and the path
  * against each citation — the same check `test/chainstatus.test.ts` runs against the indexer's
  * `DOMAIN`, adapted to the shape this service actually has rather than to the shape it would be
@@ -41,9 +41,9 @@ const client = readFileSync(here('src/lib/faucet.ts'), 'utf8')
 
 /** The three routes this bundle calls, with the `define` line each was read from. */
 const CALLED: ReadonlyArray<{ method: string; path: string; line: number }> = [
-  { method: 'GET', path: '/v1/faucet', line: 341 },
-  { method: 'POST', path: '/v1/drips', line: 375 },
-  { method: 'GET', path: '/v1/drips/:id', line: 411 },
+  { method: 'GET', path: '/v1/faucet', line: 348 },
+  { method: 'POST', path: '/v1/drips', line: 382 },
+  { method: 'GET', path: '/v1/drips/:id', line: 418 },
 ]
 
 /** Every route the faucet serves that this bundle does not call, with the reason it does not. */
@@ -51,25 +51,25 @@ const DECLINED: ReadonlyArray<{ method: string; path: string; line: number; why:
   {
     method: 'OPTIONS',
     path: '/v1/drips',
-    line: 432,
+    line: 439,
     why: 'the CORS preflight, issued by the browser rather than by application code; calling it explicitly would be a second, pointless request',
   },
   {
     method: 'GET',
     path: '/metrics',
-    line: 315,
+    line: 322,
     why: 'gated on purpose — an open /metrics publishes the remaining budget, and a browser bundle holds no operator credential and must not',
   },
   {
     method: 'GET',
     path: '/livez',
-    line: 308,
+    line: 315,
     why: 'a platform probe; rendering it would report that a process is up, which is not a fact about the faucet',
   },
   {
     method: 'GET',
     path: '/readyz',
-    line: 310,
+    line: 317,
     why: 'a platform probe; Beacon owns the question of whether a service is in the balancer',
   },
 ]
@@ -191,7 +191,7 @@ describe('the faucet client calls only routes it has cited', () => {
   it('sends the idempotency key as a BODY FIELD and never as a header', () => {
     // `micro-trade` requires an `Idempotency-Key` HEADER on every mutation
     // (`trade/src/server.ts:840-848`) and `micro-faucet` reads a body field
-    // (`faucet/src/server.ts:386-388`). Two clients that look alike and are not interchangeable is
+    // (`faucet/src/server.ts:393-395`). Two clients that look alike and are not interchangeable is
     // exactly the shape this estate keeps shipping, so both halves are asserted.
     const code = client.replace(/\/\*[\s\S]*?\*\//g, '')
     assert.match(code, /idempotencyKey: input\.idempotencyKey/, 'the key is no longer a body field')

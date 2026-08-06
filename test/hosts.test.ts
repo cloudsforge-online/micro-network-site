@@ -155,10 +155,13 @@ describe('the chain-index read is cross-origin, and three separate things now ma
     assert.match(policy, /accessControlAllowOriginList:/, 'the CORS middleware is gone from the policy')
     // Not vacuous: a hostname that was ALREADY on the list, so a broken read of the file fails
     // here first rather than reporting this surface as allowlisted when nothing was read.
-    assert.match(policy, /- https:\/\/explorer\.cloudsforge\.online/)
+    // The literal mainnet origins were deleted on purpose — one templated list now renders per
+    // environment from CF_WEB_SUFFIX, so a literal `.cloudsforge.online` here would only ever have
+    // proved the MAINNET half. Asserting the template proves both.
+    assert.match(policy, /- https:\/\/explorer\{\{ env "CF_WEB_SUFFIX" \}\}/)
     assert.match(
       policy,
-      /- https:\/\/network\.cloudsforge\.online/,
+      /- https:\/\/network\{\{ env "CF_WEB_SUFFIX" \}\}/,
       'this surface has been dropped from the gateway CORS allowlist; the chain read fails closed again',
     )
   })
@@ -186,7 +189,7 @@ describe('a base is resolved by comparing origins', () => {
   it('DROPS a basePath, because a page URL is not an API base', () => {
     // The trap this function exists for: `${hosts.faucet}/v1/drips` is `/faucet/v1/drips`, which
     // micro-faucet does not serve. Every path in its table begins `/v1`
-    // (`faucet/src/server.ts:301-437`).
+    // (`faucet/src/server.ts:308-444`).
     const h = hosts({ faucet: 'https://network.example.test/faucet' })
     assert.equal(resolveApiBase('https://other.example.test', h, 'faucet'), 'https://network.example.test')
     assert.equal(resolveApiBase('https://network.example.test', h, 'faucet'), '')

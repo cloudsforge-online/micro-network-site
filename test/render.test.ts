@@ -12,7 +12,7 @@
  *      of its four states carry no value, so there is no path from an absence to a digit — unless a
  *      page formats a nullable height itself, which is what is grepped for.
  *   2. **The disclaimers exist once.** The faucet's terms string is the service's
- *      (`faucet/src/server.ts:358-360`) and is rendered verbatim; a second wording here would be a
+ *      (`faucet/src/server.ts:365-367`) and is rendered verbatim; a second wording here would be a
  *      second thing to keep true, and the softer of the two is the one a reader would quote.
  *   3. **Every claim carries its source, on screen.** `org/templates/README.template.md:18` — "A
  *      claim nobody can check is worse than no claim, because it is believed."
