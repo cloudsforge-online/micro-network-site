@@ -34,9 +34,9 @@
  * names is declared upstream.
  *
  * The form control on the faucet page is `.cf-input` with the `--mono` modifier, from
- * `ui/packages/ui/src/ui.css:174-192`. **There is no local `.ns-input` and there must not be one** —
+ * `ui/packages/ui/src/ui.css`. **There is no local `.ns-input` and there must not be one** —
  * five frontends each wrote their own before that rule existed and two of them had already drifted
- * (`ui/packages/ui/src/ui.css:149-172`). `.cf-btn--ember` is the design system's ONE solid call to
+ * (`ui/packages/ui/src/ui.css`). `.cf-btn--ember` is the design system's ONE solid call to
  * action; `.cf-btn--primary` does not exist and a second name for one thing is how a token set
  * starts to drift.
  * ══════════════════════════════════════════════════════════════════════════════════════════════
@@ -56,7 +56,8 @@
  *
  * Nothing could see it. `test/tokens.test.ts` proves every `--cf-*` this file NAMES is declared
  * upstream, which is a different question from whether the page uses any of them at the top level;
- * `test/contrast.test.ts` does not exist here; and a screenshot would have shown it to anybody who
+ * there is no contrast suite in this repository at all; and a screenshot would have shown it to
+ * anybody who
  * took one. It took running the bundle and asking axe.
  *
  * `color-scheme` is NOT declared here any more, and its removal is the fix. It was `dark`, on

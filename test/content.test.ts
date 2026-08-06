@@ -4,7 +4,7 @@
  * ══════════════════════════════════════════════════════════════════════════════════════════════
  * WHY A FRONTEND NEEDS A TEST THAT READS ITS OWN PROSE
  *
- * `docs/ecosystem/01-product-vision.md:126` is principle 5, "Honest copy". Every surface in this
+ * `docs/ecosystem/01-product-vision.md` is principle 5, "Honest copy". Every surface in this
  * estate is nominally held to it and this is the one most able to break it, because it is about a
  * currency: a fabricated hashrate, block height, supply or yield is a false statement about money,
  * published under the company's own name, and it stays true-looking long after the person who typed
@@ -18,8 +18,8 @@
  *
  * ── WHAT IS STRIPPED BEFORE THE DIGIT SCAN, AND WHY EACH IS LEGITIMATE ────────────────────────
  *
- * **Citations.** `hearth/MAP.md:39` is rendered on screen, deliberately — the standard is
- * `org/templates/README.template.md:18`, "A claim nobody can check is worse than no claim, because
+ * **Citations.** `hearth/MAP.md` is rendered on screen, deliberately — the standard is
+ * `org/templates/README.template.md`, "A claim nobody can check is worse than no claim, because
  * it is believed" — and the `39` is a line number, not a measurement. Stripped by shape.
  *
  * **Identifiers.** `SHA-256` is the name of a hash and `secp256k1` is the name of a curve. A name
@@ -113,11 +113,19 @@ describe('the register is well formed', () => {
     for (const [key, entry] of Object.entries(FACTS)) {
       assert.match(entry.rendered, /^[\d.]+$/, `${key}.rendered is not a number`)
       assert.ok(entry.meaning.length > 20, `${key} has no real meaning`)
-      assert.ok(entry.source.length > 10, `${key} has no source`)
-      // A source is a path, and `test/citations.test.ts` checks that the ones with a line number
-      // name a line that exists. Asserted here as a SHAPE so an entry cannot be added with a
-      // hand-wave in the field.
+      // A source is a PATH TO A FILE, asserted as a shape so an entry cannot be added with a
+      // hand-wave in the field. The length floor that used to stand here was ten characters, which
+      // `nginx.conf` fails by one — a filename is short, and shortness was never the property.
       assert.match(entry.source, /[A-Za-z0-9_.\-/]+\.[a-z]+/, `${key}.source names no file`)
+      // AND NO LINE NUMBER. `test/citations.test.ts` used to check that a cited line existed; it
+      // now forbids one, because a line names a position in a file another repository owns and is
+      // free to edit — micro-faucet moving its requester hashing broke sixty-five citations here
+      // in one commit, while nothing in this repository had changed.
+      assert.doesNotMatch(
+        entry.source,
+        /[A-Za-z0-9_.\-/]+\.[a-z]+:\d+/,
+        `${key}.source names a line. Cite the file and name the constant or the sentence.`,
+      )
     }
   })
 
@@ -171,7 +179,7 @@ describe('a digit may not appear in copy unless it is registered', () => {
   })
 
   it('…and the citation strip does not swallow a claim next to a citation', () => {
-    const text = 'a 2 GiB pad, per hearth/MAP.md:39'
+    const text = 'a 2 GiB pad, per hearth/MAP.md'
     assert.deepEqual(digitRuns(text), ['2'])
   })
 
@@ -227,7 +235,7 @@ describe('the copy claims nothing it cannot support', () => {
      * nothing at all, so the standing state must be present and unambiguous.
      *
      * IT USED TO REQUIRE "no public Hearth network" AND "no mainnet". Both became false: mainnet
-     * is published on the public tunnel (`deploy/cloudflared/config.mainnet.public.yml:96`) and
+     * is published on the public tunnel (`deploy/cloudflared/config.mainnet.public.yml`) and
      * answers `eth_chainId` from off the estate. A guard that requires a false sentence is worse
      * than no guard, because the only way to pass it is to lie.
      *
@@ -267,7 +275,13 @@ describe('the copy claims nothing it cannot support', () => {
     // And it is still cited. Into micro-deploy now rather than into hearth: the hostname list and
     // the TLS note are what actually decide what a stranger can reach, and they are in this
     // estate's own repository rather than in the chain's.
-    assert.match(source, /deploy\/[A-Za-z0-9_.\-/]+\.yml:\d+/)
+    //
+    // THE FILE, NOT A LINE IN IT. This required `deploy/….yml:<line>`, which made a line number a
+    // condition of the copy passing — a position in a repository this one does not own and does not
+    // watch. micro-deploy edits that file whenever a hostname moves, and nothing runs this suite
+    // when it does.
+    assert.match(source, /deploy\/[A-Za-z0-9_.\-/]+\.yml\b/)
+    assert.doesNotMatch(source, /\.yml:\d+/, 'the standing notice cites a LINE in micro-deploy')
   })
 
   it('every block of copy that makes a claim carries a source', () => {
@@ -313,7 +327,7 @@ describe('every hearth file this site links to exists', () => {
     assert.ok(entries.length > 0)
 
     const referenced = new Set<string>()
-    // `hearthFile('docs/mining.md')` in a page.
+    // A `hearthFile(...)` call in a page — the argument is hearth-relative, not a path here.
     for (const dir of ['src/pages', 'src/lib', 'src/components']) {
       for (const file of readdirSync(at(dir))) {
         const text = readFileSync(join(at(dir), file), 'utf8')

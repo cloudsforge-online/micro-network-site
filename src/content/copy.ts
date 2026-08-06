@@ -2,7 +2,7 @@
  * The words on this site, as data.
  *
  * Copy lives here rather than inside components for the reason `micro-site` gives
- * (`site/src/content/pages.ts:1-9`): a string inside JSX cannot be walked by a test, and the two
+ * (`site/src/content/pages.ts`): a string inside JSX cannot be walked by a test, and the two
  * rules this surface is held to are both rules about strings.
  *
  *   1. **A digit may not appear here unless it is in the register** (`./facts.ts`). Enforced by
@@ -16,7 +16,7 @@
  *
  * THIS BLOCK USED TO SAY THERE WAS NO NETWORK AT ALL. HALF OF THAT IS NOW FALSE, AND ONLY HALF.
  *
- * Mainnet is reachable. `deploy/cloudflared/config.mainnet.public.yml:96` publishes
+ * Mainnet is reachable. `deploy/cloudflared/config.mainnet.public.yml` publishes
  * `rpc.<apex>` on the public tunnel, and a POST to it from off the estate answers `eth_chainId`
  * with `0x1cf3` — 7411, the id this file already carried as merely allocated. Blocks advance
  * between reads. So the old headline, "there is no public Hearth network yet", is a false
@@ -32,11 +32,11 @@
  *     fetches those or renders their absence.
  *   * **The testnet IS publicly reachable, as of 2026-08-05, and this bullet used to say the
  *     opposite.** It read: "Everything under `*.testnet.<apex>` fails its TLS handshake:
- *     Cloudflare's Universal SSL is one label deep (`deploy/gateway/dynamic/tls.yml:76`), so a
+ *     Cloudflare's Universal SSL is one label deep (`deploy/gateway/dynamic/tls.yml`), so a
  *     two-label name has no certificate to present. The faucet is on that side of the line. No
  *     testnet URL may be published here." The TLS diagnosis was correct about a scheme that was
  *     then ABANDONED: an environment is now a suffix inside the FIRST label
- *     (`<surface>-testnet.<apex>`, `ui/packages/ui/src/surfaces.ts:995-1010`), so every testnet
+ *     (`<surface>-testnet.<apex>`, `ui/packages/ui/src/surfaces.ts`), so every testnet
  *     name is one label deep and the existing certificate covers it.
  *
  *     **So testnet URLs may now be published here, and the faucet is one of them** — it is the
@@ -45,12 +45,12 @@
  *     the good news: **a testnet URL must never be published without the word testnet next to
  *     it.** Free coin and mined coin must not be made to look alike.
  *   * **The whole estate is one home server behind a Cloudflare Tunnel**
- *     (`deploy/gateway/dynamic/estate-web.yml:1120`). No second machine, no failover.
+ *     (`deploy/gateway/dynamic/estate-web.yml`). No second machine, no failover.
  *
  * So this site may not print a price, may not imply a mining income, and may not imply that a
  * reachable endpoint is an established network. What it CAN do is send somebody to a repository
  * where every claim is checkable, and be the first page in the estate that says plainly what state
- * the chain is in — `hearth/README.md:27` puts that section above everything else and calls it
+ * the chain is in — `hearth/README.md` puts that section above everything else and calls it
  * "Status, before anything else". This one does the same.
  *
  * A note on where the wording comes from: where Hearth already has a sentence for something, this
@@ -81,8 +81,8 @@ export const STANDING_STATE = {
     'whole estate runs on one home server behind a tunnel: no second machine, no failover, no ' +
     'restored backup.',
   source:
-    'deploy/cloudflared/config.mainnet.public.yml:96, ui/packages/ui/src/surfaces.ts:995-1010, ' +
-    'deploy/gateway/dynamic/estate-web.yml:1120',
+    'deploy/cloudflared/config.mainnet.public.yml, ui/packages/ui/src/surfaces.ts, ' +
+    'deploy/gateway/dynamic/estate-web.yml',
 }
 
 /* ══════════════════════════════ home ══════════════════════════════ */
@@ -113,7 +113,7 @@ export const HOME = {
           'SHA-256, then takes a pseudo-random walk that reads and rewrites it. The bottleneck is ' +
           'memory latency rather than gate count, so a warehouse of specialised hardware earns ' +
           'little more per pound than a laptop.',
-        source: 'hearth/docs/mining.md:13-24',
+        source: 'hearth/docs/mining.md',
       },
       {
         title: 'It speaks Ethereum',
@@ -121,7 +121,7 @@ export const HOME = {
           'Hex addresses, secp256k1, the Shanghai gas schedule and the standard JSON-RPC surface, ' +
           'so MetaMask, ethers, viem, Hardhat and Foundry work against it. The EVM is written here ' +
           'rather than imported — no third-party EVM library, and no runtime dependency of any kind.',
-        source: 'hearth/README.md:59, hearth/MAP.md:32-36',
+        source: 'hearth/README.md, hearth/MAP.md',
       },
       {
         title: 'Fair launch, and a Commons',
@@ -130,7 +130,7 @@ export const HOME = {
           'reward goes to an on-chain Commons treasury rather than to the miner. The testnet ' +
           'genesis state root is the empty-trie root, which is a thirty-second check rather than a ' +
           'promise.',
-        source: 'hearth/README.md:64, hearth/TESTNET.md:57',
+        source: 'hearth/README.md, hearth/TESTNET.md',
       },
       {
         title: 'A tail that does not end',
@@ -138,7 +138,7 @@ export const HOME = {
           `The reward starts at ${fact('genesisReward')} EMBER, halves every ` +
           `${fact('halfLifeYears')} years, and settles at a perpetual ${fact('tailReward')} EMBER ` +
           'per block. Security therefore never has to depend on a fee market that may not exist.',
-        source: 'hearth/README.md:78',
+        source: 'hearth/README.md',
       },
     ],
   },
@@ -148,7 +148,7 @@ export const HOME = {
    *
    * Every line here is a constant somebody will need in order to configure a wallet or a node —
    * which is the only reason to publish them — and the last one records a DISAGREEMENT rather than
-   * resolving it. `hearth/README.md:76` states it about itself: the account model specifies 18
+   * resolving it. `hearth/README.md` states it about itself: the account model specifies 18
    * decimals and the node still defines the retired ledger's 1e8. Picking a side on a marketing
    * page would be inventing a decision the project has not taken.
    */
@@ -157,7 +157,7 @@ export const HOME = {
     lede:
       'What you would type into a wallet. These are the values the code carries, and the mainnet ' +
       'id below is the one a public endpoint answers with.',
-    source: 'hearth/README.md:75-79, contracts/packages/chain/src/index.ts:50-62',
+    source: 'hearth/README.md, contracts/packages/chain/src/index.ts',
     rows: [
       { field: 'Network and coin', value: 'Hearth, and EMBER' },
       {
@@ -198,8 +198,8 @@ export const HOME = {
   /**
    * The status table.
    *
-   * Reproduced from `hearth/MAP.md:47-70`, which is the project's own single status table and which
-   * says at `hearth/MAP.md:44-45`: "Do not read a status from anywhere else in this repository
+   * Reproduced from `hearth/MAP.md`, which is the project's own single status table and which
+   * says at `hearth/MAP.md`: "Do not read a status from anywhere else in this repository
    * without checking it here first." This page follows that instruction rather than assembling a
    * more flattering list from the README.
    */
@@ -211,8 +211,8 @@ export const HOME = {
       'what actually decides whether a stranger can reach anything. Where the README and the ' +
       'table disagree, the table wins; the repository says so itself.',
     source:
-      'hearth/MAP.md:42-70, deploy/cloudflared/config.mainnet.public.yml:96, ' +
-      'deploy/gateway/dynamic/tls.yml:76',
+      'hearth/MAP.md, deploy/cloudflared/config.mainnet.public.yml, ' +
+      'deploy/gateway/dynamic/tls.yml',
     rows: [
       {
         thing: 'The EVM: interpreter, gas, opcodes, precompiles',
@@ -311,13 +311,13 @@ export const CHAIN = {
       'reorg in. The claimed tip is what a node last told it. They are different facts, and the ' +
       'index reports both rather than picking one — counting depth against a block nobody has ' +
       'looked at over-reports it, and over-reporting depth credits money early.',
-    source: 'indexer/src/reads.ts:18-30',
+    source: 'indexer/src/reads.ts',
   },
 
   /**
    * What a null means. This is the most important paragraph on the page.
    *
-   * `indexer/src/reads.ts:300-301` returns `checkpoint?.tipHeight ?? null`, so a deployment that has
+   * `indexer/src/reads.ts` returns `checkpoint?.tipHeight ?? null`, so a deployment that has
    * never followed this chain answers 200 with nulls rather than failing. That is an answer, and it
    * is a different answer from "we could not ask".
    */
@@ -328,7 +328,7 @@ export const CHAIN = {
       'and this page keeps that distinction rather than flattening it. "Not observed" means the ' +
       'index answered and had nothing to report. "Could not fetch" means the request did not ' +
       'arrive. Those are not the same, and only one of them is about Hearth.',
-    source: 'indexer/src/reads.ts:87',
+    source: 'indexer/src/reads.ts',
   },
 
   /**
@@ -375,7 +375,7 @@ export const CHAIN = {
       'The chain index did not answer, so this panel is showing which figures are missing rather ' +
       'than filling them in. Quote the request id below and the exact attempt can be found across ' +
       'every service at once.',
-    source: 'indexer/src/server.ts:163-174',
+    source: 'indexer/src/server.ts',
   },
 
   explorer: {
@@ -410,7 +410,7 @@ export const MINE = {
           `${fact('walkSteps')} steps that read and rewrite it, and hashes the result against the ` +
           'target. That is thousands of sequential rounds with a data dependency at every step, so ' +
           'memory latency is the limit and a general-purpose CPU is close to optimal.',
-        source: 'hearth/docs/mining.md:13-24',
+        source: 'hearth/docs/mining.md',
       },
       {
         title: 'A winning proof cannot be redirected',
@@ -418,7 +418,7 @@ export const MINE = {
           'A valid block must be signed by the private key its coinbase pays, so a candidate built ' +
           'for your public key is worth nothing to anybody else. That is a real guarantee about the ' +
           'work you are handed, and it is exactly as much as consensus promises.',
-        source: 'hearth/docs/mining.md:31-40',
+        source: 'hearth/docs/mining.md',
       },
       {
         title: 'Low variance, so far',
@@ -427,7 +427,7 @@ export const MINE = {
           'small miner, and the difficulty retargets every block rather than in steps, so it ' +
           'moves smoothly instead of swinging. That is the design; what a young chain with very ' +
           'little hashrate on it actually does is a runtime figure, not this one.',
-        source: 'hearth/docs/mining.md:69-72',
+        source: 'hearth/docs/mining.md',
       },
       {
         title: 'Polite by default, in the browser miner',
@@ -437,7 +437,7 @@ export const MINE = {
           'stops entirely where the browser will say so. Two of the three major browsers do not ' +
           'report power state, and the page says which it got rather than promising the feature ' +
           'everywhere.',
-        source: 'hearth/docs/mining.md:73-81',
+        source: 'hearth/docs/mining.md',
       },
     ],
   },
@@ -445,7 +445,7 @@ export const MINE = {
   /**
    * The caveats, given their own section and placed ABOVE "how to start".
    *
-   * `hearth/docs/mining.md:5-9` is a warning the project wrote about itself: the page "previously
+   * `hearth/docs/mining.md` is a warning the project wrote about itself: the page "previously
    * mixed" what is shipped with what is designed, "and the mixing is what produced the claim that
    * Homefire is non-outsourceable". Repeating that mixing on a marketing surface would be worse
    * than making it in a technical document, so the caveats come first.
@@ -465,7 +465,7 @@ export const MINE = {
           'key, collect nonces from hashers who genuinely cannot steal the reward, and sign the ' +
           'blocks itself. Closing that means committing to the private key inside the loop, which ' +
           'forks the chain. It is deliberately open, not overlooked.',
-        source: 'hearth/docs/mining.md:58-67',
+        source: 'hearth/docs/mining.md',
       },
       {
         title: 'The pad is not the size the documents promised',
@@ -475,7 +475,7 @@ export const MINE = {
           `${fact('bigPadSeconds')} seconds per evaluation, and a validator pays one for every ` +
           'block it receives against a target far shorter than that. Making the work meaningfully ' +
           'memory-hard needs an amortised dataset rather than a bigger constant.',
-        source: 'hearth/TESTNET.md:96-100',
+        source: 'hearth/TESTNET.md',
       },
       {
         title: 'The browser miner cannot yet mine a block this node accepts',
@@ -484,7 +484,7 @@ export const MINE = {
           'template endpoint still requires the old signature scheme, and block validation still ' +
           'verifies proofs with it. The two are checked against each other digest for digest in ' +
           'the test suite, so the hashing agrees; it is the key format that does not.',
-        source: 'hearth/docs/mining.md:50-56',
+        source: 'hearth/docs/mining.md',
       },
     ],
   },
@@ -496,7 +496,7 @@ export const MINE = {
       `halves every ${fact('halfLifeYears')} years, and settles at ${fact('tailReward')} EMBER per ` +
       `block for ever. ${fact('commonsShare')} per cent of it goes to the Commons rather than to ` +
       'the miner.',
-    source: 'hearth/README.md:78',
+    source: 'hearth/README.md',
   },
 
   pools: {
@@ -505,7 +505,7 @@ export const MINE = {
       'None exists, and nothing in the protocol prevents one from being built — it would hand out ' +
       'work under its own key and pay hashers off chain. What consensus does guarantee is that work ' +
       'handed to you under YOUR key cannot be taken from you.',
-    source: 'hearth/docs/mining.md:150-153',
+    source: 'hearth/docs/mining.md',
   },
 
   design: {
@@ -520,7 +520,7 @@ export const MINE = {
       'Thermal back-off — no temperature source is available to either the node or the browser.',
       'A compiled-program proof of work. Not scheduled, and not claimed.',
     ],
-    source: 'hearth/docs/mining.md:83-98',
+    source: 'hearth/docs/mining.md',
   },
 
   start: {
@@ -537,7 +537,7 @@ export const MINE = {
           'proof of work the node runs, in a pool of workers, measured at about ' +
           `${fact('hashesPerThread')} hashes per second per thread at the shipped parameters. Your ` +
           'private key never leaves the page.',
-        source: 'hearth/docs/mining.md:100-126',
+        source: 'hearth/docs/mining.md',
       },
       {
         title: 'With the node',
@@ -545,7 +545,7 @@ export const MINE = {
           'The reference node is a full node, a wallet and a miner in one process, and its mining ' +
           'flag has a duty-cycle throttle. It has no power awareness at all, which the project says ' +
           'plainly rather than implying otherwise.',
-        source: 'hearth/docs/mining.md:154-156',
+        source: 'hearth/docs/mining.md',
       },
     ],
   },
@@ -571,7 +571,7 @@ export const NODE = {
         'suites with no install, no downloaded corpus and no network. That is the fastest way to ' +
         'find out whether any of this is real.',
       command: 'cd node && npm test',
-      source: 'hearth/README.md:149-151',
+      source: 'hearth/README.md',
     },
     {
       title: 'Run the conformance gate',
@@ -580,7 +580,7 @@ export const NODE = {
         'project treats as the definition of done for every component: no part is finished until ' +
         'its vectors pass.',
       command: 'cd node && ./scripts/fetch-vectors.sh',
-      source: 'hearth/README.md:181-196',
+      source: 'hearth/README.md',
     },
     {
       title: 'Bring up a local chain',
@@ -589,7 +589,7 @@ export const NODE = {
         `all on the same isolated network, with the seed's RPC on port ${fact('seedRpcPort')}. Each ` +
         'container keeps its own volume, so the chain survives a restart and not a teardown.',
       command: 'docker compose -f docker-compose.testnet.yml up --build',
-      source: 'hearth/TESTNET.md:132-149',
+      source: 'hearth/TESTNET.md',
     },
     {
       title: 'Point your tooling at something',
@@ -601,14 +601,14 @@ export const NODE = {
         'and pointing a wallet at a chain whose EMBER cannot be sold is a decision for you rather ' +
         'than a step in a walkthrough.',
       command: `node tools/rpc-probe/stub.js --port ${fact('probePort')}`,
-      source: 'hearth/README.md:198-207',
+      source: 'hearth/README.md',
     },
   ],
 
   /**
    * The genesis check.
    *
-   * `hearth/TESTNET.md:43-77` is the table and the two traps under it. Worth putting on a public
+   * `hearth/TESTNET.md` is the table and the two traps under it. Worth putting on a public
    * page because both traps produce a silent split rather than an error, which is the class of
    * failure a reader cannot diagnose without being told it exists.
    */
@@ -622,7 +622,7 @@ export const NODE = {
       'anybody mines — and the genesis file is pinned to a data directory the first time a node ' +
       'starts, so a volume that was not wiped after a consensus change keeps the old one.',
     command: `curl -s localhost:${fact('seedRpcPort')}/info`,
-    source: 'hearth/TESTNET.md:43-77',
+    source: 'hearth/TESTNET.md',
   },
 
   contribute: {
@@ -634,7 +634,7 @@ export const NODE = {
       'labels deep and the wildcard certificate in front of them covers one. That, and finding a ' +
       'proof of work that is memory-hard without costing a validator more than a block interval ' +
       'to check, is the highest-leverage work left.',
-    source: 'hearth/CONTRIBUTING.md, hearth/README.md:244-253',
+    source: 'hearth/CONTRIBUTING.md, hearth/README.md',
   },
 }
 
@@ -653,7 +653,7 @@ export const FAUCET = {
    * The one thing a reader must understand before using the form.
    *
    * The faucet dispenses on the testnet chain id, and that chain is not published
-   * (`hearth/MAP.md:66`). So a drip that succeeds funds an address on a chain the reader cannot
+   * (`hearth/MAP.md`). So a drip that succeeds funds an address on a chain the reader cannot
    * reach from their own machine unless they are running it. Saying so is the difference between a
    * faucet and a demonstration of one.
    */
@@ -666,7 +666,7 @@ export const FAUCET = {
       'Coin from this form is given away on request, so it is worth nothing by construction — it ' +
       'is for testing, and the chain it lives on may be restarted from genesis without notice. ' +
       'Nothing anywhere gives away mainnet EMBER, and a page that offers to is not this one.',
-    source: 'faucet/src/env.ts:63, faucet/src/index.ts:106-121',
+    source: 'faucet/src/env.ts, faucet/src/index.ts',
   },
 
   /**
@@ -683,7 +683,7 @@ export const FAUCET = {
       'EMBER is mined and never given away, so no form on this site will ever hand you any — ' +
       'and no mainnet faucet exists to be found elsewhere, on this estate or off it. The testnet ' +
       'faucet is the same page on the testnet host, linked below.',
-    source: 'faucet/src/env.ts:63 — NETWORK is the literal testnet, so mainnet is a type error',
+    source: 'faucet/src/env.ts — NETWORK is the literal testnet, so mainnet is a type error',
     action: 'Go to the testnet faucet',
     fallback:
       'The testnet host is this same name with -testnet on the end of its first label, ' +
@@ -704,7 +704,7 @@ export const FAUCET = {
   /**
    * How a refusal is worded — which is to say, it is not worded here at all.
    *
-   * `faucet/src/server.ts:253-255`: the limiter's message "names a rule and a number, never a
+   * `faucet/src/server.ts`: the limiter's message "names a rule and a number, never a
    * balance, an address the caller did not send, or anything about the funding key". This page
    * shows that message verbatim. A second wording would be a second thing to keep true.
    */
@@ -716,7 +716,7 @@ export const FAUCET = {
       'requester per window, a balance ceiling on the recipient, and a rolling budget that bounds ' +
       'the total. The last is the one that means anything; the other three exist so that an honest ' +
       'user is never the one who trips it.',
-    source: 'faucet/src/limits.ts:5-18',
+    source: 'faucet/src/limits.ts',
   },
 
   poll: {
@@ -726,7 +726,7 @@ export const FAUCET = {
       'transaction is signed by the custody service, its bytes are committed before it is ' +
       'broadcast, and it is followed to a pinned confirmation depth. This page polls until it ' +
       'settles, and every state it passes through is a state the service actually records.',
-    source: 'faucet/src/server.ts:372-377',
+    source: 'faucet/src/server.ts',
   },
 
   /** Shown when the terms could not be fetched. Never a default set of numbers. */

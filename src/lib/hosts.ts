@@ -15,24 +15,24 @@
  *
  * ── 1. The chain index. Registry key `explorer`, and the read is CROSS-ORIGIN ─────────────────
  *
- * There is no `indexer` key: `SurfaceKey` is declared at `ui/packages/ui/src/surfaces.ts:23-38`
+ * There is no `indexer` key: `SurfaceKey` is declared at `ui/packages/ui/src/surfaces.ts`
  * and `indexer` is not among them, and `CloudsForgeHosts` is `Record<SurfaceKey, string>`
- * (`ui/packages/ui/src/index.tsx:121`), so a frontend can only name a surface. The one that means
+ * (`ui/packages/ui/src/index.tsx`), so a frontend can only name a surface. The one that means
  * "the chain index" is `explorer`, whose devPort is **4008** — the port `micro-indexer` binds
- * (`ui/packages/ui/src/surfaces.ts:456`, `indexer/src/env.ts:364`). That entry was 8080 until
+ * (`ui/packages/ui/src/surfaces.ts`, `indexer/src/env.ts`). That entry was 8080 until
  * recently and micro-ui has since corrected it, with the reasoning in the comment above it.
  *
  * So `cloudsforgeHosts().explorer` is `https://explorer.<apex>` in production, and this bundle is
- * served from `https://network.<apex>` (`ui/packages/ui/src/surfaces.ts:192`). Those are different
+ * served from `https://network.<apex>` (`ui/packages/ui/src/surfaces.ts`). Those are different
  * origins, and THIS READ NOW WORKS. Three things had to be true and all three now are; each is
  * recorded because each was separately absent and each failed in a way that looked like one of
  * the others.
  *
  *   1. **CORS at the service.** `micro-indexer` used to send no `access-control-` header at all.
- *      It now sets one itself (`indexer/src/server.ts:898`), and answers a preflight
- *      (`indexer/src/server.ts:207-212`).
+ *      It now sets one itself (`indexer/src/server.ts`), and answers a preflight
+ *      (`indexer/src/server.ts`).
  *   2. **CORS at the gateway.** The estate's headers come from one middleware on the websecure
- *      entrypoint (`deploy/compose/docker-compose.gateway.yml:117`,
+ *      entrypoint (`deploy/compose/docker-compose.gateway.yml`,
  *      `deploy/gateway/dynamic/policy.yml`), and `https://network.cloudsforge.online` was the one
  *      registry product missing from that list — an allowlist that omits an origin fails closed
  *      and in silence, because the browser refuses the response and nothing server-side records a
@@ -60,9 +60,9 @@
  * ── 2. The faucet. Registry key `faucet`, whose devPort is THIS PAGE ──────────────────────────
  *
  * `faucet` is a `surface` with `subdomain: 'network'`, `basePath: '/faucet'` and devPort **3003**
- * (`ui/packages/ui/src/surfaces.ts:365-380`) — "a route on the Network site rather than a host of
- * its own". `micro-faucet` the SERVICE binds **4013** (`faucet/src/env.ts:311`,
- * `faucet/.env.example:19`, `faucet/Dockerfile:84`).
+ * (`ui/packages/ui/src/surfaces.ts`) — "a route on the Network site rather than a host of
+ * its own". `micro-faucet` the SERVICE binds **4013** (`faucet/src/env.ts`,
+ * `faucet/.env.example`, `faucet/Dockerfile`).
  *
  * So `cloudsforgeHosts().faucet` is `https://network.<apex>/faucet` — a PAGE on this app, which is
  * exactly what the registry means by it, and not an API base. This is the same shape of confusion
@@ -73,7 +73,7 @@
  *
  *   * **The basePath must be stripped before a request path is appended.** `${hosts.faucet}/v1/faucet`
  *     is `/faucet/v1/faucet`, which `micro-faucet` does not serve — its table is at
- *     `faucet/src/server.ts:308-444` and every path there starts `/v1`. `faucetBase()` below takes
+ *     `faucet/src/server.ts` and every path there starts `/v1`. `faucetBase()` below takes
  *     the ORIGIN and drops the path, and `test/hosts.test.ts` pins that.
  *   * **In production the origin is this page's**, so the base is `''` and the drip request is
  *     relative — which is what the registry asserts and what the gateway therefore has to route.
@@ -100,9 +100,9 @@ import {
 /**
  * The surface this application IS.
  *
- * `ui/packages/ui/src/surfaces.ts:187-199` registers `network` as a **product**: verb `Mine`,
+ * `ui/packages/ui/src/surfaces.ts` registers `network` as a **product**: verb `Mine`,
  * subdomain `network`, devPort 3003, accent `#d6412f`, glyph `●`, `markId: 'mark-network'` and
- * `inSwitcher: true`. Unlike the explorer, this surface DOES have a mark — `brand/README.md:36`
+ * `inSwitcher: true`. Unlike the explorer, this surface DOES have a mark — `brand/README.md`
  * gives `network` the **full** set of eight files and `brand/assets/network/` holds all eight —
  * and `test/brand-chrome.test.ts` checks the four this bundle ships byte for byte.
  */
@@ -126,10 +126,9 @@ export const APP_NAME = 'network-site'
 /**
  * The accent block this page's `<html>` names.
  *
- * `[data-cf-product='network']` exists at `ui/packages/ui/src/tokens.css:340-345` and carries
+ * `[data-cf-product='network']` exists at `ui/packages/ui/src/tokens.css` and carries
  * `#d6412f`, the exact accent the registry gives this surface
- * (`ui/packages/ui/src/surfaces.ts:194`). Checked rather than assumed: tokens.css says at
- * `:389-396` that "every key an app may set is declared", precisely so a surface cannot fall
+ * (`ui/packages/ui/src/surfaces.ts`). Checked rather than assumed: tokens.css says that "every key an app may set is declared", precisely so a surface cannot fall
  * through to the company ember in silence, which is what `admin` did.
  */
 export const ACCENT_SURFACE = 'network'
@@ -163,7 +162,7 @@ export function resolveApiBase(
  *
  * This is not tidying. `hosts.faucet` is `https://network.<apex>/faucet`, and appending an API
  * path to it produces `/faucet/v1/drips` — a path `micro-faucet` does not serve
- * (`faucet/src/server.ts:308-444`; every entry begins `/v1`). A 404 from a path shape nobody
+ * (`faucet/src/server.ts`; every entry begins `/v1`). A 404 from a path shape nobody
  * serves is indistinguishable from a service that is down, which is exactly the class of defect
  * this estate keeps shipping.
  */
@@ -193,11 +192,11 @@ export function isLocal(hostname: string): boolean {
  * ══════════════════════════════════════════════════════════════════════════════════════════════
  * THE FAUCET IS THE REASON THIS EXISTS, AND IT IS A SAFETY QUESTION RATHER THAN A COSMETIC ONE.
  *
- * `/faucet` is a route on this host (`ui/packages/ui/src/surfaces.ts:545-561`), and this host
+ * `/faucet` is a route on this host (`ui/packages/ui/src/surfaces.ts`), and this host
  * exists on BOTH networks — so `network.cloudsforge.online/faucet` served a page titled "Testnet
  * faucet" from a MAINNET origin, measured 200 on 2026-08-05. Nothing could be dispensed by it:
- * `micro-faucet` pins `NETWORK = 'testnet' as const` (`faucet/src/env.ts:63`) so mainnet is a
- * COMPILE error, exits at boot on any chain id that is not 7412 (`faucet/src/index.ts:106-121`),
+ * `micro-faucet` pins `NETWORK = 'testnet' as const` (`faucet/src/env.ts`) so mainnet is a
+ * COMPILE error, exits at boot on any chain id that is not 7412 (`faucet/src/index.ts`),
  * carries `profiles: ["ember-testnet"]` so no mainnet container starts, and its `/v1` router is
  * rendered only when `CF_EMBER_NETWORK` is testnet (`deploy/gateway/dynamic/estate-web.yml`).
  * Four independent locks, and `POST /v1/drips` on the mainnet host answers 404.
@@ -209,7 +208,7 @@ export function isLocal(hostname: string): boolean {
  *
  * ── WHY THE ENVIRONMENT IS READ OFF THE FIRST LABEL ───────────────────────────────────────────
  *
- * `splitEnvLabel` is the registry's own parser (`ui/packages/ui/src/surfaces.ts:1059-1078`): an
+ * `splitEnvLabel` is the registry's own parser (`ui/packages/ui/src/surfaces.ts`): an
  * environment is a SUFFIX inside the first label, split on the LAST hyphen, so
  * `network-testnet.cloudsforge.online` is the surface `network` on `testnet`. A bare
  * `network.cloudsforge.online` has no env label and is therefore mainnet — the unadorned form is
@@ -246,7 +245,7 @@ export function pageNetwork(hostname: string): PageNetwork {
  * Whether this bundle is being served from an address the surface registry knows.
  *
  * `cloudsforgeHosts()` derives the apex by stripping a KNOWN subdomain prefix
- * (`ui/packages/ui/src/index.tsx:149-158`). Served from an unknown name, the whole name becomes
+ * (`ui/packages/ui/src/index.tsx`). Served from an unknown name, the whole name becomes
  * the apex, and every CloudsForge URL derived from it — the chain index, the account portal,
  * Lantern — resolves one level too deep. The app still renders, because this is a public reference
  * surface and nothing here is a security boundary; but it says so, once, in the shell.
@@ -297,7 +296,7 @@ export function currentNetwork(): PageNetwork {
  * Where the faucet actually is: this same route, on the testnet host.
  *
  * Derived rather than written, through the registry's own `envLabel()`
- * (`ui/packages/ui/src/surfaces.ts:1076-1078`), so it cannot drift from the scheme — and so that
+ * (`ui/packages/ui/src/surfaces.ts`), so it cannot drift from the scheme — and so that
  * nobody re-introduces the dead `<surface>.testnet.<apex>` form by typing it. Returns `null` when
  * the apex cannot be derived, and the caller names the host in prose rather than shipping a link
  * to nowhere.

@@ -9,10 +9,10 @@
  *
  * There is no `ProtectedRoute` in this repository, and there must not be one. The chain read is
  * anonymous (`authoriseRead` returns `null` for a caller with no token and lets the handler run,
- * `indexer/src/server.ts:792-801`) and the three faucet routes are unauthenticated by that
- * service's own decision (`faucet/src/server.ts:341-342`, `:407-409`). A gate here would demand a
+ * `indexer/src/server.ts`) and the three faucet routes are unauthenticated by that
+ * service's own decision (`faucet/src/server.ts`). A gate here would demand a
  * session for facts anyone can read off a public chain and a faucet anyone may use —
- * `docs/ecosystem/15-monetisation-model.md:50` settles the neighbouring case: "A public chain whose
+ * `docs/ecosystem/15-monetisation-model.md` settles the neighbouring case: "A public chain whose
  * explorer is paywalled is not a public chain."
  *
  * `test/routes.test.ts` asserts the absence, so restoring the estate's usual shape is a decision

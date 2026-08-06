@@ -1,8 +1,8 @@
 /**
  * THE `/auth/me` SHAPE, AND THE ABSENCE OF A GATE.
  *
- * The profile is **nested under `user`** (`identity/src/server.ts:1286-1302`, built by `toPublicUser`
- * at `identity/src/users.ts:52-63`). The web template used to declare `interface Me { handle?, roles? }`
+ * The profile is **nested under `user`** (`identity/src/server.ts`, built by `toPublicUser`
+ * at `identity/src/users.ts`). The web template used to declare `interface Me { handle?, roles? }`
  * and read both off the TOP level, where they are not; four frontends inherited it, `roles` was then
  * always null, `isAdmin` in the shared bar was always false, and the switcher hid every `adminOnly`
  * entry from every signed-in operator.
@@ -82,24 +82,55 @@ describe('nothing on this surface is gated', () => {
   })
 })
 
-describe('the /auth/me citation is a line that exists', () => {
-  it('names the route handler in micro-identity', () => {
+describe('the /auth/me citation names something micro-identity really has', () => {
+  /**
+   * The handler's own region, FOUND rather than sliced out at a line range.
+   *
+   * This read `lines.slice(1179, 1192)` — thirteen lines of micro-identity, written down here as a
+   * number. That is a fact about a file this repository neither owns nor watches, and micro-identity
+   * moved that table twice in one afternoon; the range then existed and registered somebody else's
+   * route, which reads as verified and verifies nothing. Searching for the `define(` and reading to
+   * the next one costs one pass and cannot drift.
+   */
+  const regionAfter = (source: string, anchor: RegExp, until: RegExp): string | null => {
+    const lines = source.split('\n')
+    const start = lines.findIndex((l) => anchor.test(l))
+    if (start < 0) return null
+    let end = lines.length
+    for (let i = start + 1; i < lines.length; i++) {
+      if (until.test(lines[i] ?? '')) {
+        end = i
+        break
+      }
+    }
+    return lines.slice(start, end).join('\n')
+  }
+
+  it('registers GET /auth/me, and its handler is what this app reads', () => {
     const root = at('../identity')
     if (!existsSync(`${root}/src/server.ts`)) {
       console.log('UNCHECKED: the /auth/me citation — micro-identity is not checked out')
       return
     }
-    const lines = readFileSync(`${root}/src/server.ts`, 'utf8').split('\n')
-    // `identity/src/server.ts:1286-1302`, cited in four files here. Read the range rather than a
-    // single line, because a range that has drifted onto a different handler reads as verified.
-    const cited = lines.slice(1179, 1192).join('\n')
-    assert.match(cited, /\/auth\/me/, `identity/src/server.ts:1286-1302 is:\n${cited.slice(0, 200)}`)
+    const source = readFileSync(`${root}/src/server.ts`, 'utf8')
+    const region = regionAfter(source, /define\('GET',\s*'\/auth\/me'/, /define\(/)
+    assert.ok(
+      region !== null,
+      'identity/src/server.ts no longer registers GET /auth/me at all — four files here cite it',
+    )
+    assert.match(
+      region,
+      /organisations/,
+      `the /auth/me handler no longer answers organisations:\n${region.slice(0, 200)}`,
+    )
   })
 
   it('and the body really is built nested', () => {
     const root = at('../identity')
     if (!existsSync(`${root}/src/users.ts`)) return
-    const lines = readFileSync(`${root}/src/users.ts`, 'utf8').split('\n')
-    assert.match(lines.slice(51, 63).join('\n'), /handle/, 'toPublicUser is no longer at :52-63')
+    const source = readFileSync(`${root}/src/users.ts`, 'utf8')
+    const region = regionAfter(source, /function toPublicUser\(/, /^(?:export )?(?:async )?function /)
+    assert.ok(region !== null, 'identity/src/users.ts no longer declares toPublicUser')
+    assert.match(region, /handle/, 'toPublicUser no longer carries a handle')
   })
 })

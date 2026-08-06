@@ -15,7 +15,7 @@
  *
  * ── The `/faucet` route is DERIVED FROM THE REGISTRY, not from a literal ──────────────────────
  *
- * `ui/packages/ui/src/surfaces.ts:374` gives the `faucet` surface `basePath: '/faucet'`, and every
+ * `ui/packages/ui/src/surfaces.ts` gives the `faucet` surface `basePath: '/faucet'`, and every
  * link to the faucet in the estate resolves to that path on this host. So the expected route is
  * READ OUT OF THE REGISTRY here rather than written down again: a basePath changed upstream is a
  * red run in this repository, which is where the page it names lives.

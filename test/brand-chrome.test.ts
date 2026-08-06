@@ -5,7 +5,7 @@
  *
  * **1. The bytes.** `public/` holds copies of `brand/assets/network/`, and they are compared rather
  * than merely named: a file with the right name and the wrong contents passes a naming check and
- * ships the wrong icon. `network` is entitled to the FULL set of eight (`brand/README.md:36`), and
+ * ships the wrong icon. `network` is entitled to the FULL set of eight (`brand/README.md`), and
  * four of them are browser chrome that a hostname cannot inherit — that is what is shipped. The
  * other four are consumed by things that are not a browser.
  *
@@ -79,7 +79,7 @@ describe('the bytes are micro-brand’s', () => {
 
   it('and `network` really is entitled to the full set, which is what makes the mark legitimate', () => {
     if (!existsSync(brand)) return
-    // Unlike `explorer` and `status`, which carry markId: null deliberately (`brand/README.md:62-67`)
+    // Unlike `explorer` and `status`, which carry markId: null deliberately (`brand/README.md`)
     // and whose repositories assert the ABSENCE of a mark. This surface is the one they belong to,
     // so the assertion here is the opposite one.
     const source = readdirSync(brand).sort()
@@ -97,7 +97,7 @@ describe('the bytes are micro-brand’s', () => {
 
   it('but the mark itself is NOT shipped as a PNG, because the design system draws it', () => {
     // `<Mark surface="network">` renders SVG that reads `--cf-accent`
-    // (`ui/packages/ui/src/index.tsx:453`, drawing at `:330`), so it wears this surface's molten
+    // (`ui/packages/ui/src/index.tsx`,), so it wears this surface's molten
     // without a second copy of the colour and costs no request. A PNG in public/ would be a second
     // copy that ages.
     assert.equal(
@@ -131,7 +131,7 @@ describe('the description says what the network is not', () => {
   /*
    * BOTH OF THESE USED TO REQUIRE "no mainnet", AND THAT SENTENCE IS NOW FALSE.
    *
-   * Mainnet is published on the public tunnel (`deploy/cloudflared/config.mainnet.public.yml:96`)
+   * Mainnet is published on the public tunnel (`deploy/cloudflared/config.mainnet.public.yml`)
    * and answers `eth_chainId` from off the estate, so a guard requiring a description to say there
    * is no mainnet could only be satisfied by lying in the one string a search engine shows.
    *

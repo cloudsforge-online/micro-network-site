@@ -4,7 +4,7 @@
  * ══════════════════════════════════════════════════════════════════════════════════════════════
  * THE CAVEATS COME BEFORE THE INSTRUCTIONS, AND THAT ORDER IS THE POINT.
  *
- * `hearth/docs/mining.md:5-9` is a warning the project wrote about its own document: it "previously
+ * `hearth/docs/mining.md` is a warning the project wrote about its own document: it "previously
  * mixed" what is shipped with what is designed, "and the mixing is what produced the claim that
  * Homefire is non-outsourceable". A marketing surface is where a corrected claim survives longest,
  * because nobody re-reads it — so the three things Homefire is NOT are their own section, above
@@ -87,13 +87,13 @@ export function MinePage() {
         </ol>
         {/*
           One command, and it is a CLONE rather than a download of a binary. There is no release to
-          point at: `hearth/MAP.md:66` records that nothing is published, and a page offering an
+          point at: `hearth/MAP.md` records that nothing is published, and a page offering an
           installer for software that ships no artefact would be inventing a distribution channel.
         */}
         <Command>git clone https://github.com/cloudsforge-online/hearth</Command>
         <p className="ns-prose">
           The mining document is{' '}
-          <a href={hearthFile('docs/mining.md')}>docs/mining.md</a>, and it is the source for every
+          <a href={hearthFile('docs/mining.md')}>hearth/docs/mining.md</a>, and it is the source for every
           sentence on this page.
         </p>
       </Section>

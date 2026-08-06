@@ -2,7 +2,7 @@
  * The testnet faucet.
  *
  * This route exists because the surface registry says it does: `faucet` is a surface with
- * `subdomain: 'network'` and `basePath: '/faucet'` (`ui/packages/ui/src/surfaces.ts:365-380`), so
+ * `subdomain: 'network'` and `basePath: '/faucet'` (`ui/packages/ui/src/surfaces.ts`), so
  * every link to the faucet anywhere in the estate resolves to this path on this host. See the
  * header of `src/lib/routes.ts`.
  *
@@ -10,7 +10,7 @@
  * EVERY NUMBER ON THIS PAGE IS THE FAUCET'S, FETCHED AT RENDER TIME.
  *
  * The drip, the cooldown, the per-requester limit, the window and the remaining budget all come
- * from `GET /v1/faucet` (`faucet/src/server.ts:348`). **There is no fallback set of numbers in this
+ * from `GET /v1/faucet` (`faucet/src/server.ts`). **There is no fallback set of numbers in this
  * repository** — `test/content.test.ts` checks the register and the register has no faucet entry —
  * so when that call fails the panel says the faucet did not answer and the form is DISABLED rather
  * than left clickable. A request posted into an unreachable service fails in a way that looks like
@@ -19,12 +19,12 @@
  * ── What this form may not send ───────────────────────────────────────────────────────────────
  *
  * **No amount.** There is no field for one and no parameter that would carry one. The handler reads
- * `address` and `idempotencyKey` and nothing else (`faucet/src/server.ts:379-380`), and
- * `faucet/src/requests.ts:126-131` states the rule in the frozen service's words: "every faucet
+ * `address` and `idempotencyKey` and nothing else (`faucet/src/server.ts`), and
+ * `faucet/src/requests.ts` states the rule in the frozen service's words: "every faucet
  * that has ever been drained let the caller influence the amount".
  *
  * **No wording of its own on a refusal.** The message shown is the limiter's, verbatim, because
- * `faucet/src/server.ts:253-255` says what that message is engineered to be: "it names a rule and a
+ * `faucet/src/server.ts` says what that message is engineered to be: "it names a rule and a
  * number, never a balance, an address the caller did not send, or anything about the funding key."
  * A second wording here would be a second thing to keep true, and the softer of the two is the one
  * a reader would quote.
@@ -150,7 +150,7 @@ export function FaucetPage() {
 /**
  * What the faucet says it will do.
  *
- * The terms STRING is rendered verbatim rather than paraphrased. `faucet/src/server.ts:365-367`
+ * The terms STRING is rendered verbatim rather than paraphrased. `faucet/src/server.ts`
  * serves "Testnet EMBER. It has no value, it is not tradeable, and the chain it funds may be reset
  * without notice." — which is the disclaimer, written once, by the service that has to honour it.
  * `test/render.test.ts` asserts this page carries no second wording of it.
@@ -172,7 +172,7 @@ function Terms({ terms }: { terms: FaucetTerms }) {
           {/*
             `fact('decimals')` rather than a literal 18, and the exponent is NAMED on screen. EMBER's
             exponent is 18 under the account model and the retired ledger's node still defines 1e8
-            (`hearth/README.md:76`), so a figure with no exponent beside it is ambiguous by exactly
+            (`hearth/README.md`), so a figure with no exponent beside it is ambiguous by exactly
             eight orders of magnitude on a page about that very chain.
           */}
           <span className="cf-num">
@@ -204,7 +204,7 @@ function Terms({ terms }: { terms: FaucetTerms }) {
       </dl>
       <Note tone="warn" title="The faucet's own terms">
         <p>{terms.terms}</p>
-        <Cite source="faucet/src/server.ts:365-367" />
+        <Cite source="faucet/src/server.ts" />
       </Note>
     </Section>
   )
@@ -234,7 +234,7 @@ function DripForm({ terms }: { terms: FaucetTerms | null }) {
    * One idempotency key per submission, generated when the request is sent.
    *
    * The service derives one from the recipient and the cooldown window when the field is absent
-   * (`faucet/src/requests.ts:135-138`), which already makes two clicks inside one cooldown a single
+   * (`faucet/src/requests.ts`), which already makes two clicks inside one cooldown a single
    * request. This page sends its own anyway, because the derived key CHANGES when the window rolls:
    * a retry that straddles a roll would be recognised as a new request and would be a second drip.
    *
@@ -281,8 +281,8 @@ function DripForm({ terms }: { terms: FaucetTerms | null }) {
           </label>
           {/*
             `.cf-input` with the `--mono` modifier, both from the design system
-            (`ui/packages/ui/src/ui.css:174-192`). A hex address is compared character by character,
-            which is what the modifier exists for — `ui/packages/ui/src/ui.css:168-172` names this
+            (`ui/packages/ui/src/ui.css`). A hex address is compared character by character,
+            which is what the modifier exists for — `ui/packages/ui/src/ui.css` names this
             surface class of app as the reason the font family is `inherit` with a modifier rather
             than fixed. There is no local `.ns-input`, and `test/tokens.test.ts` asserts its absence.
           */}
@@ -305,7 +305,7 @@ function DripForm({ terms }: { terms: FaucetTerms | null }) {
         </div>
         {/*
           `.cf-btn--ember` is the design system's ONE solid call to action
-          (`ui/packages/ui/src/ui.css:216-226`). There is no `.cf-btn--primary` and there must not
+          (`ui/packages/ui/src/ui.css`). There is no `.cf-btn--primary` and there must not
           be: a second name for one thing is how a design system starts to drift, and
           `test/tokens.test.ts` asserts it stays absent upstream.
         */}
@@ -330,7 +330,7 @@ function DripForm({ terms }: { terms: FaucetTerms | null }) {
 /**
  * A refusal, in the service's own words.
  *
- * A refusal is the limiter WORKING (`faucet/src/server.ts:253-255` logs it at INFO and says so), so
+ * A refusal is the limiter WORKING (`faucet/src/server.ts` logs it at INFO and says so), so
  * it is not painted in the danger colour unless it is genuinely a fault. `isRefusal` distinguishes
  * the five limiter codes from everything else; anything not in that set — a 500, a network error,
  * an auth status that should be impossible on an unauthenticated route — is a fault and is shown as

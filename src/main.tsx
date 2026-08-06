@@ -5,14 +5,14 @@
  *      A crash during the first render is the single most valuable event this app can send.
  *   2. `bootstrapSession()` second, and AWAITED, so the SSO hand-off code in the URL fragment is
  *      redeemed before React mounts. It strips `#cf_code` from the address bar before the exchange
- *      goes over the wire — see the note at `ui/packages/ui/src/index.tsx:202-208`. Rendering first
+ *      goes over the wire — see the note at `ui/packages/ui/src/index.tsx`. Rendering first
  *      would show a signed-out shell to somebody who has just signed in, and would leave the code
  *      on screen for the length of a network round trip.
  *   3. Render last.
  *
  * Step 2 runs on this surface too, even though **no page here needs a session at all**: the chain
- * read is anonymous (`indexer/src/server.ts:792-801`) and the three faucet routes are
- * unauthenticated (`faucet/src/server.ts:341-342`), and this bundle sends no bearer to any of them.
+ * read is anonymous (`indexer/src/server.ts`) and the three faucet routes are
+ * unauthenticated (`faucet/src/server.ts`), and this bundle sends no bearer to any of them.
  * It runs because the code has to leave the address bar whether or not the page that follows uses
  * it — a hand-off code sitting in a shared link is a hand-off code somebody else can redeem. The
  * session it may establish reaches the shared company bar and nothing else.

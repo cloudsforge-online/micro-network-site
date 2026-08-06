@@ -12,9 +12,9 @@
  *      of its four states carry no value, so there is no path from an absence to a digit — unless a
  *      page formats a nullable height itself, which is what is grepped for.
  *   2. **The disclaimers exist once.** The faucet's terms string is the service's
- *      (`faucet/src/server.ts:365-367`) and is rendered verbatim; a second wording here would be a
+ *      (`faucet/src/server.ts`) and is rendered verbatim; a second wording here would be a
  *      second thing to keep true, and the softer of the two is the one a reader would quote.
- *   3. **Every claim carries its source, on screen.** `org/templates/README.template.md:18` — "A
+ *   3. **Every claim carries its source, on screen.** `org/templates/README.template.md` — "A
  *      claim nobody can check is worse than no claim, because it is believed."
  */
 import assert from 'node:assert/strict'
@@ -114,7 +114,7 @@ describe('the disclaimers exist once', () => {
   })
 
   it('every page that mentions mining carries the caveat ABOVE the reward', () => {
-    // Order matters more than presence: `hearth/docs/mining.md:5-9` records that mixing what is
+    // Order matters more than presence: `hearth/docs/mining.md` records that mixing what is
     // shipped with what is designed "is what produced the claim that Homefire is
     // non-outsourceable". A caveat under a reward is a caveat nobody reads.
     const mine = code('mine.tsx')

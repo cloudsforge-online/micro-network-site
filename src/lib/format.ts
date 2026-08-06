@@ -4,15 +4,15 @@
  * ══════════════════════════════════════════════════════════════════════════════════════════════
  * THREE RULES, EACH OF WHICH THIS ESTATE HAS BROKEN SOMEWHERE.
  *
- * **1. Nothing here converts an amount with `Number`.** `indexer/src/reads.ts:8-10` and
- * `faucet/src/server.ts:357-358` both put amounts on the wire as decimal strings for the same
+ * **1. Nothing here converts an amount with `Number`.** `indexer/src/reads.ts` and
+ * `faucet/src/server.ts` both put amounts on the wire as decimal strings for the same
  * reason: `JSON.stringify` cannot serialise a `bigint`, and `Number("1e19 wei")` silently loses the
  * low digits of any 18-decimal value above about 9 EMBER. `weiToEmber` below is `BigInt` division
  * and string padding, start to finish. `test/format.test.ts` drives it with a value that a double
  * cannot represent and compares digit for digit.
  *
  * **2. There is no absent value that formats as a number.** Every function here that can be handed
- * nothing returns a SENTENCE, never `0` and never `—`. `indexer/src/reads.ts:87` states the rule
+ * nothing returns a SENTENCE, never `0` and never `—`. `indexer/src/reads.ts` states the rule
  * for the one field that carries it upstream — "Null when no tip has ever been observed; a lag of
  * zero would be a lie, not a default" — and it is applied to all of them. The type system carries
  * it too: heights reach the page as a `Figure` (`src/lib/chainstatus.ts`), which has no branch from
@@ -20,7 +20,7 @@
  *
  * **3. THE WORD "FINAL" DOES NOT APPEAR ON THIS SURFACE, AND NEITHER DOES A YIELD.** A confirmation
  * depth is a probability, not a settlement. And a block reward is a consensus constant while an
- * INCOME is a share of it — `hearth/docs/mining.md:69-72` is the whole of what the chain
+ * INCOME is a share of it — `hearth/docs/mining.md` is the whole of what the chain
  * guarantees a small miner (frequent wins at a 15-second block time, smooth LWMA retargeting) and
  * it guarantees nothing about what that is worth. `NOT_AN_INCOME` below is the one sentence this
  * surface says about that, exported so it cannot drift into six softer paraphrases, and the `rules`
@@ -42,7 +42,7 @@ export const NOT_AN_INCOME =
 /**
  * The sentence every page that prints a height has to carry.
  *
- * `indexer/src/reads.ts:18-30` scopes the two heights: `indexedHeight` is what this service has
+ * `indexer/src/reads.ts` scopes the two heights: `indexedHeight` is what this service has
  * WALKED, `tipHeight` is what a provider last CLAIMED, and counting against the second
  * "over-reports depth". Both are rendered on this surface, always, and never one without the other.
  */
@@ -68,11 +68,11 @@ export function count(value: number): string {
  *
  * `decimals` is a PARAMETER rather than a constant, and it defaults to nothing: the caller must say
  * which exponent it means. That is not ceremony. EMBER's exponent is **18**
- * (`contracts/packages/chain/src/index.ts:53`), which is what `micro-faucet` computes with
- * (`faucet/src/env.ts:180-184`, `DECIMALS = CHAINS.EMBER.decimals`) — and Hearth's own node still
- * defines `SPARKS_PER_EMBER = 100_000_000` at `hearth/node/src/params.js:6`, which is 1e8. That is
- * the retired UTXO ledger's unit and `hearth/README.md:98` records the disagreement in the project's
- * own words at `hearth/README.md:76`: "Decimals: 18 — specified; params.js still defines 1e8 and
+ * (`contracts/packages/chain/src/index.ts`), which is what `micro-faucet` computes with
+ * (`faucet/src/env.ts`, `DECIMALS = CHAINS.EMBER.decimals`) — and Hearth's own node still
+ * defines `SPARKS_PER_EMBER = 100_000_000` at `hearth/node/src/params.js`, which is 1e8. That is
+ * the retired UTXO ledger's unit and `hearth/README.md` records the disagreement in the project's
+ * own words at `hearth/README.md`: "Decimals: 18 — specified; params.js still defines 1e8 and
  * has not moved yet". A default of 18 in this file would quietly pick a side in a discrepancy that
  * is open upstream.
  *
@@ -110,7 +110,7 @@ export function weiToEmber(wei: string, decimals: number): string {
 /**
  * A duration in seconds, said the way a person would.
  *
- * The faucet's cooldowns and windows arrive as seconds (`faucet/src/server.ts:360-364`) and "86400"
+ * The faucet's cooldowns and windows arrive as seconds (`faucet/src/server.ts`) and "86400"
  * is not a thing anybody reads. The largest whole unit only — "1 day", not "1 day 0 hours" — because
  * a cooldown is a rule of thumb and a second unit implies a precision the limiter does not promise.
  */
@@ -160,11 +160,11 @@ export interface Tone {
 /**
  * What a dispense's status means to somebody watching a drip.
  *
- * The six are the service's (`faucet/src/server.ts:465`). `confirmed` is the only `good`, and
+ * The six are the service's (`faucet/src/server.ts`). `confirmed` is the only `good`, and
  * everything before it is `idle` rather than `warn`: **waiting is the normal condition of a young
  * dispense**, and painting it amber would make it look like something had gone wrong — which is the
  * exact misreading that made a marketplace tell every seller their escrow had failed
- * (`indexer/src/server.ts:468-478`).
+ * (`indexer/src/server.ts`).
  */
 export function dripTone(status: string): Tone {
   switch (status) {
@@ -190,7 +190,7 @@ export function dripTone(status: string): Tone {
 /**
  * What a chain index provider's health means.
  *
- * The three states are `micro-indexer`'s (`indexer/src/reads.ts:63`).
+ * The three states are `micro-indexer`'s (`indexer/src/reads.ts`).
  */
 export function providerTone(state: string): Tone {
   switch (state) {

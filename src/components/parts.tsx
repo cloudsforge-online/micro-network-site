@@ -5,7 +5,7 @@
  * `<Figure>` IS THE ONLY WAY A NUMBER ABOUT THE NETWORK REACHES THE SCREEN.
  *
  * `micro-status-web` made green-on-unknown structurally unreachable rather than merely unlikely:
- * `status-web/src/lib/degrade.ts:24-26` records that **no branch of its failure reducer can produce
+ * `status-web/src/lib/degrade.ts` records that **no branch of its failure reducer can produce
  * `operational`**, so the only route to that word runs through a complete document. The equivalent
  * here is that no branch of this component can produce a digit from an absence — the `Figure` union
  * (`src/lib/chainstatus.ts`) has four cases and three of them carry no value at all, so there is
@@ -67,7 +67,7 @@ export function Figure({ value, unit }: { value: FigureState; unit?: string | un
 /**
  * A yes/no about the network, with the same four states.
  *
- * `halted` is a boolean upstream (`indexer/src/reads.ts:84`) and cannot be null, but the panel it
+ * `halted` is a boolean upstream (`indexer/src/reads.ts`) and cannot be null, but the panel it
  * sits in can still be pending or unfetched — and rendering "not halted" for a panel that never
  * answered would be the boolean version of the defect `Figure` exists to stop.
  */
@@ -155,7 +155,7 @@ export function Detail({ label, children }: { label: string; children: ReactNode
  *
  * ON SCREEN, not only in a comment. This surface asks a reader to believe things about a chain
  * they cannot run and a repository they have not read, and the README template states the standard
- * in one line (`org/templates/README.template.md:18`): "A claim nobody can check is worse than no
+ * in one line (`org/templates/README.template.md`): "A claim nobody can check is worse than no
  * claim, because it is believed." Every block of copy on this site carries the path and line it
  * came from, in the smallest type on the page, and `test/citations.test.ts` checks that each one
  * names a line that exists.
