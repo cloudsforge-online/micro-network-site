@@ -89,55 +89,60 @@ export const STANDING_STATE = {
 
 export const HOME = {
   eyebrow: 'Forge Network',
-  title: 'Money mined at home',
+  title: 'A coin you can mine on the computer you already own',
   /**
    * The search-result and link-preview description. Separate from the standfirst on purpose: a
    * standfirst is read under a headline that is already on screen, a description is read with no
    * headline and inside a length budget.
    */
   blurb:
-    'Hearth is a CPU-mined, ASIC-resistant proof-of-work chain that speaks Ethereum. Its mainnet and testnet both answer on public endpoints and are new enough to be unproven, and no EMBER on either has any monetary value.',
+    'Hearth is a chain you mine with an ordinary processor, and it runs the same contracts and the same wallets as Ethereum. Both its networks are reachable and both are new and unproven, and its coin, EMBER, has no monetary value.',
   standfirst:
-    'Hearth is a proof-of-work chain built so that the machine you are reading this on is the whole ' +
-    'setup. Its coin is EMBER. Its execution layer is an EVM written from scratch and gated on ' +
-    "Ethereum's own published vectors, so the tools you already have work against it without " +
-    'knowing it is bespoke.',
+    'Hearth is designed so that the computer you are reading this on is the whole rig — no ' +
+    'specialist hardware, nothing to buy. Its coin is EMBER. Underneath, it runs Ethereum ' +
+    'contracts and answers Ethereum wallets, so the tools you already know work here without ' +
+    'being told this chain is new.',
 
   what: {
     title: 'What it is',
     items: [
       {
-        title: 'Proof of work, sized for a person',
+        title: 'Mining a laptop can win at',
         body:
-          'Homefire is memory-hard and CPU-friendly: each attempt fills a scratchpad by chaining ' +
-          'SHA-256, then takes a pseudo-random walk that reads and rewrites it. The bottleneck is ' +
-          'memory latency rather than gate count, so a warehouse of specialised hardware earns ' +
-          'little more per pound than a laptop.',
+          'Most coins are mined by machines built for nothing else, which prices an ordinary ' +
+          'computer out on the first day. Hearth is deliberately built the other way round: ' +
+          'every attempt has to shuffle a block of memory, and memory is the one thing ' +
+          'specialised hardware cannot make much faster. A warehouse of it earns little more ' +
+          'per pound than your laptop does.',
         source: 'hearth/docs/mining.md',
       },
       {
-        title: 'It speaks Ethereum',
+        title: 'Your Ethereum tools work here',
         body:
-          'Hex addresses, secp256k1, the Shanghai gas schedule and the standard JSON-RPC surface, ' +
-          'so MetaMask, ethers, viem, Hardhat and Foundry work against it. The EVM is written here ' +
-          'rather than imported — no third-party EVM library, and no runtime dependency of any kind.',
+          'Addresses, signatures, gas and the interface a wallet talks to are all the ones ' +
+          'Ethereum uses, so MetaMask, ethers, viem, Hardhat and Foundry connect without ' +
+          'changes and a contract you already wrote deploys unaltered. The engine underneath ' +
+          'was written here rather than borrowed, and it pulls in no third-party code to run.',
         source: 'hearth/README.md, hearth/MAP.md',
       },
       {
-        title: 'Fair launch, and a Commons',
+        title: 'Nobody was handed a head start',
         body:
-          `Genesis mints no spendable coins, and ${fact('commonsShare')} per cent of every block ` +
-          'reward goes to an on-chain Commons treasury rather than to the miner. The testnet ' +
-          'genesis state root is the empty-trie root, which is a thirty-second check rather than a ' +
-          'promise.',
+          'The first block created no spendable coins for anyone, founders included, so there ' +
+          `is no pre-mined pile waiting to be sold into the first buyers. ${fact('commonsShare')} per cent of ` +
+          'every reward goes to a shared treasury held on the chain instead of to the miner, ' +
+          'and the starting balances are published so you can check that claim yourself in ' +
+          'under a minute.',
         source: 'hearth/README.md, hearth/TESTNET.md',
       },
       {
-        title: 'A tail that does not end',
+        title: 'The reward never falls to nothing',
         body:
-          `The reward starts at ${fact('genesisReward')} EMBER, halves every ` +
-          `${fact('halfLifeYears')} years, and settles at a perpetual ${fact('tailReward')} EMBER ` +
-          'per block. Security therefore never has to depend on a fee market that may not exist.',
+          `Each block pays ${fact('genesisReward')} EMBER to begin with. That halves every ` +
+          `${fact('halfLifeYears')} years and then levels off at ${fact('tailReward')} EMBER a ` +
+          'block for good, rather than running down to zero. It means the people keeping the ' +
+          'chain honest are always paid something, instead of the chain having to hope ' +
+          'transaction fees alone will cover it.',
         source: 'hearth/README.md',
       },
     ],
@@ -162,7 +167,10 @@ export const HOME = {
       { field: 'Network and coin', value: 'Hearth, and EMBER' },
       {
         field: 'Chain id',
-        value: `${fact('chainIdMainnet')} for mainnet, which is published and answering, and ${fact('chainIdTestnet')} for the testnet, which has no reachable endpoint`,
+        // This row said the testnet "has no reachable endpoint" and contradicted the status table
+        // three sections below, which records it as published and answering alongside the faucet.
+        // The prohibition on unlabelled testnet URLs still holds — hence the word testnet here.
+        value: `${fact('chainIdMainnet')} for mainnet and ${fact('chainIdTestnet')} for the testnet. Both are published and both answer`,
       },
       {
         field: 'Block time',
