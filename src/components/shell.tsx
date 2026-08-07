@@ -39,7 +39,7 @@
  * notice that is absent for every reader who has been here before, which is precisely the reader
  * most likely to have formed the wrong impression.
  */
-import { CloudsForgeBar, Mark } from '@cloudsforge/ui'
+import { CloudsForgeBar, CookieBanner, Mark } from '@cloudsforge/ui'
 import { NavLink, Outlet } from 'react-router-dom'
 import { STANDING_STATE } from '../content/copy.ts'
 import { useSession } from '../lib/auth.tsx'
@@ -108,6 +108,12 @@ export function AppShell({ unregistered = false }: { unregistered?: boolean }) {
         </Note>
         <Outlet />
       </main>
+      {/*
+        Last in the DOM so it is last in the tab order: the gate is a decision about this visit, not
+        a barrier in front of the page, and a reader who never touches it has still read everything.
+        It draws nothing until `initAnalytics()` reports no stored answer.
+      */}
+      <CookieBanner />
     </>
   )
 }

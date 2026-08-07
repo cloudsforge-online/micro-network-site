@@ -19,7 +19,9 @@
  */
 import { MINE } from '../content/copy.ts'
 import { NOT_AN_INCOME } from '../lib/format.ts'
+import { hosts } from '../lib/hosts.ts'
 import { hearthFile } from '../lib/routes.ts'
+import { BrowserMine } from '../components/browsermine.tsx'
 import { Cite, Command, Note, Page, PageHead, Section } from '../components/parts.tsx'
 
 export function MinePage() {
@@ -76,6 +78,12 @@ export function MinePage() {
       </Section>
 
       <Section title={MINE.start.title} lede={MINE.start.lede} id="start">
+        {/*
+          The browser miner comes FIRST, ahead of the clone-and-build path. It is the only way to
+          start mining without installing anything, and leaving it below a git command is how a
+          reader concludes this chain wants a toolchain before it will pay them.
+        */}
+        <BrowserMine rpc={hosts().rpc} />
         <ol className="ns-steps">
           {MINE.start.steps.map((step) => (
             <li className="ns-step" key={step.title}>
