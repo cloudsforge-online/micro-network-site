@@ -125,21 +125,20 @@ describe('the disclaimers exist once', () => {
   })
 })
 
-describe('every claim on screen carries its source', () => {
-  it('each page renders at least one Cite', () => {
-    for (const file of PAGES) {
-      if (file === 'not-found.tsx') continue // nothing on it is a claim about the world
-      assert.match(code(file), /<Cite source=/, `src/pages/${file} makes claims and cites nothing`)
-    }
-  })
-
-  it('the standing state notice is in the shell, so it is on every route', () => {
+describe('the standing state notice', () => {
+  /*
+   * This block used to also require that EVERY page render at least one `<Cite source=…>` — a
+   * repository path in the smallest type on the page, under every claim. The provenance is kept
+   * (`src/content/facts.ts`, and the digit rule in `test/content.test.ts` holds copy to it); what
+   * is gone is printing it at a reader who came to find out whether they can mine a coin.
+   * `test/content.test.ts` now asserts the inverse — that no copy string prints a path at all.
+   */
+  it('is in the shell, so it is on every route', () => {
     // Not on the home page only. A reader arriving on /mine from a search result has not read the
-    // home page and would otherwise spend their whole visit believing there is a network.
+    // home page and would otherwise spend their whole visit not knowing how new this network is.
     const shell = read('src/components/shell.tsx')
     assert.match(shell, /STANDING_STATE\.headline/)
     assert.match(shell, /STANDING_STATE\.body/)
-    assert.match(shell, /<Cite source=\{STANDING_STATE\.source\}/)
   })
 })
 
@@ -163,13 +162,13 @@ describe('the 404 page tells the reader the server agreed', () => {
   })
 })
 
-describe('the failed state on the chain page explains itself with citations', () => {
-  it('renders the cross-origin note and its source inside Failed', () => {
-    // A generic failure sentence plus a specific, CITED explanation is strictly better than either
-    // alone — and strictly better than a specific explanation invented in the error handler, which
-    // is how this estate keeps shipping confident wrong diagnoses.
+describe('the failed state on the chain page explains itself', () => {
+  it('renders the cross-origin note inside Failed', () => {
+    // A generic failure sentence plus a specific explanation is strictly better than either alone
+    // — and strictly better than a specific explanation invented in the error handler, which is
+    // how this estate keeps shipping confident wrong diagnoses.
     const chain = code('chain.tsx')
-    assert.match(chain, /<Failed[\s\S]*?CHAIN\.unreachable\.body[\s\S]*?CHAIN\.unreachable\.source/)
+    assert.match(chain, /<Failed[\s\S]*?CHAIN\.unreachable\.body/)
   })
 
   it('and offers a retry, because the reason may stop being true without a reload', () => {

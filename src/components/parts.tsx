@@ -150,24 +150,12 @@ export function Detail({ label, children }: { label: string; children: ReactNode
   )
 }
 
-/**
- * A citation, rendered.
- *
- * ON SCREEN, not only in a comment. This surface asks a reader to believe things about a chain
- * they cannot run and a repository they have not read, and the README template states the standard
- * in one line (`org/templates/README.template.md`): "A claim nobody can check is worse than no
- * claim, because it is believed." Every block of copy on this site carries the path and line it
- * came from, in the smallest type on the page, and `test/citations.test.ts` checks that each one
- * names a line that exists.
- */
-export function Cite({ source }: { source: string }) {
-  return (
-    <p className="ns-cite">
-      <span className="ns-cite__label">Source</span>{' '}
-      <code className="cf-num ns-cite__path">{source}</code>
-    </p>
-  )
-}
+/* A `Cite` component used to print the repository path behind every block of copy, in the
+ * smallest type on the page. The provenance is worth keeping and is kept — `src/content/facts.ts`
+ * still records where every number comes from, and the content tests still hold copy to it. What
+ * is gone is PRINTING it: a visitor deciding whether to mine a coin is not helped by a filename,
+ * and a public page that reads like a source tree reads as unfinished rather than as honest. The
+ * page that does belong to a reader who wants to check is the repository, linked from the footer. */
 
 /** A plain advisory panel. `warn` for something the reader must weigh; never for an error. */
 export function Note({

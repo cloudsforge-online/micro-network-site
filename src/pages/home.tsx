@@ -16,7 +16,7 @@ import { Link } from 'react-router-dom'
 import { hosts } from '../lib/hosts.ts'
 import { EXPLORER_SURFACE, HEARTH_REPO } from '../lib/routes.ts'
 import { HOME } from '../content/copy.ts'
-import { Cite, Detail, Note, Page, PageHead, Section } from '../components/parts.tsx'
+import { Detail, Page, PageHead, Section } from '../components/parts.tsx'
 
 export function HomePage() {
   return (
@@ -29,7 +29,6 @@ export function HomePage() {
             <article className="ns-card" key={item.title}>
               <h3 className="ns-card__title">{item.title}</h3>
               <p className="ns-card__body">{item.body}</p>
-              <Cite source={item.source} />
             </article>
           ))}
         </div>
@@ -47,7 +46,6 @@ export function HomePage() {
             </Detail>
           ))}
         </dl>
-        <Cite source={HOME.coin.source} />
       </Section>
 
       {/*
@@ -85,7 +83,6 @@ export function HomePage() {
             </tbody>
           </table>
         </div>
-        <Cite source={HOME.state.source} />
       </Section>
 
       <Section title={HOME.where.title} lede={HOME.where.lede} id="where">
@@ -143,8 +140,8 @@ export function HomePage() {
           <article className="ns-card">
             <h3 className="ns-card__title">The source</h3>
             <p className="ns-card__body">
-              Hearth is public and MIT licensed. Every claim on this site cites a file in it, and
-              every one of those citations is checked by this repository&rsquo;s own build.
+              Hearth is public and MIT licensed. The node, the mining algorithm and the virtual
+              machine are all there to read, run and check for yourself.
             </p>
             <a className="cf-btn cf-btn--ember ns-card__go" href={HEARTH_REPO}>
               Read the repository
@@ -153,19 +150,6 @@ export function HomePage() {
         </div>
       </Section>
 
-      {/*
-        The closing note is about what this page is FOR, and it is deliberately the last thing.
-        A public surface for a chain with no network exists to be checkable, not to be persuasive.
-      */}
-      <Note tone="accent" title="How to check any of this">
-        <p>
-          Every section above carries the path and line it came from. Where Hearth&rsquo;s own
-          documents disagree with each other, its inventory wins and says so at the top of itself —
-          this page follows that instruction rather than assembling a more flattering account from
-          the readme.
-        </p>
-        <Cite source="hearth/MAP.md" />
-      </Note>
     </Page>
   )
 }
@@ -179,4 +163,4 @@ export function HomePage() {
  */
 const TONE_OF = { built: 'good', absent: 'bad', open: 'warn' } as const
 const GLYPH_OF = { built: '●', absent: '○', open: '◐' } as const
-const WORD_OF = { built: 'Built', absent: 'Not built', open: 'Open' } as const
+const WORD_OF = { built: 'Built', absent: 'Not built', open: 'In progress' } as const

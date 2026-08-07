@@ -22,7 +22,7 @@ import { NOT_AN_INCOME } from '../lib/format.ts'
 import { hosts } from '../lib/hosts.ts'
 import { hearthFile } from '../lib/routes.ts'
 import { BrowserMine } from '../components/browsermine.tsx'
-import { Cite, Command, Note, Page, PageHead, Section } from '../components/parts.tsx'
+import { Command, Note, Page, PageHead, Section } from '../components/parts.tsx'
 
 export function MinePage() {
   return (
@@ -36,7 +36,6 @@ export function MinePage() {
       <Note tone="warn" title="What mining pays, before anything else">
         <p>{NOT_AN_INCOME}</p>
         <p className="ns-note__aside">{MINE.pay.body}</p>
-        <Cite source={MINE.pay.source} />
       </Note>
 
       <Section title={MINE.how.title} lede={MINE.how.lede} id="how">
@@ -45,7 +44,6 @@ export function MinePage() {
             <article className="ns-card" key={item.title}>
               <h3 className="ns-card__title">{item.title}</h3>
               <p className="ns-card__body">{item.body}</p>
-              <Cite source={item.source} />
             </article>
           ))}
         </div>
@@ -57,7 +55,6 @@ export function MinePage() {
             <article className="ns-card ns-card--warn" key={item.title}>
               <h3 className="ns-card__title">{item.title}</h3>
               <p className="ns-card__body">{item.body}</p>
-              <Cite source={item.source} />
             </article>
           ))}
         </div>
@@ -65,7 +62,6 @@ export function MinePage() {
 
       <Section title={MINE.pools.title} id="pools">
         <p className="ns-prose">{MINE.pools.body}</p>
-        <Cite source={MINE.pools.source} />
       </Section>
 
       <Section title={MINE.design.title} lede={MINE.design.lede} id="design">
@@ -74,7 +70,6 @@ export function MinePage() {
             <li key={item}>{item}</li>
           ))}
         </ul>
-        <Cite source={MINE.design.source} />
       </Section>
 
       <Section title={MINE.start.title} lede={MINE.start.lede} id="start">
@@ -89,7 +84,6 @@ export function MinePage() {
             <li className="ns-step" key={step.title}>
               <h3 className="ns-step__title">{step.title}</h3>
               <p className="ns-step__body">{step.body}</p>
-              <Cite source={step.source} />
             </li>
           ))}
         </ol>

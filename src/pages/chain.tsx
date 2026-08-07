@@ -46,7 +46,6 @@ import { TWO_HEIGHTS, providerTone, when } from '../lib/format.ts'
 import { useResource } from '../lib/resource.ts'
 import { Failed, Loading } from '../components/states.tsx'
 import {
-  Cite,
   Claim,
   Detail,
   Figure,
@@ -70,12 +69,10 @@ export function ChainPage() {
       <Note tone="accent" title={CHAIN.heads.title}>
         <p>{CHAIN.heads.body}</p>
         <p className="ns-note__aside">{TWO_HEIGHTS}</p>
-        <Cite source={CHAIN.heads.source} />
       </Note>
 
       <Note title={CHAIN.absence.title}>
         <p>{CHAIN.absence.body}</p>
-        <Cite source={CHAIN.absence.source} />
       </Note>
 
       <Section title={CHAIN.explorer.title}>
@@ -133,7 +130,6 @@ function ScopePanel({ scope }: { scope: Scope }) {
             unverifiable claim on a public page.
           */}
           <p>{CHAIN.unreachable.body}</p>
-          <Cite source={CHAIN.unreachable.source} />
         </Failed>
         {/* Every figure the panel would have carried, rendered as unfetched rather than omitted:
             a reader must be able to see WHICH facts are missing, not merely that some are. */}

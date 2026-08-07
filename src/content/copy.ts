@@ -69,20 +69,14 @@ import { fact, grouped } from './facts.ts'
  * spend their whole visit believing there is a network to mine on.
  */
 export const STANDING_STATE = {
-  headline: 'Hearth mainnet is reachable. It is not an established network.',
+  headline: 'Hearth is a new network. Please read this before you rely on it.',
   body:
-    `A public JSON-RPC endpoint answers on chain id ${fact('chainIdMainnet')} and blocks are ` +
-    'advancing, which is a narrower claim than it sounds and is the only one this site makes. ' +
-    'EMBER has no price, because there is nowhere to trade it: no market, no listing, no ' +
-    'liquidity. The chain is new and short, so a deep reorg is a live risk rather than a ' +
-    'theoretical one. A separate public testnet answers on chain id ' +
-    `${fact('chainIdTestnet')}, and its EMBER is given away by the faucet and is worthless by ` +
-    'design — do not confuse the two. And the ' +
-    'whole estate runs on one home server behind a tunnel: no second machine, no failover, no ' +
-    'restored backup.',
-  source:
-    'deploy/cloudflared/config.mainnet.public.yml, ui/packages/ui/src/surfaces.ts, ' +
-    'deploy/gateway/dynamic/estate-web.yml',
+    'EMBER cannot be bought or sold. There is no market for it, no listing and no price, so ' +
+    'nothing you mine here is money yet. The chain itself is only weeks old and runs from a ' +
+    'single site, which means a deep reorganisation is a real possibility rather than a ' +
+    'theoretical one and an outage has nothing to fail over to. The test network is a separate ' +
+    `chain — id ${fact('chainIdTestnet')} rather than ${fact('chainIdMainnet')} — and the EMBER ` +
+    'the faucet gives away on it is worthless by design.',
 }
 
 /* ══════════════════════════════ home ══════════════════════════════ */
@@ -96,7 +90,7 @@ export const HOME = {
    * headline and inside a length budget.
    */
   blurb:
-    'Hearth is a chain you mine with an ordinary processor, and it runs the same contracts and the same wallets as Ethereum. Both its networks are reachable and both are new and unproven, and its coin, EMBER, has no monetary value.',
+    'Mine EMBER with an ordinary processor, on a chain that runs Ethereum contracts and answers Ethereum wallets. New, unproven, and not yet worth money.',
   standfirst:
     'Hearth is designed so that the computer you are reading this on is the whole rig — no ' +
     'specialist hardware, nothing to buy. Its coin is EMBER. Underneath, it runs Ethereum ' +
@@ -114,7 +108,6 @@ export const HOME = {
           'every attempt has to shuffle a block of memory, and memory is the one thing ' +
           'specialised hardware cannot make much faster. A warehouse of it earns little more ' +
           'per pound than your laptop does.',
-        source: 'hearth/docs/mining.md',
       },
       {
         title: 'Your Ethereum tools work here',
@@ -123,7 +116,6 @@ export const HOME = {
           'Ethereum uses, so MetaMask, ethers, viem, Hardhat and Foundry connect without ' +
           'changes and a contract you already wrote deploys unaltered. The engine underneath ' +
           'was written here rather than borrowed, and it pulls in no third-party code to run.',
-        source: 'hearth/README.md, hearth/MAP.md',
       },
       {
         title: 'Nobody was handed a head start',
@@ -133,7 +125,6 @@ export const HOME = {
           'every reward goes to a shared treasury held on the chain instead of to the miner, ' +
           'and the starting balances are published so you can check that claim yourself in ' +
           'under a minute.',
-        source: 'hearth/README.md, hearth/TESTNET.md',
       },
       {
         title: 'The reward never falls to nothing',
@@ -143,7 +134,6 @@ export const HOME = {
           'block for good, rather than running down to zero. It means the people keeping the ' +
           'chain honest are always paid something, instead of the chain having to hope ' +
           'transaction fees alone will cover it.',
-        source: 'hearth/README.md',
       },
     ],
   },
@@ -162,7 +152,6 @@ export const HOME = {
     lede:
       'What you would type into a wallet. These are the values the code carries, and the mainnet ' +
       'id below is the one a public endpoint answers with.',
-    source: 'hearth/README.md, contracts/packages/chain/src/index.ts',
     rows: [
       { field: 'Network and coin', value: 'Hearth, and EMBER' },
       {
@@ -212,15 +201,12 @@ export const HOME = {
    * more flattering list from the README.
    */
   state: {
-    title: 'What is built, and what is not',
+    title: 'How far along each part is',
     lede:
-      "Hearth's own status table, reproduced — except for the two endpoint rows, which are read " +
-      'off this estate\'s published hostname list rather than off Hearth, because that list is ' +
-      'what actually decides whether a stranger can reach anything. Where the README and the ' +
-      'table disagree, the table wins; the repository says so itself.',
-    source:
-      'hearth/MAP.md, deploy/cloudflared/config.mainnet.public.yml, ' +
-      'deploy/gateway/dynamic/tls.yml',
+      'The engine, the consensus rules and the tooling are finished and tested against ' +
+      "Ethereum's own published vectors. The parts still marked in progress are marked that way " +
+      'because working is not the same as proven, and you should know which is which before you ' +
+      'build on any of it.',
     rows: [
       {
         thing: 'The EVM: interpreter, gas, opcodes, precompiles',
@@ -256,19 +242,16 @@ export const HOME = {
         state: 'open' as const,
         detail:
           `Published and answering on chain id ${fact('chainIdTestnet')}, alongside the faucet ` +
-          'that funds it. This row read "unreachable" until recently, blaming a wildcard that ' +
-          'covers one label for names that were two deep; the names moved into one label instead. ' +
-          'Marked open rather than built because a testnet is disposable by definition — its ' +
-          'EMBER is given away and worth nothing, and no genesis here is promised to outlive the ' +
-          'volumes it sits on.',
+          'that funds it. In progress rather than finished because a test network is disposable ' +
+          'by definition: its EMBER is given away and worth nothing, and nothing here promises ' +
+          'that its history outlives the machine it sits on.',
       },
       {
         thing: 'Any deployed contract',
         state: 'absent' as const,
         detail:
-          'Nothing is deployed on either chain. This was previously stated in the same breath as ' +
-          'the testnet being unreachable, which made one claim look like a consequence of the ' +
-          'other; it is not, and it outlived it.',
+          'Nothing is deployed on either chain yet. Contracts you compile for Ethereum will ' +
+          'deploy here unaltered; none has been put up as a fixture for you to call.',
       },
       {
         thing: 'The proof of work at the size the documents promised',
@@ -283,8 +266,9 @@ export const HOME = {
         thing: 'Non-outsourceable mining',
         state: 'open' as const,
         detail:
-          'Not achieved, and the mining document used to claim it was. A pool can hand out work ' +
-          'under its own key and sign the blocks itself, and nothing in consensus notices.',
+          'Not achieved. A pool can still hand out work under its own key and sign the blocks ' +
+          'itself, and nothing in consensus notices, so mining here is not yet impossible to ' +
+          'centralise.',
       },
     ],
   },
@@ -319,7 +303,6 @@ export const CHAIN = {
       'reorg in. The claimed tip is what a node last told it. They are different facts, and the ' +
       'index reports both rather than picking one — counting depth against a block nobody has ' +
       'looked at over-reports it, and over-reporting depth credits money early.',
-    source: 'indexer/src/reads.ts',
   },
 
   /**
@@ -336,7 +319,6 @@ export const CHAIN = {
       'and this page keeps that distinction rather than flattening it. "Not observed" means the ' +
       'index answered and had nothing to report. "Could not fetch" means the request did not ' +
       'arrive. Those are not the same, and only one of them is about Hearth.',
-    source: 'indexer/src/reads.ts',
   },
 
   /**
@@ -383,7 +365,6 @@ export const CHAIN = {
       'The chain index did not answer, so this panel is showing which figures are missing rather ' +
       'than filling them in. Quote the request id below and the exact attempt can be found across ' +
       'every service at once.',
-    source: 'indexer/src/server.ts',
   },
 
   explorer: {
@@ -418,7 +399,6 @@ export const MINE = {
           `${fact('walkSteps')} steps that read and rewrite it, and hashes the result against the ` +
           'target. That is thousands of sequential rounds with a data dependency at every step, so ' +
           'memory latency is the limit and a general-purpose CPU is close to optimal.',
-        source: 'hearth/docs/mining.md',
       },
       {
         title: 'A winning proof cannot be redirected',
@@ -426,7 +406,6 @@ export const MINE = {
           'A valid block must be signed by the private key its coinbase pays, so a candidate built ' +
           'for your public key is worth nothing to anybody else. That is a real guarantee about the ' +
           'work you are handed, and it is exactly as much as consensus promises.',
-        source: 'hearth/docs/mining.md',
       },
       {
         title: 'Low variance, so far',
@@ -435,7 +414,6 @@ export const MINE = {
           'small miner, and the difficulty retargets every block rather than in steps, so it ' +
           'moves smoothly instead of swinging. That is the design; what a young chain with very ' +
           'little hashrate on it actually does is a runtime figure, not this one.',
-        source: 'hearth/docs/mining.md',
       },
       {
         title: 'Polite by default, in the browser miner',
@@ -445,7 +423,6 @@ export const MINE = {
           'stops entirely where the browser will say so. Two of the three major browsers do not ' +
           'report power state, and the page says which it got rather than promising the feature ' +
           'everywhere.',
-        source: 'hearth/docs/mining.md',
       },
     ],
   },
@@ -473,7 +450,6 @@ export const MINE = {
           'key, collect nonces from hashers who genuinely cannot steal the reward, and sign the ' +
           'blocks itself. Closing that means committing to the private key inside the loop, which ' +
           'forks the chain. It is deliberately open, not overlooked.',
-        source: 'hearth/docs/mining.md',
       },
       {
         title: 'The pad is not the size the documents promised',
@@ -483,7 +459,6 @@ export const MINE = {
           `${fact('bigPadSeconds')} seconds per evaluation, and a validator pays one for every ` +
           'block it receives against a target far shorter than that. Making the work meaningfully ' +
           'memory-hard needs an amortised dataset rather than a bigger constant.',
-        source: 'hearth/TESTNET.md',
       },
       {
         title: 'The browser miner cannot yet mine a block this node accepts',
@@ -492,7 +467,6 @@ export const MINE = {
           'template endpoint still requires the old signature scheme, and block validation still ' +
           'verifies proofs with it. The two are checked against each other digest for digest in ' +
           'the test suite, so the hashing agrees; it is the key format that does not.',
-        source: 'hearth/docs/mining.md',
       },
     ],
   },
@@ -504,7 +478,6 @@ export const MINE = {
       `halves every ${fact('halfLifeYears')} years, and settles at ${fact('tailReward')} EMBER per ` +
       `block for ever. ${fact('commonsShare')} per cent of it goes to the Commons rather than to ` +
       'the miner.',
-    source: 'hearth/README.md',
   },
 
   pools: {
@@ -513,7 +486,6 @@ export const MINE = {
       'None exists, and nothing in the protocol prevents one from being built — it would hand out ' +
       'work under its own key and pay hashers off chain. What consensus does guarantee is that work ' +
       'handed to you under YOUR key cannot be taken from you.',
-    source: 'hearth/docs/mining.md',
   },
 
   design: {
@@ -528,7 +500,6 @@ export const MINE = {
       'Thermal back-off — no temperature source is available to either the node or the browser.',
       'A compiled-program proof of work. Not scheduled, and not claimed.',
     ],
-    source: 'hearth/docs/mining.md',
   },
 
   start: {
@@ -545,7 +516,6 @@ export const MINE = {
           'proof of work the node runs, in a pool of workers, measured at about ' +
           `${fact('hashesPerThread')} hashes per second per thread at the shipped parameters. Your ` +
           'private key never leaves the page.',
-        source: 'hearth/docs/mining.md',
       },
       {
         title: 'With the node',
@@ -553,7 +523,6 @@ export const MINE = {
           'The reference node is a full node, a wallet and a miner in one process, and its mining ' +
           'flag has a duty-cycle throttle. It has no power awareness at all, which the project says ' +
           'plainly rather than implying otherwise.',
-        source: 'hearth/docs/mining.md',
       },
     ],
   },
@@ -579,7 +548,6 @@ export const NODE = {
         'suites with no install, no downloaded corpus and no network. That is the fastest way to ' +
         'find out whether any of this is real.',
       command: 'cd node && npm test',
-      source: 'hearth/README.md',
     },
     {
       title: 'Run the conformance gate',
@@ -588,7 +556,6 @@ export const NODE = {
         'project treats as the definition of done for every component: no part is finished until ' +
         'its vectors pass.',
       command: 'cd node && ./scripts/fetch-vectors.sh',
-      source: 'hearth/README.md',
     },
     {
       title: 'Bring up a local chain',
@@ -597,7 +564,6 @@ export const NODE = {
         `all on the same isolated network, with the seed's RPC on port ${fact('seedRpcPort')}. Each ` +
         'container keeps its own volume, so the chain survives a restart and not a teardown.',
       command: 'docker compose -f docker-compose.testnet.yml up --build',
-      source: 'hearth/TESTNET.md',
     },
     {
       title: 'Point your tooling at something',
@@ -609,7 +575,6 @@ export const NODE = {
         'and pointing a wallet at a chain whose EMBER cannot be sold is a decision for you rather ' +
         'than a step in a walkthrough.',
       command: `node tools/rpc-probe/stub.js --port ${fact('probePort')}`,
-      source: 'hearth/README.md',
     },
   ],
 
@@ -630,7 +595,6 @@ export const NODE = {
       'anybody mines — and the genesis file is pinned to a data directory the first time a node ' +
       'starts, so a volume that was not wiped after a consensus change keeps the old one.',
     command: `curl -s localhost:${fact('seedRpcPort')}/info`,
-    source: 'hearth/TESTNET.md',
   },
 
   contribute: {
@@ -642,7 +606,6 @@ export const NODE = {
       'labels deep and the wildcard certificate in front of them covers one. That, and finding a ' +
       'proof of work that is memory-hard without costing a validator more than a block interval ' +
       'to check, is the highest-leverage work left.',
-    source: 'hearth/CONTRIBUTING.md, hearth/README.md',
   },
 }
 
@@ -674,7 +637,6 @@ export const FAUCET = {
       'Coin from this form is given away on request, so it is worth nothing by construction — it ' +
       'is for testing, and the chain it lives on may be restarted from genesis without notice. ' +
       'Nothing anywhere gives away mainnet EMBER, and a page that offers to is not this one.',
-    source: 'faucet/src/env.ts, faucet/src/index.ts',
   },
 
   /**
@@ -691,7 +653,6 @@ export const FAUCET = {
       'EMBER is mined and never given away, so no form on this site will ever hand you any — ' +
       'and no mainnet faucet exists to be found elsewhere, on this estate or off it. The testnet ' +
       'faucet is the same page on the testnet host, linked below.',
-    source: 'faucet/src/env.ts — NETWORK is the literal testnet, so mainnet is a type error',
     action: 'Go to the testnet faucet',
     fallback:
       'The testnet host is this same name with -testnet on the end of its first label, ' +
@@ -706,7 +667,6 @@ export const FAUCET = {
       'all-one-case address is not claiming one and is accepted. An old-style Hearth address is ' +
       'refused, because the faucet dispenses on the account model.',
     submit: 'Request testnet EMBER',
-    source: 'faucet/src/address.ts',
   },
 
   /**
@@ -724,7 +684,6 @@ export const FAUCET = {
       'requester per window, a balance ceiling on the recipient, and a rolling budget that bounds ' +
       'the total. The last is the one that means anything; the other three exist so that an honest ' +
       'user is never the one who trips it.',
-    source: 'faucet/src/limits.ts',
   },
 
   poll: {
@@ -734,7 +693,6 @@ export const FAUCET = {
       'transaction is signed by the custody service, its bytes are committed before it is ' +
       'broadcast, and it is followed to a pinned confirmation depth. This page polls until it ' +
       'settles, and every state it passes through is a state the service actually records.',
-    source: 'faucet/src/server.ts',
   },
 
   /** Shown when the terms could not be fetched. Never a default set of numbers. */

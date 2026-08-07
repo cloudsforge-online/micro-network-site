@@ -47,7 +47,6 @@ import { fact } from '../content/facts.ts'
 import { useResource } from '../lib/resource.ts'
 import { Failed, Loading } from '../components/states.tsx'
 import {
-  Cite,
   Detail,
   Hex,
   Note,
@@ -90,7 +89,6 @@ export function FaucetPage() {
           ) : (
             <p className="ns-prose">{FAUCET.wrongNetwork.fallback}</p>
           )}
-          <Cite source={FAUCET.wrongNetwork.source} />
         </Note>
       </Page>
     )
@@ -106,7 +104,6 @@ export function FaucetPage() {
       */}
       <Note tone="warn" title={FAUCET.reach.title}>
         <p>{FAUCET.reach.body}</p>
-        <Cite source={FAUCET.reach.source} />
       </Note>
 
       {terms.state === 'loading' && <Loading label="Asking the faucet what it will do" />}
@@ -136,12 +133,10 @@ export function FaucetPage() {
 
       <Section title={FAUCET.refusal.title}>
         <p className="ns-prose">{FAUCET.refusal.body}</p>
-        <Cite source={FAUCET.refusal.source} />
       </Section>
 
       <Section title={FAUCET.poll.title}>
         <p className="ns-prose">{FAUCET.poll.body}</p>
-        <Cite source={FAUCET.poll.source} />
       </Section>
     </Page>
   )
@@ -204,7 +199,6 @@ function Terms({ terms }: { terms: FaucetTerms }) {
       </dl>
       <Note tone="warn" title="The faucet's own terms">
         <p>{terms.terms}</p>
-        <Cite source="faucet/src/server.ts" />
       </Note>
     </Section>
   )
@@ -317,7 +311,6 @@ function DripForm({ terms }: { terms: FaucetTerms | null }) {
           {submission.state === 'sending' ? 'Asking…' : FAUCET.form.submit}
         </button>
       </form>
-      <Cite source={FAUCET.form.source} />
 
       {submission.state === 'refused' && <Refused notice={submission.notice} />}
       {submission.state === 'accepted' && (

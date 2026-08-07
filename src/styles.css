@@ -263,29 +263,6 @@ body {
   overflow-wrap: anywhere;
 }
 
-/* ---- citations -------------------------------------------------------- */
-
-/*
- * A citation is rendered small and muted, but it is NEVER hidden behind a hover or a disclosure.
- * The claim and the evidence for it have to be visible at the same time, or the evidence is
- * decoration.
- */
-.ns-cite {
-  margin: 0;
-  color: var(--cf-fg-mute);
-  font-size: var(--cf-text-2xs);
-}
-
-.ns-cite__label {
-  text-transform: uppercase;
-  letter-spacing: 0.08em;
-}
-
-.ns-cite__path {
-  font-family: var(--cf-font-mono);
-  overflow-wrap: anywhere;
-}
-
 /* ---- cards ------------------------------------------------------------ */
 
 .ns-cards {

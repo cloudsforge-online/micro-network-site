@@ -45,7 +45,7 @@ import { STANDING_STATE } from '../content/copy.ts'
 import { useSession } from '../lib/auth.tsx'
 import { PRODUCT } from '../lib/hosts.ts'
 import { NAV } from '../lib/routes.ts'
-import { Cite, Note } from './parts.tsx'
+import { Note } from './parts.tsx'
 
 export function AppShell({ unregistered = false }: { unregistered?: boolean }) {
   const { account, signIn, signOut } = useSession()
@@ -104,7 +104,6 @@ export function AppShell({ unregistered = false }: { unregistered?: boolean }) {
         )}
         <Note tone="warn" title={STANDING_STATE.headline}>
           <p>{STANDING_STATE.body}</p>
-          <Cite source={STANDING_STATE.source} />
         </Note>
         <Outlet />
       </main>

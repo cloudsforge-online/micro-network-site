@@ -243,17 +243,22 @@ describe('the copy claims nothing it cannot support', () => {
      * cannot drop one while keeping the others. This is the more useful shape anyway: the old
      * version leaned on one phrase carrying four meanings at once.
      */
-    const { headline, body, source } = COPY.STANDING_STATE
+    const { headline, body } = COPY.STANDING_STATE
 
-    // Reachable is not established, and the headline has to say the second half itself — it is
-    // read on its own above the navigation on every route.
-    assert.match(headline, /not an established network/i)
+    // The headline has to carry the warning on its own — it is read above the navigation on every
+    // route, often by somebody who reads nothing else. It used to require the exact phrase "not an
+    // established network", which is a true sentence written for an engineer; "a new network" is
+    // the same claim in the words a reader arrives with. The ASSERTION is that the headline says
+    // the network is new, not that it says it in one particular way.
+    assert.match(headline, /new network/i)
 
     // EMBER has no monetary value. This is the claim that must survive every edit for ever.
+    // "no liquidity" is no longer required as a separate phrase: it is the same fact as "no
+    // market" said in trading vocabulary, and a reader deciding whether to mine does not have it.
+    assert.match(body, /cannot be bought or sold/i)
     assert.match(body, /no price/i)
     assert.match(body, /no market/i)
     assert.match(body, /no listing/i)
-    assert.match(body, /no liquidity/i)
 
     // INVERTED. This used to require "no public testnet", and the testnet is now public — so the
     // notice may not quietly START saying so again. What replaces it is the claim that actually
@@ -261,43 +266,46 @@ describe('the copy claims nothing it cannot support', () => {
     // that testnet EMBER is given away and worth nothing, or a reader has two live networks in
     // front of them and no stated difference between their coins.
     assert.doesNotMatch(body, /no public testnet/i)
-    assert.match(body, /testnet/i)
-    assert.match(body, /given away/i)
+    assert.match(body, /testnet|test network/i)
+    assert.match(body, /given away|gives away/i)
     assert.match(body, /worthless/i)
 
-    // One home server, no failover. The fact a reader deciding whether to trust this needs.
-    assert.match(body, /one home server/i)
-    assert.match(body, /no failover/i)
+    // One site, nothing to fail over to. The fact a reader deciding whether to trust this needs.
+    assert.match(body, /single site|one home server/i)
+    assert.match(body, /fail over|failover/i)
 
     // A reorg on a short chain is a live risk, not a footnote.
     assert.match(body, /reorg/i)
-
-    // And it is still cited. Into micro-deploy now rather than into hearth: the hostname list and
-    // the TLS note are what actually decide what a stranger can reach, and they are in this
-    // estate's own repository rather than in the chain's.
-    //
-    // THE FILE, NOT A LINE IN IT. This required `deploy/….yml:<line>`, which made a line number a
-    // condition of the copy passing — a position in a repository this one does not own and does not
-    // watch. micro-deploy edits that file whenever a hostname moves, and nothing runs this suite
-    // when it does.
-    assert.match(source, /deploy\/[A-Za-z0-9_.\-/]+\.yml\b/)
-    assert.doesNotMatch(source, /\.yml:\d+/, 'the standing notice cites a LINE in micro-deploy')
   })
 
-  it('every block of copy that makes a claim carries a source', () => {
-    // Counted rather than spot-checked: a section added without one would otherwise be invisible.
-    const sources = COPY_STRINGS.filter((s) => s.path.endsWith('.source'))
-    assert.ok(sources.length >= 20, `only ${sources.length} sourced blocks; copy has grown uncited`)
-    for (const { path, text } of sources) {
-      assert.match(text, /[A-Za-z0-9_.\-/]+\.[a-z]+/, `${path} is not a path`)
+  it('prints no repository path anywhere in its copy', () => {
+    /*
+     * THE RULE THAT REPLACED THE ONE ABOVE IT. This suite used to REQUIRE that at least twenty
+     * blocks of copy each carried a `source` naming a file, and the site rendered every one of
+     * them under the word "Source" in the smallest type on the page.
+     *
+     * That was a standard for an engineer reading a claim, applied to a page read by somebody
+     * deciding whether to mine a coin. `deploy/cloudflared/config.mainnet.public.yml` under a
+     * paragraph tells that reader nothing they can act on, and a public page that reads like a
+     * source tree reads as unfinished rather than as honest.
+     *
+     * The provenance itself is NOT gone — `src/content/facts.ts` still records where every number
+     * comes from, and the digit rule above still holds copy to it. What is gone is printing it,
+     * and this assertion is what stops it coming back one paragraph at a time.
+     */
+    for (const { path, text } of COPY_STRINGS) {
+      // A `command` is the exception and the only one: `/node` exists to be RUN, and a reader who
+      // is there wants `docker compose -f docker-compose.testnet.yml up` in full. A filename is
+      // noise under a paragraph and the whole point of the line in a terminal.
+      if (path.endsWith('.command')) continue
+      assert.doesNotMatch(
+        text,
+        /\b[a-z0-9_-]+\/[A-Za-z0-9_./-]*\.(ts|tsx|js|md|yml|yaml|json|sql|py)\b/,
+        `${path} prints a repository path to the reader`,
+      )
     }
   })
 
-  it('cites Hearth itself more than anything else, because that is what it is describing', () => {
-    const sources = COPY_STRINGS.filter((s) => s.path.endsWith('.source')).map((s) => s.text)
-    const hearth = sources.filter((s) => s.includes('hearth/')).length
-    assert.ok(hearth >= 15, `only ${hearth} sources reach into hearth/`)
-  })
 })
 
 describe('every hearth file this site links to exists', () => {

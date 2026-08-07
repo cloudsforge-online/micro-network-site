@@ -19,7 +19,7 @@
  */
 import { NODE } from '../content/copy.ts'
 import { HEARTH_REPO, hearthFile } from '../lib/routes.ts'
-import { Cite, Command, Note, Page, PageHead, Section } from '../components/parts.tsx'
+import { Command, Note, Page, PageHead, Section } from '../components/parts.tsx'
 
 export function NodePage() {
   return (
@@ -33,7 +33,6 @@ export function NodePage() {
               <h3 className="ns-step__title">{step.title}</h3>
               <p className="ns-step__body">{step.body}</p>
               <Command>{step.command}</Command>
-              <Cite source={step.source} />
             </li>
           ))}
         </ol>
@@ -50,7 +49,6 @@ export function NodePage() {
       <Section title={NODE.sameChain.title} id="same-chain">
         <p className="ns-prose">{NODE.sameChain.body}</p>
         <Command>{NODE.sameChain.command}</Command>
-        <Cite source={NODE.sameChain.source} />
       </Section>
 
       <Note tone="accent" title={NODE.contribute.title}>
@@ -61,7 +59,6 @@ export function NodePage() {
           <a href={hearthFile('MAP.md')}>The verified inventory</a> ·{' '}
           <a href={hearthFile('SECURITY.md')}>Reporting a vulnerability</a>
         </p>
-        <Cite source={NODE.contribute.source} />
       </Note>
     </Page>
   )
