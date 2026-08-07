@@ -142,7 +142,10 @@ describe('the description says what the network is not', () => {
   it('the meta description does', () => {
     const m = /<meta\s+name="description"\s+content="([^"]*)"/.exec(html)
     assert.ok(m, 'index.html has no description')
-    assert.match(m[1] ?? '', /no EMBER of any monetary value/i)
+    // Matched on the CLAIM, not on one wording of it. This was `/no EMBER of any monetary
+    // value/i`, which pinned a single sentence: the description now reads "its coin has no
+    // market and no monetary value", says strictly more, and would have gone red for it.
+    assert.match(m[1] ?? '', /no monetary value/i)
     // INVERTED, and deliberately so — see the header. This used to REQUIRE "no public testnet".
     // The testnet is public now, so the old guard would be satisfied only by a false sentence in
     // the one string a search engine shows. The assertion is kept, pointing the other way, so
@@ -153,7 +156,10 @@ describe('the description says what the network is not', () => {
   it('and so does the og:description, which is read entirely on its own', () => {
     const m = /<meta\s+property="og:description"\s+content="([^"]*)"/.exec(html)
     assert.ok(m, 'index.html has no og:description')
-    assert.match(m[1] ?? '', /no EMBER of any monetary value/i)
+    // Matched on the CLAIM, not on one wording of it. This was `/no EMBER of any monetary
+    // value/i`, which pinned a single sentence: the description now reads "its coin has no
+    // market and no monetary value", says strictly more, and would have gone red for it.
+    assert.match(m[1] ?? '', /no monetary value/i)
     // INVERTED, and deliberately so — see the header. This used to REQUIRE "no public testnet".
     // The testnet is public now, so the old guard would be satisfied only by a false sentence in
     // the one string a search engine shows. The assertion is kept, pointing the other way, so
