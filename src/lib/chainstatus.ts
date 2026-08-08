@@ -17,7 +17,7 @@
  * it is the estate convention, and the service's own comment says the bare form
  * exists for the operator runbooks rather than for new callers.
  *
- * ── ONE route is called. NINE are declined, each with a reason ─────────────────────────────────
+ * ── ONE route is called. TEN are declined, each with a reason ──────────────────────────────────
  *
  * | Method | Path                                                  | Gate                | Verified at               |
  * | ------ | ----------------------------------------------------- | ------------------- | ------------------------- |
@@ -40,8 +40,8 @@
  *   * `GET /v1/tokens/:chain/:network/:address` (`indexer/src/server.ts`, `authoriseRead`) — token state belongs to ForgeMint and the explorer.
  *   * `GET /v1/blocks/:chain/:network/:height` (`indexer/src/server.ts`, `authoriseRead`) — a block page here would be a second explorer competing with a tested one.
  *
- * One further read is declined for a different reason — it is the only domain GET on this service
- * that takes a token:
+ * Two further reads are declined for a different reason — they are the domain GETs on this service
+ * that take a token:
  *
  *   * `GET /v1/custody/:chain/:network/total` (`indexer/src/server.ts`) calls
  *     `authorise(ctx, deps, READ_SCOPE)` (`indexer/src/server.ts`). It is Σ confirmed native
@@ -51,6 +51,15 @@
  *     answers about a set only the platform knows, so serving it anonymously would publish the
  *     treasury's size to anyone who can reach the port (`indexer/src/server.ts`). A public
  *     marketing surface holds no service token, and has nothing to say about the treasury.
+ *   * `GET /v1/custody/:chain/:network/addresses/:address` (`indexer/src/server.ts`) is the other
+ *     one, added beside the total and gated the same way: `authorise(ctx, deps, READ_SCOPE)`. It
+ *     answers ONE named custody address's observed balance, at the depth and against the block
+ *     hash the aggregate is measured at, so a reconciliation that fails can be broken down to the
+ *     address that moved rather than re-derived from a number the two sides measured differently.
+ *     The caller does name the address, which is what makes the other seven reads public — but
+ *     the addresses worth naming here are the estate's own, so answering confirms membership of
+ *     the set the total exists to keep private. Same conclusion, same reason: no service token on
+ *     this surface, and nothing here to say about the treasury or any part of it.
  *
  * The two writes are refused to a browser and would be declined even if they were not:
  *
