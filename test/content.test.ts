@@ -278,6 +278,68 @@ describe('the copy claims nothing it cannot support', () => {
     assert.match(body, /reorg/i)
   })
 
+  it('never says the testnet cannot be reached, and never reprints the retired hostname scheme', () => {
+    /*
+     * TWO SENTENCES THIS SURFACE HAS ALREADY PUBLISHED ONCE AND MUST NOT PUBLISH AGAIN.
+     *
+     * `/node` said the testnet "is unreachable from outside" and blamed hostnames that were "two
+     * labels deep", while `src/content/facts.ts` in this same repository had recorded the opposite
+     * since 2026-08-05. The TLS diagnosis was correct about `<surface>.testnet.<apex>` and that
+     * scheme was ABANDONED: an environment is now a suffix inside the FIRST label, so a testnet
+     * name is one label deep and the existing wildcard covers it.
+     *
+     * Measured 2026-08-08: `rpc-testnet.cloudsforge.online` presents `*.cloudsforge.online` and
+     * terminates TLS, and `rpc.testnet.cloudsforge.online` has no DNS record at all.
+     *
+     * ── WHY THE REACHABILITY HALF IS SCOPED AND THE HOSTNAME HALF IS NOT ───────────────────────
+     *
+     * A blanket ban on "unreachable" would be wrong. `CHAIN.unreachable` is an honest empty state
+     * — "the chain index did not answer" — and forbidding the word outright would delete the true
+     * sentence along with the false one. So the denial scan fires only on strings whose subject is
+     * the testnet. The hostname scan needs no scoping, because the retired shape contains the word
+     * by construction.
+     *
+     * WHAT THIS DOES NOT DEFEND: it does not assert that the testnet IS reachable. Nothing static
+     * may, in either direction — the testnet is stopped and restarted without notice, and it was
+     * not answering when this was written. `/chain` asks and renders what came back.
+     */
+    const CANNOT_BE_REACHED = [
+      /\bunreachable\b/i,
+      /\bnot reachable\b/i,
+      /\bcannot be reached\b/i,
+      /\bno reachable endpoint\b/i,
+    ]
+    /*
+     * `rpc.testnet.cloudsforge.online` and `<surface>.testnet.<apex>`: a label, a dot, `testnet`,
+     * a dot, and then either the placeholder or something apex-shaped. The trailing requirement is
+     * what keeps `docker compose -f docker-compose.testnet.yml` — a filename this page prints on
+     * purpose, and a line meant to be RUN — out of the scan, rather than an exemption that would
+     * also excuse a real hostname sitting in the same field.
+     */
+    const RETIRED_SCHEME = /(?:[a-z0-9*_-]+|<surface>)\.testnet\.(?:<apex>|[a-z0-9-]+\.[a-z]{2,})/i
+
+    for (const { path, text } of COPY_STRINGS) {
+      if (/testnet|test network/i.test(text)) {
+        for (const denial of CANNOT_BE_REACHED) {
+          assert.doesNotMatch(text, denial, `${path} says the testnet cannot be reached from outside`)
+        }
+      }
+      assert.doesNotMatch(text, RETIRED_SCHEME, `${path} prints the retired two-label testnet scheme`)
+    }
+
+    // The controls, in the shape the digit scan uses: a regex that had stopped matching would
+    // otherwise let every assertion above pass while measuring nothing.
+    assert.match('the testnet is unreachable from outside', CANNOT_BE_REACHED[0] as RegExp)
+    assert.match('everything under *.testnet.cloudsforge.online fails', RETIRED_SCHEME)
+    assert.match('a URL like <surface>.testnet.<apex>', RETIRED_SCHEME)
+    assert.doesNotMatch('rpc-testnet.cloudsforge.online answers', RETIRED_SCHEME)
+    assert.doesNotMatch('docker compose -f docker-compose.testnet.yml up --build', RETIRED_SCHEME)
+    // And the scoping is real rather than an accident of the current copy: the empty state that
+    // legitimately uses the word is still here, and still says nothing about the testnet.
+    assert.match(COPY.CHAIN.unreachable.body, /did not answer/i)
+    assert.doesNotMatch(COPY.CHAIN.unreachable.body, /testnet/i)
+  })
+
   it('prints no repository path anywhere in its copy', () => {
     /*
      * THE RULE THAT REPLACED THE ONE ABOVE IT. This suite used to REQUIRE that at least twenty
@@ -306,6 +368,112 @@ describe('the copy claims nothing it cannot support', () => {
     }
   })
 
+})
+
+describe('no caveat denies a capability the same page renders a control for', () => {
+  /*
+   * ══════════════════════════════════════════════════════════════════════════════════════════════
+   * WHAT THIS DEFENDS, EXACTLY
+   *
+   * `/mine` places its caveats ABOVE the instructions on purpose (`src/pages/mine.tsx`), and the
+   * first thing under those instructions is `<BrowserMine>` — a start button that fetches
+   * `/mining/template` from the node and posts nonces back to `/mining/submit`. That layout gives
+   * this surface one contradiction it is structurally able to publish and no other page is: a
+   * caveat, read first, telling the reader that the control below it does not work.
+   *
+   * It published exactly that. `MINE.caveats` carried "The browser miner cannot yet mine a block
+   * this node accepts" while, measured 2026-08-08, a key from `src/mining/account.js` got HTTP 200
+   * and a template from `rpc.<apex>/mining/template` carrying that key as its `coinbasePub`, and
+   * `hearth/node/src/block.js` verifies `powSig` against that same `coinbasePub`.
+   *
+   * THE PROPERTY: while `mine.tsx` mounts the browser miner, no string under `MINE` may deny that
+   * the browser miner produces work this node accepts.
+   *
+   * ── WHAT THIS DOES NOT DEFEND, WHICH IS MOST OF WHAT THE NAME SUGGESTS ────────────────────────
+   *
+   * It is NOT a general "no copy contradicts any control" checker, and cannot be: there is no
+   * mechanical link from a sentence to a component, so a scan that tried would either miss
+   * everything or flag every warning on the site. This reads ONE mount and ONE denial vocabulary.
+   * A denial written in words that are not on the list gets through. It also says nothing about
+   * any other page's controls.
+   *
+   * It is emphatically NOT a rule that `/mine` may not carry a caveat about mining. The opposite:
+   * the caveat that REPLACED the false one — that a laptop may never win a block, because a
+   * template goes stale when somebody else's arrives — is genuinely owed, and the second half of
+   * this suite requires it to be present rather than forbidding it. The distinction the whole
+   * thing turns on is between "the node refuses your work" (false, and denied here) and "your work
+   * may never win" (true, and required here).
+   * ══════════════════════════════════════════════════════════════════════════════════════════════
+   */
+  const minePage = readFileSync(at('src/pages/mine.tsx'), 'utf8')
+  const MINE_STRINGS = COPY_STRINGS.filter((s) => s.path.startsWith('copy.MINE'))
+  const caveats = COPY.MINE.caveats.items.map((item) => `${item.title} ${item.body}`).join('\n')
+
+  /** A denial of the browser miner's ability, or of the node accepting what it produces. */
+  const DENIES_THE_MINER = [
+    /\b(?:browser miner|miner in the browser|browser half)\b[^.]*?\b(?:cannot|can not|can't|is unable to|does not|doesn't|will not|won't)\b/i,
+    /\b(?:cannot|can not|can't|is unable to|does not|doesn't|will not|won't)\b[^.]*?\bmine a block\b/i,
+    /\bnot yet\b[^.]*?\bmine a block\b/i,
+    /\bthis node (?:does not|doesn't|will not|won't) accept\b/i,
+  ]
+
+  it('the premise holds: /mine really does mount the browser miner', () => {
+    // If this ever goes red the assertion below is measuring nothing, so it is checked rather than
+    // assumed. A caveat saying the miner does not work would be honest on a page with no miner.
+    assert.match(minePage, /<BrowserMine\b/, 'mine.tsx no longer mounts BrowserMine')
+    assert.match(minePage, /MINE\.caveats\.items\.map/, 'mine.tsx no longer renders the caveats')
+    assert.ok(MINE_STRINGS.length >= 20, `walked only ${MINE_STRINGS.length} strings under MINE`)
+  })
+
+  it('no string on /mine denies that the browser miner produces work this node accepts', () => {
+    const offenders: string[] = []
+    for (const { path, text } of MINE_STRINGS) {
+      for (const denial of DENIES_THE_MINER) {
+        if (denial.test(text)) offenders.push(`${path}: "${text.slice(0, 90)}…" matched ${denial}`)
+      }
+    }
+    assert.deepEqual(
+      offenders,
+      [],
+      `/mine mounts a working miner and its copy denies it:\n  ${offenders.join('\n  ')}`,
+    )
+  })
+
+  it('and the scan is not vacuous: the sentence this replaced IS caught', () => {
+    const was = 'The browser miner cannot yet mine a block this node accepts'
+    assert.ok(
+      DENIES_THE_MINER.some((denial) => denial.test(was)),
+      'the denial vocabulary no longer catches the exact sentence it was written for',
+    )
+    // …and does not fire on the honest caveat that replaced it, which is the harder half.
+    for (const denial of DENIES_THE_MINER) assert.doesNotMatch(caveats, denial)
+  })
+
+  it('the caveat that is genuinely owed is still there, and still promises nothing', () => {
+    // The INVERSE assertion, and the one that stops this being satisfied by saying nothing at all.
+    // The node accepting the work is not the reader's machine winning with it, and that gap is the
+    // only thing standing between an honest page and an implied income.
+    assert.match(caveats, /\bwins?\b/i, '/mine no longer says anything about winning a block')
+    assert.match(caveats, /\bstale\b/i, '/mine no longer says a template goes stale')
+    for (const promise of [
+      /\byou will (?:win|mine|find) a block\b/i,
+      /\bguarantee/i,
+      /\bevery (?:machine|laptop|tab) (?:wins|mines)\b/i,
+    ]) {
+      assert.doesNotMatch(caveats, promise, `/mine promises a block: ${promise}`)
+    }
+  })
+
+  it('the caveats heading counts nothing, so closing a caveat cannot leave it wrong', () => {
+    // It read "Three things this is not". A spelled-out numeral is the one quantity the digit scan
+    // above structurally cannot see, and this section's membership changes whenever a limit is
+    // closed — one was closed by the same commit that wrote this test.
+    assert.doesNotMatch(
+      COPY.MINE.caveats.title,
+      /\b(?:one|two|three|four|five|six|seven|eight|nine|ten)\b/i,
+      'the caveats heading counts its items again, and nothing keeps the count true',
+    )
+  })
 })
 
 describe('every hearth file this site links to exists', () => {
