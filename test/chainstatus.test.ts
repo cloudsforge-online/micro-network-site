@@ -17,8 +17,8 @@
  * DIFFERENT route — and reported it fine. The corrected `matches` is copied from that file rather
  * than invented a third time.
  *
- * **2. EVERY ROUTE IS CALLED OR DECLINED, AND THE UNION IS EXACT.** One route is called and eight
- * are declined, each with a reason. A route the service grows that neither table knows about is a
+ * **2. EVERY ROUTE IS CALLED OR DECLINED, AND THE UNION IS EXACT.** One route is called and the
+ * rest are declined, each with a reason. A route the service grows that neither table knows about is a
  * failure here, because a client that has stopped understanding what it talks to is one edit away
  * from depending on the difference.
  *
@@ -158,6 +158,19 @@ const DECLINED: ReadonlyArray<{
       'marketing surface holds no service token and has nothing to say about the treasury.',
   },
   {
+    method: 'GET',
+    path: '/custody/:chain/:network/addresses/:address',
+    gate: 'authorise:READ_SCOPE',
+    why:
+      'indexer:read, and the second domain GET that takes a token. One named custody address’s ' +
+      'observed balance, at the same confirmation depth and against the same block hash the ' +
+      'aggregate above is measured at, so micro-ledger can break a failed reconciliation down to ' +
+      'the address that moved (see custodyAddressBalance in indexer/src/server.ts). The caller ' +
+      'names the address, but the addresses worth naming are the estate’s own, so an answer ' +
+      'confirms membership of the set the total exists to keep private. A public marketing ' +
+      'surface holds no service token and has nothing to say about the treasury or its parts.',
+  },
+  {
     method: 'POST',
     path: '/watch/:chain/:network/:address',
     gate: 'authorise:WRITE_SCOPE',
@@ -245,9 +258,20 @@ describe('the client calls only the route it has cited', () => {
     }
     // …and the module explains the shape of the declination where a reader will look. The count
     // is in the sentence on purpose: it is the one place a route added upstream and quietly left
-    // out of the prose would show up. NINE since the custody total.
-    assert.match(client, /NINE are declined, each with a reason/)
-    assert.equal(DECLINED.length, 9, 'the declined table and the sentence in the client disagree')
+    // out of the prose would show up. TEN since micro-indexer added the per-address custody
+    // balance beside the total.
+    //
+    // The word is DERIVED from the table rather than written twice. Both copies of the old number
+    // — this line and the client's header — had to be found and changed by hand, and the reason
+    // anybody looked was a red build in a repository that had not been edited.
+    const words = ['no', 'ONE', 'TWO', 'THREE', 'FOUR', 'FIVE', 'SIX', 'SEVEN', 'EIGHT', 'NINE', 'TEN']
+    const word = words[DECLINED.length]
+    assert.ok(word, `${DECLINED.length} declined routes: write the count into the list above`)
+    assert.match(
+      client,
+      new RegExp(`${word} are declined, each with a reason`),
+      `the table declines ${DECLINED.length} routes; the sentence in src/lib/chainstatus.ts says otherwise`,
+    )
   })
 
   it('writes the scope out as two segments, with no helper standing for chain/network', () => {
@@ -376,11 +400,26 @@ describe('the cited lines are the lines that register the routes', () => {
 
   it('reads a server with a route table in it, so this cannot pass on an empty file', () => {
     const entries = lines.filter((l) => /^\s{2}\['(GET|POST)',/.test(l))
-    // TEN since `micro-indexer` f9344de added `GET /custody/:chain/:network/total` — the chain
-    // side of `micro-ledger`'s solvency reconciliation, which until then compared the ledger
-    // against itself because nothing in the estate could supply the observed total. The pin moves
-    // because the entry was read and declined below, not to make this line stop complaining.
-    assert.equal(entries.length, 10, `expected the indexer's ten DOMAIN entries, found ${entries.length}`)
+    // TWO things, and NO NUMBER WRITTEN HERE.
+    //
+    // The first is what the name says: a table with entries in it, so nothing below can pass by
+    // reading an empty or renamed file.
+    //
+    // The second is that the tables above account for every one of them — read from the LENGTH of
+    // those tables, not from a literal. The literal said TEN; `micro-indexer` ed9db36 added
+    // `GET /custody/:chain/:network/addresses/:address` and this repository went red for an edit
+    // that touched nothing it calls, as did micro-explorer-web, which had the same number written
+    // down. Bumping it to ELEVEN would buy exactly one release. Reading it from the tables means
+    // the only way to satisfy this check is to have READ the new route and called or declined it
+    // with a reason — which is the thing worth requiring, and which the both-directions check
+    // below then verifies against the service itself.
+    assert.ok(entries.length > 0, 'indexer/src/server.ts has no DOMAIN entries in it at all')
+    const known = [...CALLED, ...DECLINED]
+    assert.equal(
+      entries.length,
+      known.length,
+      `micro-indexer registers ${entries.length} DOMAIN entries; the tables here cover ${known.length}`,
+    )
   })
 
   /**
@@ -516,13 +555,16 @@ describe('the cited lines are the lines that register the routes', () => {
     assert.doesNotMatch(fn, /throw new TokenError/, 'authoriseRead has grown a missing-token throw')
   })
 
-  it('the nine handlers are exactly seven anonymous reads and two gated writes, and the TENTH is a read that takes a token', () => {
+  it('the domain handlers are exactly seven anonymous reads, two reads that take a token and two gated writes', () => {
     // Note what the OLD arithmetic would have done with the custody total: `gated` matched only
     // WRITE_SCOPE, so a READ_SCOPE handler landed in neither bucket, and the closing
     // `anonymous + gated === 9` is the line that would have caught it. That is why the third
     // bucket is named here rather than folded into one of the other two.
+    //
+    // The custody total then stopped being the only read that takes a token — micro-indexer
+    // ed9db36 added the per-address balance beside it, gated identically — so the buckets are
+    // sized off the tables above rather than pinned at a literal that a sibling repository moves.
     const handlers = [...CALLED, ...DECLINED]
-    assert.equal(handlers.length, 10, 'the tables no longer cover all ten domain routes')
     const bodies = new Map(handlers.map((r) => [r, bodyOf(r)] as const))
     const anonymous = handlers.filter((r) =>
       /await authoriseRead\(ctx, deps\)/.test(bodies.get(r) ?? ''),
@@ -533,9 +575,13 @@ describe('the cited lines are the lines that register the routes', () => {
     const gated = handlers.filter((r) =>
       /await authorise\(ctx, deps, WRITE_SCOPE\)/.test(bodies.get(r) ?? ''),
     )
-    assert.equal(anonymous.length, 7, `${anonymous.length} anonymous reads upstream, not seven`)
-    assert.equal(readScoped.length, 1, 'the custody total is no longer the only read taking a token')
-    assert.equal(gated.length, 2, `${gated.length} gated writes upstream, not two`)
+    // Each bucket against the GATE COLUMN of the tables above — the belief — rather than against a
+    // literal. One route called anonymously, six more anonymous and declined for what this page IS,
+    // two reads that take indexer:read and two writes that take indexer:write.
+    const declaredAs = (g: Gate) => handlers.filter((r) => r.gate === g).length
+    assert.equal(anonymous.length, declaredAs('authoriseRead'), 'the anonymous set upstream is not the one declared here')
+    assert.equal(readScoped.length, declaredAs('authorise:READ_SCOPE'), 'the indexer:read set upstream is not the one declared here')
+    assert.equal(gated.length, declaredAs('authorise:WRITE_SCOPE'), 'the indexer:write set upstream is not the one declared here')
     // Each route in exactly one bucket, and every route in one.
     assert.deepEqual(
       handlers
