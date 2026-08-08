@@ -706,9 +706,17 @@ describe('the cited lines are the lines that register the routes', () => {
     //
     // It required 'testnet' at the head, because when it was written neither scope had a chain
     // behind it and testnet was the less absent of the two. Mainnet is now published on the public
-    // tunnel (`deploy/cloudflared/config.mainnet.public.yml`) and answers `eth_chainId`, while
-    // testnet is unreachable at the TLS layer — Universal SSL is one label deep
-    // (`deploy/gateway/dynamic/tls.yml`) — so the ordering inverted with the facts. Kept as an
+    // tunnel (`deploy/cloudflared/config.mainnet.public.yml`) and answers `eth_chainId`, so the
+    // ordering inverted with the facts.
+    //
+    // THE SECOND HALF OF THIS COMMENT WAS STALE AND IS CORRECTED HERE. It said testnet was
+    // "unreachable at the TLS layer — Universal SSL is one label deep". The TLS fact is still
+    // true and the conclusion stopped following from it: testnet names are no longer two labels
+    // deep (`ui/packages/ui/src/surfaces.ts` puts the environment inside the first label), and
+    // measured 2026-08-08 `rpc-testnet.cloudsforge.online` terminates TLS under the `*.<apex>`
+    // wildcard. Both scopes are published, and the argument for THIS order is no longer absence:
+    // it is that mainnet balances are permanent and testnet coin is given away, which is the
+    // reasoning `src/lib/chainstatus.ts` already carries above `HEARTH_SCOPES`. Kept as an
     // assertion so a reorder back is a decision somebody argues for rather than a reflex.
     assert.equal(HEARTH_SCOPES[0]?.network, 'mainnet')
     assert.equal(HEARTH_SCOPES[1]?.network, 'testnet')
