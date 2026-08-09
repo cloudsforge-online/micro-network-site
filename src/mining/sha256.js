@@ -10,8 +10,16 @@
  * and it runs millions of times.
  *
  * Verified byte-for-byte against Node's crypto.createHash('sha256') and against
- * node/src/pow.js in node/test/browser-pow.js. If you change anything in this
- * file, that test is what tells you the browser stopped agreeing with the chain.
+ * hearth's node/src/pow.js by test/browser-pow.test.ts IN THIS REPOSITORY, which
+ * runs in this repository's CI. If you change anything in this file, that suite
+ * is what tells you the browser stopped agreeing with the chain.
+ *
+ * This header used to name hearth's node/test/browser-pow.js instead. That
+ * sentence came with the code when the miner was restored here on 2026-08-06 and
+ * was true of the file's ancestor, not of this file: nothing in this repository
+ * compared the port to anything. hearth carries the mirror of the comparison
+ * again, and it is worth having — but it runs on hearth's schedule, so it cannot
+ * be what stands between an edit here and a deploy. micro-org#298.
  */
 
 const K = new Uint32Array([

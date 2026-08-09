@@ -149,6 +149,22 @@ jobs:
       # No token: `cloudsforge-online/hearth` is public. It is checked out in full rather than
       # sparsely, because the citations reach into README.md, MAP.md, TESTNET.md, docs/, node/src/
       # and CONTRIBUTING.md, and a sparse list would be a fourth copy of the set to keep in step.
+      #
+      # ── IT IS ALSO THE PROOF-OF-WORK ORACLE NOW, AND THAT IS THE SHARPER USE ──────────────────
+      #
+      # `/mine` is a public page that puts a stranger's CPU to work against the live chain, and
+      # `src/mining/{sha256,homefire,miner,worker}.js` are a SECOND implementation of Homefire and
+      # of the proof signature. `test/browser-pow.test.ts` loads `node/src/pow.js`,
+      # `node/src/params.js`, `node/src/chain/header.js` and `node/src/evmnode.js` out of this
+      # checkout and compares them digest for digest — hearth's PRODUCTION source only, never its
+      # `node/test/` directory, so an edit to another repository's test suite cannot turn this one
+      # red for a change it did not make.
+      #
+      # NO `ref:`, DELIBERATELY. Pinning is the reflex and here it would defeat the check. Half of
+      # what the comparison exists to catch is hearth RETUNING CONSENSUS underneath a port that did
+      # not follow; against a pinned ref that divergence is invisible and the first person to learn
+      # of it is a visitor whose browser is hashing for nothing. The step below records the commit
+      # it resolved to, so a run stays reproducible after the fact without the gate going blind.
       # ══════════════════════════════════════════════════════════════════════════════════════════
       - uses: actions/checkout@v4
         with:
@@ -664,6 +680,129 @@ jobs:
           fi
           echo "ok: a class the design system does not declare turns the suite red"
 
+      # ── The browser miner must agree with the chain it grinds against, HERE ───────────────────
+      #
+      # `/mine` is public. A visitor's own CPU runs `src/mining/*` against the live Hearth chain,
+      # and a digest that differs from the node's in one bit is a share the chain refuses — at full
+      # fan speed, indistinguishable from bad luck, on a machine nobody here can see.
+      #
+      # hearth carries the mirror of this comparison and it is real. It is also in ANOTHER
+      # repository on another schedule: an edit to `src/mining/*` goes green here, gets published by
+      # the `publish` job at the end of this file, and only turns hearth red afterwards. So the
+      # comparison runs here too, where the change is made. micro-org#298.
+      - name: The browser miner was compared against the node's own implementation
+        working-directory: network-site
+        run: |
+          set -euo pipefail
+          test -f ../hearth/node/src/pow.js || {
+            echo "::error::hearth was not checked out; the browser miner's proof-of-work was never compared to the chain's"
+            exit 1
+          }
+          # WHICH hearth. The checkout pins no ref on purpose — see its header — so the log has to
+          # record what was compared against, or a green run cannot be reproduced after the fact.
+          echo "compared against hearth $(git -C ../hearth rev-parse HEAD)"
+
+          # `--test-reporter=tap` EXPLICITLY, and it is not a style choice. node:test picks `spec`
+          # or `tap` by itself and colourises on a heuristic that is not simply "is stdout a TTY" —
+          # measured 2026-08-09, a plain command substitution still came back with SGR escapes
+          # wrapped around `pass 16`, so an anchored match on the count silently found nothing and
+          # the floor below would have read 0 on a green run. TAP is the same bytes everywhere.
+          out=$(node --import tsx --test --test-reporter=tap test/browser-pow.test.ts 2>&1) || {
+            printf '%s\n' "$out"
+            echo "::error::the browser miner does not agree with hearth/node/src/pow.js"
+            exit 1
+          }
+          # The suite FAILS rather than skips when hearth is missing, so there is no skip line to
+          # look for here. What has to be checked instead is that the checks with teeth ran at all:
+          # a rename that quietly dropped one would leave the rest green.
+          for name in \
+            'agrees on eight random seeds at the live consensus parameters' \
+            'agrees at retuned parameters, which the template carries and neither side hard-codes' \
+            'the browser finds a nonce with its own loop, and the node recomputes the identical digest' \
+            "is byte for byte what the node's own signProof would have produced" \
+            'accepts the submission, and the chain grows by the block a browser mined' \
+            'refuses a proof signed by a key the work was not issued to'
+          do
+            grep -qF "$name" <<<"$out" || {
+              echo "::error::the cross-check '$name' did not run"
+              exit 1
+            }
+          done
+          # A FLOOR. Sixteen is what the file carries on 2026-08-09; adding checks must not require
+          # editing this workflow, and deleting them must not go unnoticed.
+          count=$(sed -nE 's/^# pass ([0-9]+)$/\1/p' <<<"$out" | head -1)
+          [ "${count:-0}" -ge 16 ] || {
+            printf '%s\n' "$out"
+            echo "::error::only ${count:-0} browser/node comparisons ran; there are at least sixteen"
+            exit 1
+          }
+          echo "ok: $count comparisons between this port and the node that has to accept its work"
+
+      - name: …and it would have noticed a scratchpad walked in the wrong order
+        working-directory: network-site
+        run: |
+          set -euo pipefail
+          cp src/mining/homefire.js "$RUNNER_TEMP/homefire.js.orig"
+          restore() { cp "$RUNNER_TEMP/homefire.js.orig" src/mining/homefire.js; }
+          trap restore EXIT
+
+          # THE INDEX DERIVATION, because it is the divergence a reader is least likely to see. The
+          # digests stay well-formed, the miner stays fast, the page stays busy — every share is
+          # simply refused. `perl` rather than `sed` for the reason the mutations above give: GNU
+          # sed's address forms are not BSD sed's, so a sed mutation can only be rehearsed on the
+          # runner.
+          grep -q 'return lo % words;' src/mining/homefire.js || {
+            echo "::error::accIndex no longer derives the index that way; this mutation targets nothing"
+            exit 1
+          }
+          perl -0pi -e 's/  return lo % words;/  return (lo >>> 1) % words;/' src/mining/homefire.js
+          if cmp -s src/mining/homefire.js "$RUNNER_TEMP/homefire.js.orig"; then
+            echo "::error::the mutation changed nothing, so this step proves nothing"
+            exit 1
+          fi
+          out=$(node --import tsx --test --test-reporter=tap test/browser-pow.test.ts 2>&1 || true)
+          failed=$(sed -nE 's/^# fail ([0-9]+)$/\1/p' <<<"$out" | head -1)
+          # Measured 2026-08-09: this mutation fails 4 of the 16 checks. The floor is 3 so that
+          # adding a check never has to be paired with an edit here, and so that a suite which
+          # decayed to one accidental assertion still reports as broken.
+          [ "${failed:-0}" -ge 3 ] || {
+            printf '%s\n' "$out"
+            echo "::error::a browser walking the scratchpad in a different order failed only ${failed:-0} checks"
+            exit 1
+          }
+          echo "ok: bending the scratchpad index derivation fails $failed of the comparisons"
+
+      - name: …and it would have noticed the recovery byte going missing from a proof
+        working-directory: network-site
+        run: |
+          set -euo pipefail
+          cp src/mining/miner.js "$RUNNER_TEMP/miner.js.orig"
+          restore() { cp "$RUNNER_TEMP/miner.js.orig" src/mining/miner.js; }
+          trap restore EXIT
+
+          # THE DEFECT THAT ALREADY HAPPENED, replayed. This file once produced 64 bytes with no
+          # recovery id, on the reasoning that the header already carries `coinbasePub`. The node
+          # requires 65 and recovers the key from the signature, so every block the browser miner
+          # found was answered `bad signature` AFTER the work was done. It survived because the only
+          # thing describing the format was a constant, and a constant cannot be wrong loudly.
+          grep -qF "sig.recoveryId.toString(16).padStart(2, '0')" src/mining/miner.js || {
+            echo "::error::proofSignature no longer appends the recovery byte that way; this mutation targets nothing"
+            exit 1
+          }
+          perl -0pi -e "s/\+ sig\.recoveryId\.toString\(16\)\.padStart\(2, '0'\)/+ ''/" src/mining/miner.js
+          if cmp -s src/mining/miner.js "$RUNNER_TEMP/miner.js.orig"; then
+            echo "::error::the mutation changed nothing, so this step proves nothing"
+            exit 1
+          fi
+          out=$(node --import tsx --test --test-reporter=tap test/browser-pow.test.ts 2>&1 || true)
+          failed=$(sed -nE 's/^# fail ([0-9]+)$/\1/p' <<<"$out" | head -1)
+          # Measured 2026-08-09: 3 of the 16 checks. The floor is 2, for the reason above.
+          [ "${failed:-0}" -ge 2 ] || {
+            printf '%s\n' "$out"
+            echo "::error::a 64-byte proof signature failed only ${failed:-0} checks — the 2026 defect would recur"
+            exit 1
+          }
+          echo "ok: dropping the recovery byte fails $failed of the comparisons"
 
       - name: Build
         working-directory: network-site
@@ -776,6 +915,32 @@ jobs:
         # even though a session unlocks nothing: a code left in a shared link is a code somebody
         # else can redeem.
         run: grep -q 'bootstrapSession' src/main.tsx
+
+      - name: Every suite this bundle's prose says checks it is a suite in this repository
+        # THE DEFECT THIS REPOSITORY SHIPPED, TURNED INTO A RULE. `src/mining/*` arrived on
+        # 2026-08-06 carrying hearth's sentence — "node/test/browser-pow.js runs this file against
+        # the node's own implementation and fails on any divergence" — and that file was not here,
+        # was not in hearth either at the time, and nothing in this repository compared the port to
+        # anything. `mining.d.ts` and the restoring commit said the same. A reader had no way to
+        # find out; the claim was the only evidence for itself. micro-org#298.
+        #
+        # So: any `test/<name>.test.ts` a source file NAMES has to exist. A suite in another
+        # repository is fine to mention and cannot satisfy this rule, which is the point — it must
+        # be described as what it is rather than as a gate that stands between an edit here and a
+        # deploy.
+        run: |
+          set -uo pipefail
+          named=$(grep -rhoE 'test/[A-Za-z0-9._-]+\.test\.ts' src | sort -u)
+          if [ -z "$named" ]; then
+            echo "::error::no source file names the suite that checks it; this rule has stopped reading anything"
+            exit 1
+          fi
+          fail=0
+          for t in $named; do
+            test -f "$t" || { echo "::error::src names $t, which does not exist in this repository"; fail=1; }
+          done
+          [ "$fail" = 0 ] || exit 1
+          echo "ok: $(printf '%s\n' "$named" | wc -l | tr -d ' ') suites named in src, all of them here"
 
       - name: The route table, the router and nginx agree
         # Already asserted by test/routes.test.ts; repeated here so deleting the test does not

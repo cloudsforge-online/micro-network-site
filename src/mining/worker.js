@@ -8,6 +8,13 @@
  * that never yields cannot receive `postMessage`, so a stop or a new-block
  * signal would sit in the queue until the current run finished. Yielding is what
  * makes the miner interruptible.
+ *
+ * Nothing in this file can run outside a Worker, so nothing in this file is
+ * directly tested. What is tested is the composition it performs — powSeed into
+ * Homefire into meetsTarget, at the parameters the template carried — which
+ * test/browser-pow.test.ts reproduces line for line and grinds until the node
+ * accepts a block from it. A port whose four pieces each match and which seeds
+ * from the wrong nonce is exactly the defect that check exists for.
  */
 
 import { Sha256, toHex } from './sha256.js';

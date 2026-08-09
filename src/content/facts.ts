@@ -53,10 +53,18 @@
  *
  * ── WHAT A SOURCE IS ──────────────────────────────────────────────────────────────────────────
  *
- * `source` is a path into `cloudsforge-online/hearth` or into this estate, with a line number where
- * the value is a constant. `test/citations.test.ts` checks that every one names a line that exists
- * in the checked-out repository, and CI checks Hearth out for exactly that reason: Hearth is the one
- * PUBLIC repository this surface is about, so a reader can follow every citation here.
+ * `source` is a path into `cloudsforge-online/hearth` or into this estate, followed by the NAME of
+ * the constant or the sentence the value was read from — never a line number, which micro-org#235
+ * retired because a position in a file another repository owns turns this one red for an edit it
+ * did not make. `test/content.test.ts` checks that every path named here exists in the checked-out
+ * repository, and CI checks Hearth out for exactly that reason: Hearth is the one PUBLIC repository
+ * this surface is about, so a reader can follow every citation here.
+ *
+ * That sentence used to name a citation suite this repository does not have, and to claim the LINE
+ * was checked, which stopped being true when the line numbers went. Both were found by the rule in
+ * `.github/workflows/ci.yml` that requires every suite named in `src/` to be a suite that is here —
+ * added on 2026-08-09 for the same defect in `src/mining/`. The rule cannot tell a live claim from
+ * a historical one, which is why the old name is described here rather than quoted. micro-org#298.
  *
  * Where Hearth's own documents disagree with each other, `hearth/MAP.md` settles it: "Where this
  * contradicts `README.md`, `WHITEPAPER.md`, `TESTNET.md` or anything in `docs/`, believe this file
