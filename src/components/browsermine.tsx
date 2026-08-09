@@ -11,6 +11,12 @@
  * the node's in one bit is work the chain refuses, and the page would look busy while producing
  * nothing.
  *
+ * WHERE IT IS CHECKED, since a sentence like the one above is exactly the sort that gets written
+ * before the check exists. `test/browser-pow.test.ts`, in this repository, run by this
+ * repository's CI against a hearth checkout, failing rather than skipping when hearth cannot be
+ * obtained. It was written on 2026-08-09; between the restore on 2026-08-06 and then, this
+ * paragraph was a claim with nothing behind it. micro-org#298.
+ *
  * ── The key never leaves this tab ────────────────────────────────────────────────────────────────
  *
  * It is generated here, held in memory, and used only to sign a proof once a nonce has already won.

@@ -1,10 +1,20 @@
 /* Homefire proof-of-work, in the browser.
  *
- * A line-for-line port of node/src/pow.js. It has to be exactly that: a digest
- * that differs from the node's in one bit is a share the chain rejects, and the
- * miner would look like it was working while producing nothing.
- * node/test/browser-pow.js runs this file against the node's own implementation
- * and fails on any divergence.
+ * A line-for-line port of hearth's node/src/pow.js. It has to be exactly that: a
+ * digest that differs from the node's in one bit is a share the chain rejects,
+ * and the miner would look like it was working while producing nothing.
+ *
+ * test/browser-pow.test.ts, in this repository, runs this file against the
+ * node's own implementation — loaded out of the hearth checkout this
+ * repository's CI makes — and fails, rather than skips, on any divergence or on
+ * the node's source being unobtainable.
+ *
+ * That sentence used to name hearth's node/test/browser-pow.js and nothing else.
+ * It travelled here with the code on 2026-08-06 and described a gate in another
+ * repository that, at the time, did not exist either. hearth carries the mirror
+ * of the comparison again; it runs on hearth's schedule, after this bundle has
+ * been built and published, so it is a second opinion rather than the gate.
+ * micro-org#298.
  *
  * Two deliberate differences from the node, neither of them observable:
  *

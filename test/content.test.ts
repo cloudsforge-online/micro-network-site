@@ -478,9 +478,13 @@ describe('no caveat denies a capability the same page renders a control for', ()
 
 describe('every hearth file this site links to exists', () => {
   /**
-   * The links are `hearthFile(path)` calls and the citations are `hearth/<path>:<line>` strings.
-   * Both name a file in a PUBLIC repository, so a reader will follow them — which makes a renamed
-   * document a broken promise rather than an internal inconsistency.
+   * The links are `hearthFile(path)` calls and the citations are `hearth/<path>` strings. Both name
+   * a file in a PUBLIC repository, so a reader will follow them — which makes a renamed document a
+   * broken promise rather than an internal inconsistency.
+   *
+   * A FILE, not a line. This header said `hearth/<path>:<line>` after micro-org#235 had already
+   * taken the line numbers out of `FACTS`, and the regex below never read one; the sentence was
+   * describing a check that had stopped existing.
    */
   const hearthRoot = at('../hearth')
 

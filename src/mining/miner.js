@@ -16,8 +16,8 @@
  *
  * Homefire is untouched: the pad fill, the walk, the digest and the target
  * comparison are exactly what they were, they still live in homefire.js and
- * worker.js, and node/test/browser-pow.js still checks them digest for digest
- * against the node. Nothing in this file's hash loop moved.
+ * worker.js, and test/browser-pow.test.ts checks them digest for digest against
+ * the node. Nothing in this file's hash loop moved.
  *
  * What moved is the key the proof BINDS. The coinbase has to receive the block
  * reward and the fees, so it must be an account the account-model chain can
@@ -46,9 +46,19 @@
  *
  * `POW_SIG_FORM` below exists so a mismatch is a grep rather than an
  * investigation, and it was faithfully kept in sync with the wrong answer. So
- * the format is now checked instead of described: `node/test/browser-proof.js`
- * imports `proofSignature` from this file, signs a real winning digest with it,
- * and requires the node's own template flow to accept the block.
+ * the format is now checked instead of described: `test/browser-pow.test.ts`,
+ * in this repository, signs a real winning digest with `proofSignature`,
+ * requires it byte for byte equal to what hearth's own
+ * `node/src/chain/header.js` `signProof` produces, and drives the node's real
+ * template flow until it accepts the block.
+ *
+ * WHERE THIS SENTENCE USED TO POINT. At hearth's `node/test/browser-proof.js`,
+ * which did not exist when this file was restored here on 2026-08-06 — the
+ * citation came with the code. hearth has it again now, importing this very
+ * file from a checkout of this repository. That is a real gate and it is not
+ * this one: it runs in hearth's CI, on hearth's schedule, most likely after a
+ * change here has already been published by this repository's own workflow.
+ * micro-org#298.
  * ---------------------------------------------------------------------------
  */
 
