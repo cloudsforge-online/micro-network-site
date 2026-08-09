@@ -514,12 +514,38 @@ export const MINE = {
       'the miner.',
   },
 
+  /**
+   * THIS SECTION SAID "NONE EXISTS" FULL STOP, AND ON 2026-08-09 THAT SENTENCE ACQUIRED A WAY OF
+   * BEING READ AS FALSE THAT IT DID NOT HAVE WHEN IT WAS WRITTEN.
+   *
+   * CloudsForge now runs a mining pool. It is micro-pool, it is registered in the surface registry,
+   * and `pool.<apex>` is in this bundle's own footer — the shared `FOOTER_GROUPS` "More" column
+   * puts it on every page of this site. So a reader can arrive here from a link to a pool and read
+   * a page telling them no pool exists.
+   *
+   * BOTH SENTENCES ARE TRUE BECAUSE THEY ARE ABOUT DIFFERENT CHAINS. This page is about EMBER, and
+   * micro-pool mines Litecoin — it asks a litecoind for a block template and refuses to start when
+   * the chain the node reports is not the one it was configured for (`pool/src/template.ts`). It
+   * has no EMBER path and none is planned here. The fix is therefore to say WHICH chain has no
+   * pool, not to soften the claim.
+   *
+   * WHAT THIS DELIBERATELY DOES NOT DO IS ADVERTISE THAT POOL. The file header's rule is that this
+   * site "may not imply a mining income", and pointing a reader at a pool is the most direct way to
+   * imply one. It is also not running: as of 2026-08-09 micro-pool sits behind a compose profile
+   * that is not started, because two values it requires do not exist yet — the payout address and
+   * the operator's fee, which is an unmade product decision (`36-multi-chain-and-mining-pool.md`
+   * §7.1). A sentence here promising a service nobody can connect to would be the exact failure
+   * this file exists to prevent. The footer link is enough; it goes to a console that describes its
+   * own state.
+   */
   pools: {
     title: 'Pools',
     body:
-      'None exists, and nothing in the protocol prevents one from being built — it would hand out ' +
-      'work under its own key and pay hashers off chain. What consensus does guarantee is that work ' +
-      'handed to you under YOUR key cannot be taken from you.',
+      'None exists for EMBER, and nothing in the protocol prevents one from being built — it would ' +
+      'hand out work under its own key and pay hashers off chain. What consensus does guarantee is ' +
+      'that work handed to you under YOUR key cannot be taken from you. There is a pool elsewhere ' +
+      'in the estate and it is for Litecoin, not for this chain; whether it is accepting work is a ' +
+      'question its own console answers, and nothing on this page applies to it.',
   },
 
   design: {
