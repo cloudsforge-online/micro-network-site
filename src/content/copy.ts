@@ -543,9 +543,9 @@ export const MINE = {
     body:
       'None exists for EMBER, and nothing in the protocol prevents one from being built — it would ' +
       'hand out work under its own key and pay hashers off chain. What consensus does guarantee is ' +
-      'that work handed to you under YOUR key cannot be taken from you. CloudsForge does run a pool ' +
-      'elsewhere in the estate, and it mines Litecoin rather than this chain; nothing on this page ' +
-      'applies to it.',
+      'that work handed to you under YOUR key cannot be taken from you. There is a pool elsewhere ' +
+      'in the estate and it is for Litecoin, not for this chain; whether it is accepting work is a ' +
+      'question its own console answers, and nothing on this page applies to it.',
   },
 
   design: {
