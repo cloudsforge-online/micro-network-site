@@ -106,7 +106,7 @@ import { chainIndex } from './api.ts'
 /* ══════════════════════════════ scope ══════════════════════════════ */
 
 /**
- * The six chains this service runs, as `indexer/src/chains.ts` declares them.
+ * The chains this service runs, as `indexer/src/chains.ts` declares them, in its order.
  *
  * `shard` is deliberately absent upstream and the reason is at `indexer/src/chains.ts`:
  * SHARD exists in `CHAINS` only so that record is total, it never exists on a chain, and "an
@@ -114,14 +114,29 @@ import { chainIndex } from './api.ts'
  * Restated here rather than imported, because a browser bundle must not depend on a service's
  * source tree; `test/chainstatus.test.ts` reads the real list and fails if this one drifts.
  *
+ * **THE COUNT IS NO LONGER STATED, AND THAT IS THE SECOND LESSON RATHER THAN A STYLE CHOICE.**
+ * This opened "the six chains", which was a fact about upstream at the time of writing and has
+ * been wrong twice since. A number in the sentence above a list is a second copy of the list's
+ * length, kept by hand, in a repository nothing notifies when the real one changes.
+ *
  * `ltc` JOINED ON 2026-08-05 and this list did not, which is exactly the drift that test exists
- * to catch — it went red on the next push rather than at a reader's expense. Litecoin needs no
- * worker of its own upstream: its spec carries `family: 'bitcoin'` and the indexer selects a
- * worker by family (`indexer/src/chains.ts`). Nothing on THIS surface renders the list —
- * Forge Network is `ember` alone (`HEARTH_CHAIN` below) and the custodied chains belong on the
- * explorer — so this entry is a restatement of upstream truth and changes no pixel.
+ * to catch — it went red on the next push rather than at a reader's expense. `etc` and `doge`
+ * JOINED ON 2026-08-07 with micro-contracts `c0e7c77`, and it happened AGAIN: this list still
+ * had six, the drift test had been red for it, and nothing had acted on the red. Neither new
+ * chain needs a worker of its own upstream — Dogecoin's spec carries `family: 'bitcoin'` and
+ * Ethereum Classic's `family: 'evm'`, and the indexer selects a worker by family
+ * (`indexer/src/chains.ts`), which is why a chain can arrive there without a line of new code
+ * and arrive here without anybody noticing.
+ *
+ * **Being on this list is being ASKABLE, never being followed, and on this surface it is not even
+ * that.** `INDEXER_CHAINS` is what a deployment actually walks and both live estates set it to a
+ * single scope. Nothing here renders the list at all — Forge Network is `ember` alone
+ * (`HEARTH_CHAIN` below) and the custodied chains belong on the explorer — so these entries are a
+ * restatement of upstream truth and change no pixel. In particular no copy on this site says
+ * DOGE or ETC can be held or deposited, because no deposit in either has ever been credited at
+ * any depth (`contracts/packages/chain/src/index.ts`).
  */
-export const CHAIN_IDS = ['ember', 'eth', 'btc', 'sol', 'xrp', 'ltc'] as const
+export const CHAIN_IDS = ['ember', 'eth', 'etc', 'btc', 'sol', 'xrp', 'ltc', 'doge'] as const
 export type ChainId = (typeof CHAIN_IDS)[number]
 
 /** `indexer/src/chains.ts`. */
