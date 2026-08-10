@@ -571,6 +571,33 @@ export const MINE = {
    * §7.1). A sentence here promising a service nobody can connect to would be the exact failure
    * this file exists to prevent. The footer link is enough; it goes to a console that describes its
    * own state.
+   *
+   * ── 2026-08-10: BOTH HALVES OF THAT LAST PARAGRAPH TURNED OUT TO BE WRONG, SO THERE IS A LINK ──
+   *
+   * "The footer link is enough" was the load-bearing sentence, and there is no footer. This bundle
+   * mounts no `CloudsForgeFooter` anywhere — `src/components/shell.tsx` renders the bar and the
+   * page and nothing else — so `FOOTER_GROUPS` never runs here and `pool.<apex>` has never been on
+   * any page of this site. The reasoning above withheld a link on the grounds that a different link
+   * already existed, and that other link was imagined. This surface and the company site are the
+   * only two bundles in the estate not mounting the shared footer, which is exactly how a claim
+   * like that survives being written down.
+   *
+   * "It is also not running" is no longer true either. Measured 2026-08-10: `GET /v1/pool` on
+   * `pool.<apex>` answers 200 from mainnet with `ready: true`, a Litecoin template thirty-odd
+   * seconds old, and `feeBasisPoints` set — so the operator fee that was an unmade decision has
+   * been made, and the service the paragraph called unreachable is reachable from a browser.
+   *
+   * WHAT DOES NOT CHANGE IS THE INCOME RULE, and it is the reason the link reads the way it does.
+   * The pool records shares and settles none of them — `payoutsImplemented` is `false` on the same
+   * response — so the sentence introducing it says so before it says anything else. A link that
+   * carries the absence of a payout with it cannot imply a yield; a link labelled "start earning"
+   * would, which is the version this comment was originally right to refuse.
+   *
+   * The link goes to the CONSOLE, resolved through the registry like every other outbound address
+   * here. Not to a hostname typed into this file, and not to a page in this repository describing
+   * somebody else's service: which chains that pool serves and whether it is accepting work are
+   * live facts, they change without anybody editing this bundle, and the console reads them from
+   * the pool itself on every load.
    */
   pools: {
     title: 'Pools',
@@ -580,6 +607,19 @@ export const MINE = {
       'that work handed to you under YOUR key cannot be taken from you. There is a pool elsewhere ' +
       'in the estate and it is for Litecoin, not for this chain; whether it is accepting work is a ' +
       'question its own console answers, and nothing on this page applies to it.',
+    /**
+     * The one link off this page that is about a pool, and the note that has to travel with it.
+     * `to` is a registry key rather than an address; `src/pages/mine.tsx` resolves it through
+     * `hosts()` so this file names no hostname, which is the rule everywhere in this bundle.
+     */
+    elsewhere: {
+      to: 'pool' as const,
+      label: 'The Litecoin pool console',
+      note:
+        'It records shares and pays nothing — there is no payout mechanism in it yet — and it is ' +
+        'a different chain with a different proof of work, so nothing above applies to it. Its ' +
+        'console is what answers whether it is accepting work today.',
+    },
   },
 
   design: {
