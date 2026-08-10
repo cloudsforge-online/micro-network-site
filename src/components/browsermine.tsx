@@ -69,6 +69,11 @@ export function BrowserMine({ rpc }: { rpc: string }) {
   // span up, and the rate sat at zero with nothing on screen to say why.
   const [onBattery, setOnBattery] = useState(false)
   const [mineOnBattery, setMineOnBattery] = useState(false)
+  // Whether the tip is reaching this tab live. Kept on screen rather than raised as a one-shot
+  // notice: it is a condition that lasts the whole session, and it changes what the numbers next
+  // to it mean — on the fallback poll, some of that hash rate is spent on a parent that has
+  // already moved. It was ALSO false for months with nothing to say so (micro-org#236).
+  const [following, setFollowing] = useState(false)
   const miner = useRef<MinerHandle | null>(null)
 
   // Stop mining if the reader navigates away. A worker pool left running in a detached component
@@ -90,6 +95,7 @@ export function BrowserMine({ rpc }: { rpc: string }) {
   const toggle = useCallback(async () => {
     if (running) {
       miner.current?.stop()
+      setFollowing(false)
       return
     }
     if (!key) return
@@ -113,6 +119,7 @@ export function BrowserMine({ rpc }: { rpc: string }) {
         setNotice(`the node refused a block: ${(e as CustomEvent).detail.err}`),
       )
       m.addEventListener('error', (e) => setNotice((e as CustomEvent).detail.message))
+      m.addEventListener('follow', (e) => setFollowing(Boolean((e as CustomEvent).detail.following)))
       await m.start()
     } catch (err) {
       setNotice(err instanceof Error ? err.message : 'mining could not start')
@@ -198,6 +205,11 @@ export function BrowserMine({ rpc }: { rpc: string }) {
             {running && !onBattery && <span className="ns-mine__rate cf-num">{rate(hashrate)}</span>}
             {height !== null && (
               <span className="ns-mine__height">working on block {height.toLocaleString()}</span>
+            )}
+            {running && (
+              <span className={following ? 'ns-mine__link' : 'ns-mine__link ns-mine__link--poll'}>
+                {following ? 'following the chain live' : 'checking for new work every 10s'}
+              </span>
             )}
           </div>
 
