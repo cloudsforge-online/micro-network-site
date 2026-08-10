@@ -79,7 +79,7 @@ declare module '*/mining/miner.js' {
   /**
    * Emits: `state` {running}, `hashrate` {hashrate,total}, `template` {height,…},
    * `accepted` {height,id,reward}, `stale` {templateId}, `rejected` {err}, `error` {message},
-   * `power` {onPower,known}, `duty` {…}.
+   * `power` {onPower,known}, `duty` {…}, `follow` {following,everyMs}.
    */
   export class Miner extends EventTarget {
     constructor(options: MinerOptions)
@@ -88,10 +88,26 @@ declare module '*/mining/miner.js' {
     readonly running: boolean
     readonly hashrate: number
     readonly accepted: number
+    /**
+     * Is the tip reaching this tab live over `GET /events`, or is it on the fallback poll?
+     *
+     * Declared because it is a fact about the session that the page renders, not an internal —
+     * `browsermine.tsx` puts it on screen. It went silently false for months (micro-org#236), so
+     * the `_follow` internals below are declared too: `test/mining-follow.test.ts` drives the two
+     * `EventSource` transitions by hand, which is the only way to assert a state machine whose
+     * inputs are a browser's callbacks.
+     */
+    readonly following: boolean
     /** Writable: the duty calculation reads it live, so it can be changed on a running pool. */
     pauseOnBattery: boolean
     /** Recomputes duty and pushes it to every worker. Call after changing `pauseOnBattery`. */
     _applyDuty(): void
+    /** Opens the event stream and arms the fallback poll. Called by `start()`. */
+    _follow(): void
+    /** The fallback poll's current period, in ms: 45 s while following, 10 s while blind. */
+    readonly _refreshEveryMs: number
+    readonly _refreshTimer: number | null
+    readonly _sse: EventSource | null
   }
   export const POW_SIG_FORM: string
   export function proofSignature(digestHex: string, priv: Uint8Array): string

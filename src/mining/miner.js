@@ -125,6 +125,8 @@ export class Miner extends EventTarget {
     this._samples = [];
     this._sse = null;
     this._refreshTimer = null;
+    this._refreshEveryMs = 0;
+    this.following = false;                  // is the tip reaching us live?
     this._visibility = () => this._applyDuty();
   }
 
@@ -137,20 +139,94 @@ export class Miner extends EventTarget {
     document.addEventListener('visibilitychange', this._visibility);
     await this._watchPower();
     await this._refresh();
-    // The tip moving invalidates every in-flight nonce, so follow new blocks
-    // rather than polling on a timer we would have to keep short to be useful.
-    this._sse = new EventSource(`${this.rpc}/events`);
+    this._follow();
+  }
+
+  /* HOW THIS MINER LEARNS THE TIP MOVED, AND WHAT IT DOES WHEN IT CANNOT.
+   *
+   * The tip moving invalidates every in-flight nonce: the template's parent is
+   * gone, so every hash after that block lands is spent on work the node will
+   * answer with `stale`. Following the chain is therefore not a nicety, it is
+   * the difference between mining and burning someone's battery.
+   *
+   * `GET /events` is the live signal and the timer is the fallback, and until
+   * micro-org#236 the fallback was the ONLY thing running — the estate's gateway
+   * published `/mining/template` and `/mining/submit` and nothing else, so
+   * `rpc.<apex>/events` fell through to the JSON-RPC router and answered 405.
+   *
+   * ── AND THE FAILURE WAS SILENT, WHICH IS THE PART WORTH FIXING HERE ────────
+   *
+   * A non-200 is FATAL to an `EventSource`: `readyState` goes to CLOSED and the
+   * browser does not retry. There was no `onerror`, so nothing noticed and
+   * nothing said so. This page ran on a 45-second timer for months while its own
+   * code said it was following the chain, and the only visible symptom was a
+   * stale rate nobody could attribute.
+   *
+   * So: `onopen` and `onerror` are both wired, and the timer's period DEPENDS on
+   * which of the two last fired.
+   *
+   *   following  → 45 s. Belt and braces against a missed frame; templates live
+   *                120 s (`TTL_MS`, node/src/mining.js) so this is well inside.
+   *   not        → 10 s. The chain targets 15 s, so this is the shortest period
+   *                that is not simply polling for its own sake — one request per
+   *                block per miner, which is the honest shape `cf-mining-throttle`
+   *                (2/s per IP) was sized for and two orders of magnitude under it.
+   *
+   * A `follow` EVENT RATHER THAN AN `error` ONE, because this is a STATE and not
+   * an incident. `browsermine.tsx` renders `error` as a one-shot warning titled
+   * "That did not work", which is both wrong (mining works, it is just less
+   * efficient) and gone by the time it matters — a condition that lasts the whole
+   * session needs a line on screen that lasts the whole session.
+   *
+   * NOT A RECONNECT LOOP. A browser that re-dials a refused stream forever is
+   * indistinguishable from the outage it is in, and both caps on this route
+   * refuse deliberately rather than queue — `SSE_MAX_CLIENTS` in
+   * hearth/node/src/sse.js answers 503, `cf-sse-inflight` at the gateway answers
+   * 429 — precisely so a client can back off and say so. One attempt, then the
+   * timer, then a line on the page.
+   */
+  _follow() {
+    try {
+      this._sse = new EventSource(`${this.rpc}/events`);
+    } catch {
+      this._pollEvery(10_000);
+      return;
+    }
+    this._sse.onopen = () => {
+      this.following = true;
+      this._pollEvery(45_000);
+      this.emit('follow', { following: true, everyMs: 45_000 });
+    };
     this._sse.onmessage = () => this._refresh().catch(() => {});
-    // Templates expire; refresh well inside that even if no block arrives.
-    this._refreshTimer = setInterval(() => this._refresh().catch(() => {}), 45_000);
+    this._sse.onerror = () => {
+      /* Fires for a refusal AND for an ordinary disconnect. `readyState` is what
+       * separates them: CONNECTING means the browser is retrying by itself and
+       * this is a blip, CLOSED means it has given up and will not try again. */
+      const dead = !this._sse || this._sse.readyState === EventSource.CLOSED;
+      if (!dead) return;
+      this.following = false;
+      this._pollEvery(10_000);
+      this.emit('follow', { following: false, everyMs: 10_000 });
+    };
+    this._pollEvery(10_000);
+  }
+
+  /** Templates expire; refresh well inside that even if no block arrives. */
+  _pollEvery(ms) {
+    if (this._refreshEveryMs === ms && this._refreshTimer) return;
+    if (this._refreshTimer) clearInterval(this._refreshTimer);
+    this._refreshEveryMs = ms;
+    this._refreshTimer = setInterval(() => this._refresh().catch(() => {}), ms);
   }
 
   stop() {
     this.running = false;
     for (const w of this.workers) { w.postMessage({ type: 'stop' }); w.terminate(); }
     this.workers = [];
-    if (this._sse) { this._sse.close(); this._sse = null; }
+    if (this._sse) { this._sse.onerror = null; this._sse.close(); this._sse = null; }
     if (this._refreshTimer) { clearInterval(this._refreshTimer); this._refreshTimer = null; }
+    this._refreshEveryMs = 0;
+    this.following = false;
     if (this._battery && this._onCharging) this._battery.removeEventListener('chargingchange', this._onCharging);
     document.removeEventListener('visibilitychange', this._visibility);
     this.hashrate = 0;

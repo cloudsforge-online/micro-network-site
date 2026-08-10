@@ -724,8 +724,16 @@ body {
 }
 
 .ns-mine__height,
+.ns-mine__link,
 .ns-mine__ack {
   color: var(--cf-fg-mute);
+}
+
+/* Muted when the tip is arriving live, warned when it is not. Colour is not the
+   only carrier — the two states say different words — because a fifth of readers
+   with a red/green deficiency would otherwise see one unexplained grey line. */
+.ns-mine__link--poll {
+  color: var(--cf-warn);
 }
 
 .ns-mine__ack {
