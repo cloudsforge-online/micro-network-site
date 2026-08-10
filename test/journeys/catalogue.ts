@@ -295,6 +295,91 @@ export const CATALOGUE: readonly Scenario[] = [
     },
   },
 
+  /**
+   * THIS SITE NAMED A POOL IN PROSE AND GAVE NOBODY A WAY TO REACH IT.
+   *
+   * `MINE.pools` has said "there is a pool elsewhere in the estate" since 2026-08-09, and the
+   * comment above it withheld a link on the grounds that the shared footer already carried
+   * `pool.<apex>` on every page of this site. It does not. This bundle mounts no
+   * `CloudsForgeFooter` at all, so `FOOTER_GROUPS` never runs here and that address has never been
+   * on any page — the reasoning withheld one link because a second, imagined one existed.
+   *
+   * The link is the easy half. The half worth a scenario is the ORDER: this surface may not imply
+   * a mining income, and what keeps that true once a pool is linked is not the absence of the link
+   * but the sentence in front of it saying the pool settles nothing. Reversing those two is a
+   * one-line edit that no typecheck, lint or unit test can see, and it turns an honest page into
+   * an advertisement.
+   *
+   * BJ-NET-04 already sweeps the whole page for the yield vocabulary, so the new copy is covered
+   * there for free. Nothing here asserts what the pool serves or whether it is accepting work:
+   * those are live facts, they change without anybody editing this bundle, and they belong to the
+   * console this links to.
+   */
+  {
+    id: 'BJ-NET-POOL',
+    title: 'the mining page reaches the Litecoin pool, behind the sentence saying it settles nothing',
+    tier: 1,
+    // `presentation`. It asserts what the page offers and never follows the link: the console is
+    // another repository's surface and its state is that repository's to keep.
+    asserts: 'presentation',
+    async run(surface) {
+      const session = await renderOnlyWithStubbedNetwork(surface.origin, { path: '/mine', stubs: ANONYMOUS })
+      try {
+        await assertMounted(session)
+
+        const pools = session.page.locator('#pools')
+        const text = await pools.innerText()
+
+        // The section's own claim is unchanged and stays first: EMBER has no pool. A link to
+        // somebody else's pool arriving above that sentence would read as this chain's.
+        assert.ok(
+          text.includes('None exists for EMBER'),
+          'the pools section no longer says EMBER has no pool of its own',
+        )
+        // …and the thing being linked is named as the other chain, not as this one.
+        assert.ok(/Litecoin/.test(text), 'the pool being linked is no longer named as Litecoin')
+
+        /*
+         * THE ORDER, WHICH IS THE ASSERTION. "Pays nothing" is in front of the link, in the same
+         * paragraph, so a reader cannot reach the link without having read it. `textOrder` reads
+         * document order rather than geometry — a stylesheet can put a box anywhere on a row, and
+         * a reader using a screen reader gets the document.
+         */
+        assert.ok(
+          /pays nothing/i.test(text),
+          'the pools section links a pool without saying it pays nothing',
+        )
+        assert.equal(
+          await textOrder(session.page, 'pays nothing', MINE.pools.elsewhere.label),
+          'before',
+          'the link to the pool comes before the sentence saying the pool settles nothing',
+        )
+
+        /*
+         * The address is read for the two properties that together prove it is a registry lookup
+         * rather than a hostname typed into this repository: it is absolute, and it is on an
+         * origin this bundle is not served from. The hostname itself is never named here, for the
+         * same reason `src/content/copy.ts` may not name one.
+         */
+        const link = pools.locator('a[href]').first()
+        assert.equal(
+          (await link.innerText()).trim(),
+          MINE.pools.elsewhere.label,
+          'the pools section links something other than the pool console',
+        )
+        const href = (await link.getAttribute('href')) ?? ''
+        assert.ok(/^https?:\/\//.test(href), `the pool link is not a resolved address: ${href}`)
+        assert.notEqual(
+          new URL(href).origin,
+          surface.origin,
+          'the pool link leads back to this site instead of to the console',
+        )
+      } finally {
+        await session.close()
+      }
+    },
+  },
+
   /* ---- doc 22 BJ-NET-05 ------------------------------------------------ */
   {
     id: 'BJ-NET-05',

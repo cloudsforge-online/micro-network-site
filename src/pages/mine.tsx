@@ -62,6 +62,25 @@ export function MinePage() {
 
       <Section title={MINE.pools.title} id="pools">
         <p className="ns-prose">{MINE.pools.body}</p>
+        {/*
+          THE ONE LINK ON THIS SITE TO THE POOL, AND IT IS HERE BECAUSE THERE WAS NOWHERE ELSE.
+
+          The comment above `MINE.pools` in `src/content/copy.ts` withheld this link on the grounds
+          that the shared footer already carried `pool.<apex>` on every page. It does not: this
+          bundle mounts no `CloudsForgeFooter` at all, so until now this site named the pool in
+          prose — "there is a pool elsewhere in the estate" — and gave a reader no way to reach it.
+
+          The note comes BEFORE the reader can act on the link, in the same paragraph, because the
+          rule in this file's header is that nothing here may imply a yield. What keeps that true
+          is not the absence of a link, it is that the sentence introducing it says the pool
+          settles nothing.
+
+          Resolved through `hosts()`, so this is the registry's address and not one typed here.
+        */}
+        <p className="ns-prose">
+          {MINE.pools.elsewhere.note}{' '}
+          <a href={hosts()[MINE.pools.elsewhere.to]}>{MINE.pools.elsewhere.label}</a>
+        </p>
       </Section>
 
       <Section title={MINE.design.title} lede={MINE.design.lede} id="design">
