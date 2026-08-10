@@ -30,7 +30,7 @@
  * blank the whole page, which is the "one dead upstream costs one tile" rule
  * (`hub-api`'s own description) applied to a browser.
  */
-import { hosts } from '../lib/hosts.ts'
+import { hosts, siteUrlOn } from '../lib/hosts.ts'
 import { EXPLORER_SURFACE } from '../lib/routes.ts'
 import { CHAIN } from '../content/copy.ts'
 import {
@@ -66,9 +66,12 @@ export function ChainPage() {
         <ScopePanel key={`${scope.chain}:${scope.network}`} scope={scope} />
       ))}
 
+      {/* `TWO_HEIGHTS` is the definition and leads, `CHAIN.heads.body` is the argument and
+          follows. They used to be the other way round and the definition was said twice — see the
+          comment on `heads.body` in `src/content/copy.ts`. */}
       <Note tone="accent" title={CHAIN.heads.title}>
-        <p>{CHAIN.heads.body}</p>
-        <p className="ns-note__aside">{TWO_HEIGHTS}</p>
+        <p>{TWO_HEIGHTS}</p>
+        <p className="ns-note__aside">{CHAIN.heads.body}</p>
       </Note>
 
       <Note title={CHAIN.absence.title}>
@@ -171,6 +174,11 @@ function ScopePanel({ scope }: { scope: Scope }) {
     )
   }
 
+  // `followed === false` is a statement; `undefined` is an index that predates the field and is
+  // read as the answer it used to give. Only the explicit false suppresses the halt alarm.
+  const notFollowed = doc.followed === false
+  const elsewhere = siteUrlOn(scope.network === 'testnet' ? 'testnet' : 'mainnet', '/chain')
+
   return (
     <Section title={title} lede={`${doc.asset} on the ${doc.family} family.`}>
       <Figures
@@ -181,11 +189,34 @@ function ScopePanel({ scope }: { scope: Scope }) {
         depth={figureOf(doc.requiredConfirmations)}
         alarm={figureOf(doc.reorgAlarmDepth)}
         known
-        halted={doc.halted}
+        halted={!notFollowed && doc.halted}
+        // The heights, the hash and `tipSeenAt` are left exactly as the document reports them even
+        // when the scope is unfollowed: they are a dated record of what this index once walked,
+        // and "Tip last seen" carries the date that makes them readable as one. Only the VERDICT
+        // is withheld, because a verdict has no date on it.
+        haltedKnown={!notFollowed}
+        haltedWhy={CHAIN.notFollowed.title}
         seenAt={doc.tipSeenAt}
         hash={doc.indexedHash}
       />
-      {doc.halted && doc.haltReason && (
+      {notFollowed && (
+        <Note title={CHAIN.notFollowed.title}>
+          <p>{CHAIN.notFollowed.body}</p>
+          {elsewhere !== null && (
+            <p>
+              <a className="cf-btn" href={elsewhere}>
+                {CHAIN.notFollowed.link}
+              </a>
+            </p>
+          )}
+        </Note>
+      )}
+      {/* Gated on `notFollowed` as well as on the flag: a halt is a claim in the present tense,
+          and an index that is not walking this chain is not making it. Upstream now gates the
+          field itself (`indexer/src/reads.ts`), and this bundle may be talking to one that does
+          not — which is exactly what it was doing on mainnet on 2026-08-10, rendering an
+          `ember:testnet` halt recorded on 2026-08-04 by a provider removed six days earlier. */}
+      {!notFollowed && doc.halted && doc.haltReason && (
         <Note tone="warn" title="This chain is halted">
           <p>
             The chain index has stopped vouching for this chain: {doc.haltReason}. A reorg at or
@@ -209,6 +240,9 @@ function Figures(props: {
   alarm: ReturnType<typeof figureOf>
   known: boolean
   halted: boolean
+  /** Defaults to `known`. False withholds the halt VERDICT while the figures still answer. */
+  haltedKnown?: boolean
+  haltedWhy?: string
   seenAt: string | null
   hash: string | null
 }) {
@@ -235,11 +269,11 @@ function Figures(props: {
       </Detail>
       <Detail label="Crediting halted?">
         <Claim
-          known={props.known}
+          known={props.haltedKnown ?? props.known}
           value={props.halted}
           yes="Yes — the index has stopped vouching for this chain"
           no="No"
-          why="the chain index did not answer"
+          why={props.haltedWhy ?? 'the chain index did not answer'}
         />
       </Detail>
       <Detail label="Tip last seen">

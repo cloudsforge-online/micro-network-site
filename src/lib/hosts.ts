@@ -302,11 +302,32 @@ export function currentNetwork(): PageNetwork {
  * to nowhere.
  */
 export function testnetFaucetUrl(): string | null {
+  return siteUrlOn('testnet', '/faucet')
+}
+
+/**
+ * This same app, on the other network, at `path`.
+ *
+ * The estates are two deployments and each one's chain index follows exactly one EMBER network —
+ * `deploy/compose/env/chain.mainnet.env` says so in its first sentence, "exactly one of this file
+ * and `chain.testnet.env` is ever read, and no deploy can have half of each". So a panel on this
+ * page about the OTHER network can never be filled from the index this page talks to, and the only
+ * honest thing to offer is the address of the deployment that can fill it.
+ *
+ * Mainnet is the empty env label rather than `mainnet`: the unadorned form is production
+ * (`pageNetwork` above), and `envLabel(subdomain, '')` returns the subdomain untouched
+ * (`ui/packages/ui/src/surfaces.ts`). Passing the literal string would build
+ * `network-mainnet.<apex>`, which is not a hostname this estate serves.
+ *
+ * Returns `null` when the apex cannot be derived — on `localhost` and on any two-label host — and
+ * the caller names the host in prose rather than shipping a link to nowhere.
+ */
+export function siteUrlOn(network: 'mainnet' | 'testnet', path: string): string | null {
   if (typeof window === 'undefined') return null
   const parts = window.location.hostname.split('.')
   if (parts.length < 3) return null
   const apex = parts.slice(1).join('.')
-  return `https://${envLabel(PRODUCT, 'testnet')}.${apex}/faucet`
+  return `https://${envLabel(PRODUCT, network === 'mainnet' ? '' : network)}.${apex}${path}`
 }
 
 /** Whether the current address is one the registry knows. Read by the shell. */

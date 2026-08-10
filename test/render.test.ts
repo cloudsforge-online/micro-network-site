@@ -86,6 +86,35 @@ describe('no page renders a height except through Figure', () => {
     // as a rendering bug rather than as an answer.
     assert.doesNotMatch(code('chain.tsx'), /\{doc\.(tipHeight|indexedHeight|lagBlocks)\}/)
   })
+
+  it('the halt alarm is gated on the index following the chain', () => {
+    /*
+     * THE FAILURE THIS PINS, MEASURED ON MAINNET ON 2026-08-10.
+     *
+     * The mainnet chain index still held an `ember:testnet` checkpoint written on 2026-08-04 by a
+     * provider that had been removed from `INDEXER_CHAINS` the same week. Nothing cleared the row
+     * and nothing distinguished it, so `status` answered `halted: true` with "reorg deeper than
+     * 256 blocks below height 87" and THIS PAGE published it: "This chain is halted — the chain
+     * index has stopped vouching for this chain". Six days after the last worker touched it.
+     *
+     * A halt is a claim in the present tense. `indexer/src/reads.ts` now gates the field itself,
+     * and this page gates the alarm again on its own side because a browser bundle can be talking
+     * to an estate mid-deploy — which is exactly the state the defect was found in.
+     */
+    const chain = code('chain.tsx')
+    assert.match(chain, /const notFollowed = doc\.followed === false/)
+    assert.match(
+      chain,
+      /\{!notFollowed && doc\.halted && doc\.haltReason && \(/,
+      'src/pages/chain.tsx renders the halt alarm without first asking whether the index follows the chain',
+    )
+    // `=== false` and not `!doc.followed`: an index that predates the field sends no key at all,
+    // and reading `undefined` as "not followed" would blank a panel that used to work.
+    assert.doesNotMatch(chain, /!doc\.followed\b/)
+    // And the reader is told where the answer does live, rather than being left with a dead panel.
+    assert.match(chain, /siteUrlOn\(/)
+    assert.match(chain, /CHAIN\.notFollowed\.title/)
+  })
 })
 
 describe('the disclaimers exist once', () => {

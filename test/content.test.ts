@@ -36,6 +36,7 @@ import { fileURLToPath } from 'node:url'
 import { describe, it } from 'node:test'
 import { FACTS, fact, grouped, type FactKey } from '../src/content/facts.ts'
 import * as COPY from '../src/content/copy.ts'
+import { TWO_HEIGHTS } from '../src/lib/format.ts'
 
 const at = (p: string) => fileURLToPath(new URL(`../${p}`, import.meta.url))
 
@@ -338,6 +339,36 @@ describe('the copy claims nothing it cannot support', () => {
     // legitimately uses the word is still here, and still says nothing about the testnet.
     assert.match(COPY.CHAIN.unreachable.body, /did not answer/i)
     assert.doesNotMatch(COPY.CHAIN.unreachable.body, /testnet/i)
+  })
+
+  it('the two-heights note defines the terms once, not twice', () => {
+    /*
+     * `src/pages/chain.tsx` renders `TWO_HEIGHTS` and `CHAIN.heads.body` as consecutive paragraphs
+     * inside ONE note. Both used to define "walked head" and "claimed tip", in different words, and
+     * a reader on 2026-08-10 quoted the pair back as though the second were a second point.
+     *
+     * `TWO_HEIGHTS` is the estate's single wording for the distinction (`src/lib/format.ts`) and
+     * every surface that prints a height carries it, so it is the one that keeps the definitions.
+     * What is left here is the argument, and this assertion is what stops the definitions being
+     * re-typed beside it one edit at a time.
+     */
+    assert.match(TWO_HEIGHTS, /walked head/)
+    assert.match(TWO_HEIGHTS, /claimed tip/)
+    assert.doesNotMatch(COPY.CHAIN.heads.body, /walked head/i)
+    assert.doesNotMatch(COPY.CHAIN.heads.body, /claimed tip/i)
+    // Not vacuous: what remains must still be the argument the note exists to make.
+    assert.match(COPY.CHAIN.heads.body, /over-report/i)
+  })
+
+  it('the unfollowed-chain note makes no claim about the chain it is not following', () => {
+    // The panel it belongs to replaced a false present-tense alarm (see `test/render.test.ts`).
+    // Replacing one over-claim with another would be the same defect wearing calmer words, so the
+    // copy is held to saying what THIS deployment does and nothing about the other chain's state.
+    const { body, title } = COPY.CHAIN.notFollowed
+    assert.match(title, /does not follow/i)
+    assert.match(body, /absences, not zeroes/i)
+    assert.doesNotMatch(body, /\bhalt/i)
+    assert.doesNotMatch(body, /\bdown\b|\boffline\b|\bstopped\b/i)
   })
 
   it('prints no repository path anywhere in its copy', () => {

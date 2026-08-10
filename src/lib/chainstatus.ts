@@ -188,6 +188,15 @@ export interface Scope {
  * `ui/packages/ui/src/surfaces.ts`), the wildcard covers them, and
  * `rpc-testnet.cloudsforge.online` answers `eth_chainId` with `0x1cf4` from off the estate.
  *
+ * **AND A THIRD FACT, WHICH IS ABOUT THE INDEX RATHER THAN ABOUT THE CHAINS.** Both scopes have a
+ * chain behind them and no single deployment can answer for both: each estate's chain index follows
+ * exactly one EMBER network, and `deploy/compose/env/chain.mainnet.env` opens by saying so —
+ * "exactly one of this file and `chain.testnet.env` is ever read, and no deploy can have half of
+ * each". So one of these two panels is always about a chain the index this page talks to is not
+ * walking. That panel is kept rather than dropped, because the reader's question is "is there a
+ * testnet" and the answer is yes, over there — see `CHAIN.notFollowed` and the `followed` field.
+ * Dropping it was the alternative and it hides the question instead of answering it.
+ *
  * So BOTH scopes now have a chain behind them, and "the more absent of the two" is no longer the
  * argument for this order. The argument that replaces it is about what a reader is looking at:
  * mainnet is the chain whose balances are permanent, testnet's coin is given away and disposable,
@@ -268,7 +277,28 @@ export interface ChainStatus {
   readonly indexedHash: string | null
   /** Null when no tip has ever been observed — "a lag of zero would be a lie, not a default." */
   readonly lagBlocks: number | null
-  /** True once an alarming reorg has made this service stop vouching for the chain. */
+  /**
+   * Whether the index this page is talking to FOLLOWS this scope (`indexer/src/reads.ts`).
+   *
+   * Optional, and the optionality is the compatibility seam rather than an uncertainty about the
+   * field: an index older than the release that added it answers without the key, and this page is
+   * served from a bundle that can reach an estate mid-deploy. `undefined` is read as "it did not
+   * say", which this page renders as the answer it used to give.
+   *
+   * It was added because this page rendered the failure. On 2026-08-10 the mainnet index still
+   * held an `ember:testnet` checkpoint left by a provider that had run on that host on 2026-08-04,
+   * halted at height 87, and `INDEXER_CHAINS` had not listed the scope for six days. Nothing
+   * cleared the row and nothing distinguished it, so this panel told every reader "This chain is
+   * halted" — a present-tense alarm about a chain the service was not walking.
+   */
+  readonly followed?: boolean
+  /**
+   * True once an alarming reorg has made this service stop vouching for the chain.
+   *
+   * Upstream gates this on `followed` (`indexer/src/reads.ts`), so an index at or past that
+   * release cannot report a halt for a scope it does not follow. This page still checks
+   * `followed` before rendering the alarm, because it may be talking to an older one.
+   */
   readonly halted: boolean
   readonly haltReason: string | null
   readonly providers: readonly ProviderView[]
