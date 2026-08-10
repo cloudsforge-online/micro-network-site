@@ -298,11 +298,45 @@ export const CHAIN = {
    */
   heads: {
     title: 'Two heights, and the gap between them',
+    /**
+     * THE DEFINITIONS ARE NOT HERE, AND THAT IS THE CORRECTION RATHER THAN AN OMISSION.
+     *
+     * This read "The walked head is the highest block the chain index has read and would have
+     * detected a reorg in. The claimed tip is what a node last told it. They are different facts,
+     * and the index reports both rather than picking one — …", and `src/pages/chain.tsx` renders
+     * `TWO_HEIGHTS` in the very next paragraph, which defines the same two terms in the same note.
+     * A reader on 2026-08-10 got both, one after the other, and read the second as a second point
+     * being made. `TWO_HEIGHTS` is the estate's one wording for the distinction
+     * (`src/lib/format.ts`) and every surface that prints a height carries it, so the definition
+     * belongs there and only there. What is left here is the part that sentence does not say: WHY
+     * the index refuses to pick one.
+     */
     body:
-      'The walked head is the highest block the chain index has read and would have detected a ' +
-      'reorg in. The claimed tip is what a node last told it. They are different facts, and the ' +
-      'index reports both rather than picking one — counting depth against a block nobody has ' +
-      'looked at over-reports it, and over-reporting depth credits money early.',
+      'The index reports both rather than picking one because the choice is not cosmetic: ' +
+      'counting depth against a block nobody has looked at over-reports it, and over-reporting ' +
+      'depth credits money early.',
+  },
+
+  /**
+   * A chain this deployment does not follow.
+   *
+   * Each estate's chain index follows exactly one EMBER network — `deploy/compose/env/
+   * chain.mainnet.env` opens with "exactly one of this file and `chain.testnet.env` is ever read,
+   * and no deploy can have half of each" — so this panel is the permanent state of the network
+   * this page is NOT served from, rather than an error.
+   *
+   * It is a panel and not a deletion because the reader's question is "is there a testnet", and
+   * the answer is yes, over there. The link is derived from this page's own hostname
+   * (`hosts.siteUrlOn`) and is absent on a host with no apex to derive from, which is why the
+   * body names the surface in prose as well.
+   */
+  notFollowed: {
+    title: 'This chain index does not follow this chain',
+    body:
+      'Each estate runs its own chain index and each one follows exactly one EMBER network, so ' +
+      'this deployment has nothing of its own to report here. The figures above are absences, ' +
+      'not zeroes, and no claim is being made about whether that chain is running.',
+    link: 'Open the Network site for that chain',
   },
 
   /**

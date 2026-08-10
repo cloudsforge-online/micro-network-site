@@ -656,6 +656,16 @@ describe('the cited lines are the lines that register the routes', () => {
     )
   })
 
+  it('and a halt cannot be reported for a scope the index does not follow', () => {
+    // The gate is upstream's, and this page depends on it: without it the mainnet index answered
+    // `halted: true` for `ember:testnet` on 2026-08-10 from a checkpoint row written on 2026-08-04
+    // by a provider removed from `INDEXER_CHAINS` the same week, and this surface published it.
+    // The page gates again on its own side for an estate mid-deploy, but the day this expression
+    // is relaxed upstream every OTHER consumer of the document is lied to again.
+    assert.match(reads, /halted: isFollowed && \(checkpoint\?\.halted \?\? false\)/)
+    assert.match(reads, /haltReason: isFollowed \? \(checkpoint\?\.haltReason \?\? null\) : null/)
+  })
+
   it('the status shape still carries every field this page renders', () => {
     for (const field of [
       'tipHeight',
@@ -663,6 +673,7 @@ describe('the cited lines are the lines that register the routes', () => {
       'indexedHeight',
       'indexedHash',
       'lagBlocks',
+      'followed',
       'halted',
       'haltReason',
       'requiredConfirmations',
