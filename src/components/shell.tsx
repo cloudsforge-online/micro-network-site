@@ -39,11 +39,11 @@
  * notice that is absent for every reader who has been here before, which is precisely the reader
  * most likely to have formed the wrong impression.
  */
-import { CloudsForgeBar, CookieBanner, Mark } from '@cloudsforge/ui'
+import { CloudsForgeBar, CookieBanner, Mark, miningOnHub } from '@cloudsforge/ui'
 import { NavLink, Outlet } from 'react-router-dom'
 import { STANDING_STATE } from '../content/copy.ts'
 import { useSession } from '../lib/auth.tsx'
-import { PRODUCT } from '../lib/hosts.ts'
+import { PRODUCT, hosts } from '../lib/hosts.ts'
 import { NAV } from '../lib/routes.ts'
 import { Note } from './parts.tsx'
 
@@ -57,11 +57,25 @@ export function AppShell({ unregistered = false }: { unregistered?: boolean }) {
       <a className="ns-skip" href="#main">
         Skip to the page
       </a>
+      {/*
+        `mining` beside the account, as on every other surface that mounts this bar.
+
+        THIS SURFACE IS THE REASON THE CONTROL EXISTS. `/mine` here is a page that DESCRIBES
+        mining — what the reward is, what it is not, and that it is not an income — and for a
+        while it was also the only way to find the miner at all. A capability you reach by
+        remembering which page it was filed under is a capability most readers never find. The
+        page keeps its job, which is explaining; starting it belongs beside the account, on every
+        page, which is what this is.
+
+        `miningOnHub()` — the miner is a WebSocket and two Web Workers on ONE origin, and this
+        bundle is not served from it, so this renders an anchor to the surface that can start it.
+      */}
       <CloudsForgeBar
         current={PRODUCT}
         account={account}
         onSignIn={() => signIn()}
         onSignOut={signOut}
+        mining={miningOnHub(hosts().hub)}
       />
       {/*
         The sub-nav is sticky at exactly `var(--cf-bar-h)` — the bar's own height token, not a
