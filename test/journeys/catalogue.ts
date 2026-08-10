@@ -29,6 +29,7 @@ import {
   textOrder,
   type KnownViolation,
 } from './axe.ts'
+import { HUB_MINE_PATH, NOT_PAID_CLAUSE } from '@cloudsforge/ui'
 import type { Scenario } from './scenario.ts'
 import { CHAIN, FAUCET, HOME, MINE, NODE } from '../../src/content/copy.ts'
 import { NOT_AN_INCOME } from '../../src/lib/format.ts'
@@ -728,6 +729,121 @@ export const CATALOGUE: readonly Scenario[] = [
             .apiCalls()
             .filter((c) => Object.keys(c.headers).some((h) => h.toLowerCase() === 'authorization'))
           assert.deepEqual(withAuth.map((c) => c.url), [], `${path} sent a credential`)
+        } finally {
+          await session.close()
+        }
+      }
+    },
+  },
+  /**
+   * THE OFFER OF BROWSER MINING IS BESIDE THE ACCOUNT, ON EVERY ADDRESS THIS SURFACE SERVES.
+   *
+   * The owner's report, twice: starting a miner is "hidden deep in mining page", and then — after
+   * the control shipped — "the mine is not visible in network site and main site". Both are the
+   * same defect. `mining` is an OPT-IN prop on `CloudsForgeBar`; a bar rendered without it is a
+   * perfectly valid bar, so a shell that never passes it is indistinguishable from one that does by
+   * typecheck, by lint, and by every other test in this suite. Eleven of eighteen frontends passed
+   * it on 2026-08-10 and this surface was one of the three that did not.
+   *
+   * This surface is also the one where the absence read as deliberate: `/mine` here is a page that
+   * DESCRIBES mining, so the capability appeared to be filed under a page rather than carried by
+   * the account. The page keeps its job, which is explaining. Starting it belongs in the chrome.
+   *
+   * Reverting the one line in `src/components/shell.tsx` turns this red and leaves the rest of the
+   * suite green, which is the mutation proof.
+   *
+   * What it does NOT assert is what the control DRAWS — micro-ui's `mining.test.ts` owns that, and
+   * pressing it is asserted in micro-hub-web, which actually mounts the miner. A session is a
+   * WebSocket and two Web Workers pinned to ONE origin and `hub.<apex>` is not this one, so what
+   * this surface owes a reader is that the offer exists, that it is where they will look for it,
+   * and that it is a LINK they can middle-click rather than an `onClick` no link check can see.
+   */
+  {
+    id: 'BJ-MINE-BAR',
+    title: 'the offer of browser mining is beside the account, on every address this surface serves',
+    tier: 2,
+    asserts: 'presentation',
+    async run(surface) {
+      // Every owned route, and one address this app does not own — nginx answers 404 for it while
+      // still serving this shell (BJ-NETWORK-404), and chrome that is absent on the 404 is chrome
+      // that is absent exactly where a lost reader needs a way onwards.
+      for (const path of [...OWNED, '/blocks/1']) {
+        const session = await renderOnlyWithStubbedNetwork(surface.origin, {
+          path,
+          stubs: [...CHAIN_UP, ...FAUCET_UP],
+        })
+        try {
+          const found = await session.page.$$('.cf-bar .cf-mine')
+          assert.equal(found.length, 1, `${path}: expected one mining control in the bar, found ${found.length}`)
+          const mine = found[0] as NonNullable<(typeof found)[number]>
+
+          /*
+           * An anchor, and pointed at HUB. Getting the surface wrong is the likely mistake rather
+           * than a hypothetical one: a control that offered mining and led back to the page the
+           * reader is already on is indistinguishable from a working one in every screenshot.
+           */
+          assert.equal(
+            await mine.evaluate((el) => el.tagName),
+            'A',
+            `${path}: the mining control is not a link`,
+          )
+          const href = (await mine.getAttribute('href')) ?? ''
+          assert.ok(
+            href.endsWith(HUB_MINE_PATH),
+            `${path}: the mining control points at ${href}, not at ${HUB_MINE_PATH}`,
+          )
+          assert.notEqual(
+            new URL(href, surface.origin).origin,
+            new URL(surface.origin).origin,
+            `${path}: the mining control leads back to this surface instead of to Forge Hub`,
+          )
+
+          /*
+           * DOCUMENT ORDER, NOT CSS. A stylesheet can put a box anywhere on the row — `order:` and
+           * `flex-direction: row-reverse` both do it without moving a node — so reading the
+           * rendered geometry would pass for a control a keyboard reader reaches last, after the
+           * switcher and the whole page. "Beside the account" is a claim about where you find it.
+           *
+           * The `.cf-sr` skipped between them is the control's own description span, which
+           * `MiningControl` renders as a SIBLING so it is a description and not part of the
+           * accessible name (`ui/packages/ui/src/mining.tsx`).
+           */
+          const placement = await session.page.evaluate(() => {
+            const inner = document.querySelector('.cf-bar__inner')
+            if (!inner) return null
+            const kids = [...inner.children]
+            const mineAt = kids.findIndex((el) => el.classList.contains('cf-mine'))
+            const last = kids.length - 1
+            return {
+              between: kids.slice(mineAt + 1, last).filter((el) => !el.classList.contains('cf-sr')).length,
+              account: kids[last]?.className ?? '',
+            }
+          })
+          assert.ok(placement, `${path}: the bar has no inner row`)
+          assert.equal(placement.between, 0, `${path}: something now sits between mining and the account`)
+          assert.match(
+            placement.account,
+            /cf-pop|cf-btn--ember/,
+            `${path}: the last control in the bar is not the account (${placement.account})`,
+          )
+
+          /*
+           * And it promises nothing. `pool/src/payouts.ts` states it — "PAYOUTS ARE OFF" — and
+           * `miningOnHub()` defaults `payoutsImplemented` to false rather than asking a bundle that
+           * has never spoken to the pool to assert otherwise. Asserted against the exported
+           * constant, so rewording the sentence in micro-ui does not leave this checking a string
+           * that no longer appears anywhere.
+           */
+          const clause = await session.page.evaluate(() => {
+            const el = document.querySelector('.cf-bar .cf-mine')
+            const id = el?.getAttribute('aria-describedby') ?? ''
+            return document.getElementById(id)?.textContent ?? null
+          })
+          assert.ok(clause, `${path}: the mining control carries no description for a screen reader`)
+          assert.ok(
+            clause.includes(NOT_PAID_CLAUSE),
+            `${path}: the mining control does not carry the not-paid clause`,
+          )
         } finally {
           await session.close()
         }
