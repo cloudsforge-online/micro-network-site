@@ -23,15 +23,28 @@
  *
  * ── WHAT IS DELIBERATELY NOT HERE ─────────────────────────────────────────────────────────────
  *
- * **No price, and no market capitalisation.** THE PREMISE THIS USED TO REST ON HAS CHANGED AND THE
- * CONCLUSION HAS NOT. It read "there is no mainnet and no public testnet, so EMBER is not traded
- * anywhere" — and mainnet is now published and answering
+ * **No price FIGURE, and no market capitalisation.** THE PREMISE THIS USED TO REST ON HAS CHANGED
+ * TWICE AND THE CONCLUSION HAS SURVIVED BOTH. It read "there is no mainnet and no public testnet,
+ * so EMBER is not traded anywhere" — and mainnet is now published and answering
  * (`deploy/cloudflared/config.mainnet.public.yml`). A true statement resting on a false premise
  * is one edit away from being deleted along with it, so the real reason is written down instead:
  * **EMBER has no market, no listing and no liquidity.** Nothing quotes it, nothing settles it, and
- * a reachable chain is not a traded one. Any price or capitalisation figure here would be invented
- * rather than merely unavailable. `micro-faucet` says the same thing in the string it serves to
- * this page — "Testnet EMBER. It has no value, it is not tradeable" (`faucet/src/server.ts`).
+ * a reachable chain is not a traded one. `micro-faucet` says the same thing in the string it
+ * serves to this page — "Testnet EMBER. It has no value, it is not tradeable"
+ * (`faucet/src/server.ts`).
+ *
+ * The second change is the one that renamed this paragraph. On 2026-08-10 at 19:13:30Z the
+ * operator set an administered rate through `PUT /admin/prices/:asset`, so **there is now a price
+ * and it is still not a market price** — measured 2026-08-11, `GET /rates` answers EMBER with
+ * `source: "administered"` and `sourceCount: 0`, beside eleven assets answering `market` with
+ * `sourceCount: 4`. That does not admit a figure to this register, and the reason is sharper than
+ * before: an administered rate is not merely unavailable to this file, it is a **runtime
+ * measurement of a decision somebody can change this afternoon**, which is the same objection as
+ * the hashrate paragraph below. It belongs to `pricing` at runtime or nowhere.
+ *
+ * What DID have to change is the copy, and it is in `./copy.ts` rather than here: the standing
+ * notice may not say "no price" any more. Registering the number instead would have been the wrong
+ * repair — it would put an operator's Thursday decision in a bundle behind a CDN.
  *
  * The public testnet is a separate matter and is **no longer absent**: as of 2026-08-05 it answers
  * at `rpc-testnet.cloudsforge.online` on chain id 7412. This paragraph used to say it was

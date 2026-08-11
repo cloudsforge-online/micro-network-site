@@ -31,7 +31,7 @@ import {
 } from './axe.ts'
 import { HUB_MINE_PATH, NOT_PAID_CLAUSE } from '@cloudsforge/ui'
 import type { Scenario } from './scenario.ts'
-import { CHAIN, FAUCET, HOME, MINE, NODE } from '../../src/content/copy.ts'
+import { CHAIN, FAUCET, HOME, MINE, NODE, STANDING_STATE } from '../../src/content/copy.ts'
 import { NOT_AN_INCOME } from '../../src/lib/format.ts'
 
 /**
@@ -289,6 +289,83 @@ export const CATALOGUE: readonly Scenario[] = [
             `the mining page says "${word}"`,
           )
         }
+      } finally {
+        await session.close()
+      }
+    },
+  },
+
+  /**
+   * THIS SITE TOLD A READER THERE WAS NO PRICE WHILE THE ESTATE WAS PRINTING ONE.
+   *
+   * `test/content.test.ts` holds the sentence; this holds the fact that a reader MEETS it, which
+   * is a different claim and the one micro-org#365 was opened about. The whole shape of that
+   * defect is a value that is computed correctly, serialised correctly and never rendered — so an
+   * assertion about a string in a module is exactly the assertion that was already passing while
+   * the estate shipped an unqualified dollar figure. This mounts the page and reads the DOM.
+   *
+   * ── WHY /mine, AND WHY THE ORDER IS ASSERTED ──────────────────────────────────────────────────
+   *
+   * The standing notice is chrome, so any route would prove it renders. `/mine` is chosen because
+   * it is the page that asks somebody to spend their own electricity, and the estate's rule
+   * (docs/ecosystem/18-build-status.md, restated for both networks) is that the page inviting
+   * someone to mine EMBER must also say what EMBER is not. Above the invitation, not beside it.
+   *
+   * ── AND WHY THESE ARE LITERALS ────────────────────────────────────────────────────────────────
+   *
+   * Same reason BJ-NET-04 spells its clause out: comparing the page against `STANDING_STATE` —
+   * the module it renders from — catches a page that stops rendering the notice and cannot catch
+   * the notice being softened, because rewriting `copy.ts` rewrites both sides and stays green.
+   */
+  {
+    id: 'BJ-NET-PRICE',
+    title: 'the standing notice names EMBER’s price and says whose it is, above the invitation to mine',
+    tier: 1,
+    asserts: 'presentation',
+    async run(surface) {
+      const session = await renderOnlyWithStubbedNetwork(surface.origin, { path: '/mine', stubs: ANONYMOUS })
+      try {
+        await assertMounted(session, { showing: [STANDING_STATE.headline, MINE.start.title] })
+
+        // Scoped to the standing note rather than swept across the page, for the reason BJ-NET-04
+        // records: a whole-page search for a common word finds it somewhere else and passes for
+        // the wrong reason, which has already happened once in micro-site's build page.
+        const notice = await session.page
+          .locator('.ns-note', { hasText: STANDING_STATE.headline })
+          .first()
+          .innerText()
+
+        // THE PAIR. Either half alone is a different false statement: "there is a price" with no
+        // owner reads as a market price, and an owner with no price reads as a page that has
+        // nothing to do with the figure on hub. Measured 2026-08-11, `GET /rates` answers EMBER
+        // `source: "administered"`, `sourceCount: 0` — beside eleven assets on `market` with
+        // `sourceCount: 4`. These kill, in order: deleting the price sentence; keeping it and
+        // dropping the attribution.
+        assert.ok(
+          /\bprice\b/i.test(notice),
+          `the standing notice says nothing about EMBER having a price. It says: ${notice.slice(0, 300)}`,
+        )
+        assert.ok(
+          notice.includes('we set ourselves'),
+          `the standing notice names a price and not whose it is. It says: ${notice.slice(0, 300)}`,
+        )
+
+        // And it may never go back. This is the sentence that was live on this surface for a day
+        // after micro-site corrected the identical clause in its own honesty block on 2026-08-10;
+        // the mutation this kills is a revert, which is the likeliest one there is.
+        assert.equal(
+          /\bno price\b/i.test(notice),
+          false,
+          `the standing notice denies EMBER has a price. It says: ${notice.slice(0, 300)}`,
+        )
+
+        // Above the invitation, not below it. Reverting the notice from the shell to the bottom of
+        // the page leaves every assertion above green and this one red.
+        assert.equal(
+          await textOrder(session.page, STANDING_STATE.headline, MINE.start.title),
+          'before',
+          'the standing notice is below the instructions for starting to mine',
+        )
       } finally {
         await session.close()
       }
