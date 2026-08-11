@@ -636,8 +636,11 @@ export const MINE = {
       'None exists for EMBER, and nothing in the protocol prevents one from being built — it would ' +
       'hand out work under its own key and pay hashers off chain. What consensus does guarantee is ' +
       'that work handed to you under YOUR key cannot be taken from you. There is a pool elsewhere ' +
-      'in the estate and it is for Litecoin, not for this chain; whether it is accepting work is a ' +
-      'question its own console answers, and nothing on this page applies to it.',
+      'in the estate and it is for other chains, not for this one — Litecoin, which a browser tab ' +
+      'can hash for, and Bitcoin, which it offers to mining hardware only. Dogecoin is merge-mined ' +
+      'from the Litecoin work, so one solution can be a block on both without a miner configuring ' +
+      'anything. None of that applies here: those are different proofs of work from Homefire, and ' +
+      'whether that pool is accepting work today is a question its own console answers.',
     /**
      * The one link off this page that is about a pool, and the note that has to travel with it.
      * `to` is a registry key rather than an address; `src/pages/mine.tsx` resolves it through
@@ -645,11 +648,24 @@ export const MINE = {
      */
     elsewhere: {
       to: 'pool' as const,
-      label: 'The Litecoin pool console',
+      /*
+       * NOT "The Litecoin pool console", WHICH IS WHAT THIS SAID AND WHAT THE POOL STOPPED BEING.
+       *
+       * `POOL_CHAINS` was `ltc` alone when this label was written and has been `ltc,btc` since
+       * 2026-08-11, when bitcoind reached the tip. Read from mainnet that day: two chains, both
+       * `ready: true`. A label naming one of them sends a reader with a Bitcoin rig past the one
+       * link that would have helped them — and it is the failure mode this whole item is supposed
+       * to avoid, since the reason the destination is a console rather than a page here is exactly
+       * that which chains it serves is a live fact this bundle must not hold a copy of.
+       *
+       * So the label names no chain at all. A count would have to be re-checked every time
+       * `POOL_CHAINS` changes; the console reads the real set on every load.
+       */
+      label: 'The CloudsForge mining pool console',
       note:
-        'It records shares and pays nothing — there is no payout mechanism in it yet — and it is ' +
-        'a different chain with a different proof of work, so nothing above applies to it. Its ' +
-        'console is what answers whether it is accepting work today.',
+        'It records shares and pays nothing — there is no payout mechanism in it yet — and those ' +
+        'are different chains with different proofs of work, so nothing above applies to them. ' +
+        'Its console is what answers which chains it is accepting work for today.',
     },
   },
 
