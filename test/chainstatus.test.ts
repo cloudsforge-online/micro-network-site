@@ -171,6 +171,19 @@ const DECLINED: ReadonlyArray<{
       'surface holds no service token and has nothing to say about the treasury or its parts.',
   },
   {
+    method: 'GET',
+    path: '/custody/:chain/:network/addresses/:address/outpoints',
+    gate: 'authorise:READ_SCOPE',
+    why:
+      'indexer:read. Which unspent outputs a named bitcoin-family custody address still holds — ' +
+      'the input micro-settlement builds a withdrawal from, added for micro-org#382 so a ' +
+      'transaction can be assembled without a node wallet. Declined for a stronger reason than ' +
+      'its sibling above: a balance discloses how much the estate holds at an address, and this ' +
+      'discloses the exact coins, their amounts and their ages — everything an observer needs to ' +
+      'follow the treasury as it moves. A public marketing surface holds no service token, has ' +
+      'no address to ask about, and is the last place that answer belongs.',
+  },
+  {
     method: 'POST',
     path: '/watch/:chain/:network/:address',
     gate: 'authorise:WRITE_SCOPE',
@@ -264,7 +277,10 @@ describe('the client calls only the route it has cited', () => {
     // The word is DERIVED from the table rather than written twice. Both copies of the old number
     // — this line and the client's header — had to be found and changed by hand, and the reason
     // anybody looked was a red build in a repository that had not been edited.
-    const words = ['no', 'ONE', 'TWO', 'THREE', 'FOUR', 'FIVE', 'SIX', 'SEVEN', 'EIGHT', 'NINE', 'TEN']
+    const words = [
+      'no', 'ONE', 'TWO', 'THREE', 'FOUR', 'FIVE', 'SIX', 'SEVEN', 'EIGHT', 'NINE', 'TEN',
+      'ELEVEN', 'TWELVE', 'THIRTEEN', 'FOURTEEN', 'FIFTEEN',
+    ]
     const word = words[DECLINED.length]
     assert.ok(word, `${DECLINED.length} declined routes: write the count into the list above`)
     assert.match(
