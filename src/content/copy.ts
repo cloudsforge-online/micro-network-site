@@ -1,6 +1,22 @@
 /**
  * The words on this site, as data.
  *
+ * ── 2026-08-11: THE FAILURE THIS FILE GUARDS AGAINST RAN THE OTHER WAY, AND NOTHING CAUGHT IT ───
+ *
+ * Every rule below is aimed at a sentence that claims more than the estate can show. That aim is
+ * right and none of it is relaxed. But a status table is a claim in both directions, and this one
+ * had drifted into the understating direction on four rows at once: two public endpoints that
+ * answer and advance were badged "In progress", a chain with contracts running on it was badged
+ * "Not built", and the how-to-start section sent a reader to clone a repository in order to use a
+ * miner mounted an inch above the sentence. Each is quoted at the row that fixes it, with what was
+ * measured and when.
+ *
+ * A false "not done" is a false statement about this company, published under its own name, and it
+ * is not the safe direction to err in — it teaches a reader that nothing here works, which is the
+ * one impression the measurements do not support. **The rule is neither "hedge" nor "claim": it is
+ * that a status is a measurement, and a row nobody has measured recently is a row nobody should
+ * trust.** micro-org#412.
+ *
  * Copy lives here rather than inside components for the reason `micro-site` gives
  * (`site/src/content/pages.ts`): a string inside JSX cannot be walked by a test, and the two
  * rules this surface is held to are both rules about strings.
@@ -233,11 +249,22 @@ export const HOME = {
    */
   state: {
     title: 'How far along each part is',
+    /*
+     * ── THIS LEDE DESCRIBED A TABLE THAT NO LONGER EXISTS BELOW IT ─────────────────────────────
+     *
+     * It said the rows still marked in progress were marked that way "because working is not the
+     * same as proven". That was an accurate description of the table when three of those rows were
+     * services that ran and had not been leaned on. Those rows are now built (see each one), and
+     * what is left in progress is not working-but-unproven at all: it is two acknowledged gaps in
+     * the proof of work, where the thing the documents describe has not been written. Carrying the
+     * old sentence over the new table would tell a reader the pad size is a maturity question.
+     */
     lede:
       'The engine, the consensus rules and the tooling are finished and tested against ' +
-      "Ethereum's own published vectors. The parts still marked in progress are marked that way " +
-      'because working is not the same as proven, and you should know which is which before you ' +
-      'build on any of it.',
+      "Ethereum's own published vectors, both networks answer on the public internet, and there " +
+      'are contracts running on them. What is still marked in progress is not half-finished work ' +
+      'and will not become finished by being left alone — it is two gaps in the proof of work ' +
+      'that need a redesign, and you should know which is which before you build on any of it.',
     rows: [
       {
         thing: 'The EVM: interpreter, gas, opcodes, precompiles',
@@ -259,30 +286,58 @@ export const HOME = {
         state: 'built' as const,
         detail: `Blocks are produced, validated and reorged. ${fact('nodes')} nodes run under docker compose on chain id ${fact('chainIdTestnet')}.`,
       },
+      /*
+       * ── THESE THREE ROWS SAID "IN PROGRESS", "IN PROGRESS" AND "NOT BUILT". ALL THREE WERE
+       *    UNDERSTATEMENTS, AND THE BADGE IS THE PART A READER TAKES AWAY ────────────────────────
+       *
+       * `src/pages/home.tsx` renders the word from the state alone — `open` is "In progress" and
+       * `absent` is "Not built" — so a detail sentence beginning "Published and answering" was
+       * printed underneath a badge saying the opposite. The badge wins that argument every time,
+       * and this table is the one thing on this site a reader scans instead of reading.
+       *
+       * Measured 2026-08-11 from off the estate, which is the only measurement worth anything here:
+       *
+       *   * mainnet answers `eth_chainId` with 0x1cf3 and its height moved from 0x37ad to 0x37b1
+       *     across forty-five seconds;
+       *   * the testnet answers 0x1cf4 and moved 0x1fbf to 0x1fc0, and the faucet on it answers its
+       *     terms with a drip, a cooldown and a budget;
+       *   * every block of both chains was walked and every transaction fetched: nine contract
+       *     creations on each, every receipt `status: 0x1`, `eth_getCode` returning runtime code at
+       *     all eighteen addresses, and `eth_call` answering `closeTime`, `questionHash`, `feeBps`
+       *     and `oracle` on one of them.
+       *
+       * WHAT THE CAVEATS WERE FOR IS KEPT, BECAUSE NONE OF THEM WAS THE REASON FOR THE BADGE. One
+       * home server, no independent peer, no audit, a testnet that may be wiped: those are true of a
+       * built thing. "Built" here has always meant the narrow claim in the row's own words, and the
+       * file header's rule stands — a reachable chain is not an established one.
+       */
       {
         thing: 'A public mainnet endpoint',
-        state: 'open' as const,
+        state: 'built' as const,
         detail:
           `Published and answering: a JSON-RPC endpoint on the public tunnel returns chain id ` +
-          `${fact('chainIdMainnet')} and its height advances between reads. Marked open rather ` +
-          'than built because reachable is not established — it is served from one home server ' +
-          'with no failover, it has no independent peer, and nothing has audited it.',
+          `${fact('chainIdMainnet')} and its height advances between reads. Built is a claim ` +
+          'about the endpoint and about nothing else — it is served from one home server with no ' +
+          'failover, it has no independent peer, and nothing has audited it.',
       },
       {
         thing: 'A public testnet endpoint',
-        state: 'open' as const,
+        state: 'built' as const,
         detail:
           `Published and answering on chain id ${fact('chainIdTestnet')}, alongside the faucet ` +
-          'that funds it. In progress rather than finished because a test network is disposable ' +
-          'by definition: its EMBER is given away and worth nothing, and nothing here promises ' +
-          'that its history outlives the machine it sits on.',
+          'that funds it and publishes its own drip, cooldowns and budget. A test network is ' +
+          'disposable by definition — its EMBER is given away and worth nothing, and nothing here ' +
+          'promises its history outlives the machine it sits on — which is a warning about the ' +
+          'coin rather than a gap in the service.',
       },
       {
-        thing: 'Any deployed contract',
-        state: 'absent' as const,
+        thing: 'A deployed contract',
+        state: 'built' as const,
         detail:
-          'Nothing is deployed on either chain yet. Contracts you compile for Ethereum will ' +
-          'deploy here unaltered; none has been put up as a fixture for you to call.',
+          'Contracts are deployed on both chains and answer calls: the prediction markets this ' +
+          "platform runs are Solidity, compiled for Ethereum, deployed unaltered on Hearth's own " +
+          'EVM. They are the estate running its own code rather than a fixture put up for you to ' +
+          'practise against, and this page publishes no address for them.',
       },
       {
         thing: 'The proof of work at the size the documents promised',
@@ -629,6 +684,17 @@ export const MINE = {
    * somebody else's service: which chains that pool serves and whether it is accepting work are
    * live facts, they change without anybody editing this bundle, and the console reads them from
    * the pool itself on every load.
+   *
+   * ── 2026-08-11: AND THIS PARAGRAPH'S OWN LESSON CAUGHT ONE OF ITS OWN SENTENCES ───────────────
+   *
+   * The body said flatly that "Dogecoin is merge-mined from the Litecoin work". Measured that day,
+   * `GET /v1/pool` on mainnet answers with the Litecoin chain carrying `merged: null`, which
+   * `pool/src/chainservice.ts` defines as "the chain merge-mined underneath this one, or `null`
+   * when none is configured". So the code is there, tested, and not switched on. This is the same
+   * mistake as the chain label two paragraphs down, made in the opposite direction: a live fact
+   * about somebody else's service, written into this bundle as though it were settled. It is
+   * corrected in place rather than deleted, because a reader who has heard the estate merge-mines
+   * Dogecoin is better served by being told it is off than by finding no mention of it.
    */
   pools: {
     title: 'Pools',
@@ -637,10 +703,11 @@ export const MINE = {
       'hand out work under its own key and pay hashers off chain. What consensus does guarantee is ' +
       'that work handed to you under YOUR key cannot be taken from you. There is a pool elsewhere ' +
       'in the estate and it is for other chains, not for this one — Litecoin, which a browser tab ' +
-      'can hash for, and Bitcoin, which it offers to mining hardware only. Dogecoin is merge-mined ' +
-      'from the Litecoin work, so one solution can be a block on both without a miner configuring ' +
-      'anything. None of that applies here: those are different proofs of work from Homefire, and ' +
-      'whether that pool is accepting work today is a question its own console answers.',
+      'can hash for, and Bitcoin, which it offers to mining hardware only. It can also merge-mine ' +
+      'Dogecoin from the Litecoin work, and it is not doing so: that is a capability written into ' +
+      'the pool and switched off, not a chain it is mining today. None of it applies here anyway — ' +
+      'those are different proofs of work from Homefire, and whether that pool is accepting work ' +
+      'today is a question its own console answers.',
     /**
      * The one link off this page that is about a pool, and the note that has to travel with it.
      * `to` is a registry key rather than an address; `src/pages/mine.tsx` resolves it through
@@ -683,20 +750,40 @@ export const MINE = {
     ],
   },
 
+  /*
+   * ── THIS SECTION SENT A READER TO A CHECKOUT TO USE SOMETHING THIS PAGE ALREADY MOUNTS ────────
+   *
+   * The lede said both ways were "written against a chain on your own machine" and that "nothing on
+   * this page has been measured against it"; the first step said "open the miner page from a
+   * checkout". `src/pages/mine.tsx` renders `<BrowserMine rpc={hosts().rpc} />` in this very
+   * section, above these steps. So the page told a reader to go and clone a repository in order to
+   * reach a button an inch above the sentence.
+   *
+   * Measured 2026-08-11: the live site serves the miner chunk, and the public mainnet endpoint
+   * answers `/mining/template` for a key generated by this bundle's own `src/mining/account.js`
+   * with a template naming that key as the coinbase — and it answers with an
+   * `access-control-allow-origin` for this site's origin, which is the part that decides whether a
+   * browser may make the request at all.
+   *
+   * WHAT IS NOT CLAIMED, AND THE DISTINCTION IS THE SAME ONE THE CAVEAT ABOVE DRAWS: being issued
+   * work is not winning a block. The measurement above is a request and a response. Nothing here
+   * has watched a tab win, and no wording in this section may imply one.
+   */
   start: {
     title: 'How to start',
     lede:
-      'Two ways, both written against a chain on your own machine, which is what the mining ' +
-      'document describes. Mainnet is reachable now, and nothing on this page has been measured ' +
-      'against it — so nothing here is advice about mining on it.',
+      'Two ways. The first is on this page and runs against the public endpoint, so the mining ' +
+      "document's local setup is the second way rather than the only one. Neither is advice to " +
+      'mine: what your own machine wins is the question above, and this section does not answer it.',
     steps: [
       {
-        title: 'In the browser',
+        title: 'In the browser, on this page',
         body:
-          'Open the miner page from a checkout, create or load a key, and press start. The same ' +
-          'proof of work the node runs, in a pool of workers, measured at about ' +
-          `${fact('hashesPerThread')} hashes per second per thread at the shipped parameters. Your ` +
-          'private key never leaves the page.',
+          'Create or load a key in the panel above these steps and press start — nothing to ' +
+          'install, and no checkout. It asks the public endpoint for work under your own key and ' +
+          'is given it. The same proof of work the node runs, in a pool of workers, measured at ' +
+          `about ${fact('hashesPerThread')} hashes per second per thread at the shipped ` +
+          'parameters. Your private key never leaves the page.',
       },
       {
         title: 'With the node',
