@@ -253,13 +253,43 @@ describe('the copy claims nothing it cannot support', () => {
     // the network is new, not that it says it in one particular way.
     assert.match(headline, /new network/i)
 
-    // EMBER has no monetary value. This is the claim that must survive every edit for ever.
+    // EMBER cannot be sold. This is the claim that must survive every edit for ever.
     // "no liquidity" is no longer required as a separate phrase: it is the same fact as "no
     // market" said in trading vocabulary, and a reader deciding whether to mine does not have it.
     assert.match(body, /cannot be bought or sold/i)
-    assert.match(body, /no price/i)
     assert.match(body, /no market/i)
     assert.match(body, /no listing/i)
+
+    /*
+     * INVERTED, AND THIS FILE HAS ALREADY SAID WHY TWICE.
+     *
+     * This line was `assert.match(body, /no price/i)`. On 2026-08-10 at 19:13:30Z the operator set
+     * an administered rate through `PUT /admin/prices/:asset`; measured 2026-08-11, `GET /rates`
+     * answers EMBER `source: "administered"`, `usable: true`, and a dollar figure now appears
+     * wherever the estate shows a value. So the guard was requiring a false sentence — "a guard
+     * that requires a false sentence is worse than no guard, because the only way to pass it is to
+     * lie", which is this file's own words about the mainnet reachability assertion above.
+     *
+     * ── WHY IT IS A PAIR AND NOT A DELETION ───────────────────────────────────────────────────
+     *
+     * Deleting the assertion outright passes against a notice that says nothing about the price at
+     * all, and a reader who meets a five-figure total on hub with no account of it is the entire
+     * defect (micro-org#365). Requiring only "there is a price" passes against a notice that has
+     * quietly started describing an administered rate in the vocabulary of a market one, which is
+     * the same lie pointing the other way. So both halves are pinned, plus the denial as a
+     * negative — three assertions, and each kills a different mutation:
+     *
+     *   * dropping the price sentence back to silence      → the /price/ match fails
+     *   * keeping the price and dropping whose it is       → the /we set ourselves/ match fails
+     *   * restoring "no price" beside the new sentence     → the doesNotMatch fails
+     */
+    assert.match(body, /\bprice\b/i)
+    assert.match(body, /we set ourselves/i)
+    assert.doesNotMatch(
+      body,
+      /\bno price\b/i,
+      'the standing notice denies EMBER has a price. It has had an administered one since 2026-08-10.',
+    )
 
     // INVERTED. This used to require "no public testnet", and the testnet is now public — so the
     // notice may not quietly START saying so again. What replaces it is the claim that actually

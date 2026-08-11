@@ -17,7 +17,7 @@
  * it is the estate convention, and the service's own comment says the bare form
  * exists for the operator runbooks rather than for new callers.
  *
- * ── ONE route is called. TEN are declined, each with a reason ──────────────────────────────────
+ * ── ONE route is called. ELEVEN are declined, each with a reason ──────────────────────────────────
  *
  * | Method | Path                                                  | Gate                | Verified at               |
  * | ------ | ----------------------------------------------------- | ------------------- | ------------------------- |
@@ -60,6 +60,16 @@
  *     the addresses worth naming here are the estate's own, so answering confirms membership of
  *     the set the total exists to keep private. Same conclusion, same reason: no service token on
  *     this surface, and nothing here to say about the treasury or any part of it.
+ *   * `GET /v1/custody/:chain/:network/addresses/:address/outpoints`
+ *     (`indexer/src/server.ts`) is the third, added for micro-org#382 so `micro-settlement` can
+ *     build a withdrawal without a node wallet. It is declined for a STRONGER reason than the two
+ *     above rather than the same one: a total discloses how much the estate holds, and a
+ *     per-address balance discloses how much sits at one address — this discloses the individual
+ *     coins, their amounts and their ages, which is everything an observer needs to follow the
+ *     treasury as it moves and to recognise its change outputs afterwards. Gated
+ *     `authorise(ctx, deps, READ_SCOPE)` like its siblings. No service token on this surface, no
+ *     address it would have to ask about, and the least appropriate place in the estate for that
+ *     answer to appear.
  *
  * The two writes are refused to a browser and would be declined even if they were not:
  *

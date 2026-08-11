@@ -25,8 +25,21 @@
  * EVERYTHING ELSE THE OLD WORDING PROTECTED AGAINST IS STILL TRUE, AND IS WORDED MORE CAREFULLY
  * BECAUSE IT NOW HAS TO SURVIVE NEXT TO GOOD NEWS:
  *
- *   * **EMBER has no monetary value.** No market, no listing, no liquidity, no price. A chain
- *     being reachable is not a chain being traded, and this site may never blur the two.
+ *   * **EMBER has no market, no listing and no liquidity, and it DOES have a price.** This bullet
+ *     used to end "no price" and that clause is now false. On 2026-08-10 at 19:13:30Z the operator
+ *     set an administered rate for EMBER through `PUT /admin/prices/:asset`; measured 2026-08-11,
+ *     `GET /rates` answers EMBER with `source: "administered"`, `usable: true` and `sourceCount: 0`
+ *     against `market` and `sourceCount: 4` for the eleven assets whose rate is a median of real
+ *     venues. So a figure is now shown wherever this estate shows a value, and a reader told here
+ *     that there is no price concludes the estate is careless rather than that the figure is ours.
+ *
+ *     The half that did not change is the half that matters: nothing quotes EMBER and nothing
+ *     settles it, so the number is a number a person typed. `micro-site` made exactly this
+ *     correction to its own honesty block on 2026-08-10 and this surface was not carried with it,
+ *     which is why the clause survived here for a day longer than it was true. **The rule is now
+ *     "name the price, then say whose it is" — never "there is no price", and never a price with
+ *     no owner beside it.** A chain being reachable is still not a chain being traded, and a
+ *     figure we set ourselves is still not a figure anybody has paid; this site may blur neither.
  *   * **The chain is new and short.** "Live" here means reachable, not established. Nothing on
  *     this surface may state a height, an age or a block time it OBSERVED — the /chain page
  *     fetches those or renders their absence.
@@ -67,16 +80,34 @@ import { fact, grouped } from './facts.ts'
  * Rendered in the shell above the navigation on every route, not only on the home page, because a
  * reader arriving on `/mine` from a search result has not read the home page and would otherwise
  * spend their whole visit believing there is a network to mine on.
+ *
+ * ── THE PRICE CLAUSE IS THE ONE THAT MOVED, AND IT MOVED IN THE UNFLATTERING DIRECTION ────────
+ *
+ * This read "no market for it, no listing and no price". The last third stopped being true on
+ * 2026-08-10 and the sentence stayed up: EMBER now has an administered rate, `GET /rates` answers
+ * it with `source: "administered"`, and hub prints a dollar figure against an EMBER balance. A
+ * reader who mines here on the strength of this paragraph and then meets that figure has been told
+ * two incompatible things by the same company on the same visit, and the one they will believe is
+ * the number.
+ *
+ * So the clause is not deleted — deleting it leaves the reader with a figure and no account of it,
+ * which is the whole defect (micro-org#365). It is REPLACED by the pair: the price exists, and it
+ * is ours. Present tense and no schedule, because "not yet listed" describes a date that does not
+ * exist; and no figure, because the statement's job is to say what kind of number a reader is
+ * looking at, not to put a second number in front of them. That is the shape
+ * `hub-web/src/components/estimate.tsx` renders beside the figure itself, said here in the words
+ * of somebody deciding whether to switch their computer on rather than somebody reading a balance.
  */
 export const STANDING_STATE = {
   headline: 'Hearth is a new network. Please read this before you rely on it.',
   body:
-    'EMBER cannot be bought or sold. There is no market for it, no listing and no price, so ' +
-    'nothing you mine here is money yet. The chain itself is only weeks old and runs from a ' +
-    'single site, which means a deep reorganisation is a real possibility rather than a ' +
-    'theoretical one and an outage has nothing to fail over to. The test network is a separate ' +
-    `chain — id ${fact('chainIdTestnet')} rather than ${fact('chainIdMainnet')} — and the EMBER ` +
-    'the faucet gives away on it is worthless by design.',
+    'EMBER cannot be bought or sold. There is no market for it and no listing, so nothing you ' +
+    'mine here is money yet. It does carry a price on CloudsForge screens, and that price is one ' +
+    'we set ourselves rather than one anybody has paid for it. The chain itself is only weeks ' +
+    'old and runs from a single site, which means a deep reorganisation is a real possibility ' +
+    'rather than a theoretical one and an outage has nothing to fail over to. The test network ' +
+    `is a separate chain — id ${fact('chainIdTestnet')} rather than ${fact('chainIdMainnet')} — ` +
+    'and the EMBER the faucet gives away on it is worthless by design.',
 }
 
 /* ══════════════════════════════ home ══════════════════════════════ */
