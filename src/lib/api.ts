@@ -26,7 +26,7 @@
  * surface that has quietly made itself depend on a credential. `test/api.test.ts` drives every one
  * of the four public calls with an access token in storage and inspects what `fetch` was handed.
  */
-import { consumeAuthCallback, signInRedirect, signOutRedirect } from '@cloudsforge/ui'
+import { attemptSilentSignIn, consumeAuthCallback, signInRedirect, signOutRedirect } from '@cloudsforge/ui'
 import { APP_NAME, chainIndexBase, faucetBase, hosts, pageOrigin } from './hosts.ts'
 import { report } from './obs.ts'
 
@@ -463,7 +463,21 @@ export async function bootstrapSession(): Promise<boolean> {
       stack: err instanceof Error ? (err.stack ?? null) : null,
     })
   }
-  return hasSession()
+  // ── COLLECT A SESSION THIS SURFACE CANNOT SEE (cross-surface sign-in) ────────────────────────
+  //
+  // Tokens live in `localStorage`, which is scoped to one origin, and every surface here is its
+  // own origin — so a reader signed in at the portal arrived and was shown a signed-out page. The
+  // SSO chain to fix that already existed end to end; nothing ever asked it. This asks, ONCE per
+  // tab, and only when the apex hint says a session exists somewhere. An anonymous visitor is
+  // never redirected: `attemptSilentSignIn` returns false with no hint, so a public page is
+  // exactly as fast as it was.
+  const local = hasSession()
+  if (attemptSilentSignIn(local)) {
+    // A navigation has started and this document is going away. Answer "no session" so nothing
+    // paints a signed-out shell in the moments before it does.
+    return false
+  }
+  return local
 }
 
 /**
