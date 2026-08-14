@@ -16,12 +16,40 @@
  * address bar agrees with the payout.
  */
 
-import { envLabel, splitEnvLabel } from '@cloudsforge/ui'
+import { envLabel, networkFromQuery, splitEnvLabel } from '@cloudsforge/ui'
 import { chainIndexBase } from './hosts.ts'
 import type { PageNetwork } from './hosts.ts'
 import { currentNetwork } from './hosts.ts'
 
-let viewed: PageNetwork | null = null
+/**
+ * The choice a link arrived carrying, read ONCE, at load.
+ *
+ *     "if you select testnet and switch product you are back to mainnet"
+ *
+ * Every surface is its own origin, so the module state below stops at the hostname and a link
+ * from Forge Hub to the chain pages could not bring the reader's network with it. `?net=` is the
+ * one channel that survives a cross-origin navigation without being storage — and it survives the
+ * combined view's retirement redirect too: `network-testnet.<apex>` 302s to `network.<apex>`
+ * preserving path and query.
+ *
+ * Read, never written. Nothing persists, so the no-stored-network invariant is untouched: this is
+ * a statement the LINK made for one navigation, not a preference the tab keeps. Navigate in-app
+ * and it is gone.
+ *
+ * Off-registry (`local`) it answers null. There is no sibling estate to view from localhost,
+ * `NetworkSwitcher` hides itself there, and a non-null `viewed` would send `viewedChainIndexBase`
+ * rewriting a hostname it does not understand. The FAUCET is unaffected either way — it is this
+ * surface's one write and stays pinned to the estate the address bar names.
+ */
+function fromLink(): PageNetwork | null {
+  const here = currentNetwork()
+  if (here === 'local') return null
+  const asked = networkFromQuery()
+  if (asked === null) return null
+  return asked === here ? null : asked
+}
+
+let viewed: PageNetwork | null = fromLink()
 
 /** The network the reader is viewing: their in-tab choice, or the hostname's network. */
 export function viewedNetwork(): PageNetwork {
