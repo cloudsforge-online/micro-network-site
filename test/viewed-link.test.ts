@@ -14,7 +14,9 @@
  * that makes it a carrier rather than a store.
  */
 import assert from 'node:assert/strict'
+import { readFileSync } from 'node:fs'
 import { afterEach, describe, it } from 'node:test'
+import { fileURLToPath } from 'node:url'
 import { installWindow, removeWindow } from './browser-stubs.ts'
 
 let seq = 0
@@ -77,5 +79,55 @@ describe('the network a link arrived carrying', () => {
     await import(`../src/lib/viewed.ts?case=${seq}`)
     assert.deepEqual(browser.replaced, [])
     assert.deepEqual(browser.assigned, [])
+  })
+})
+
+/**
+ * AND THE BAR IS TOLD THE SAME NETWORK THE MODULE HONOURS.
+ *
+ *     "if you have testnet and you choose forge network it return you to mainnet,
+ *      the rest products seems to keep it"           — reported 2026-08-14
+ *
+ * Every assertion above passed while that was true. They prove `lib/viewed.ts` reads the link;
+ * they say nothing about what the SHELL hands to `CloudsForgeBar`, and the shell seeded its state
+ * from `currentNetwork()` — the hostname — so the module was viewing testnet while the bar was
+ * describing mainnet.
+ *
+ * That gap is not cosmetic, because the bar spends `networkSwitch.selected` three ways
+ * (`ui/packages/ui/src/index.tsx`): the switcher's label, whether `TestnetBand` renders, and the
+ * `viewedNetwork` handed to `resolveProducts`, which decides whether each outgoing product link
+ * carries `?net=`. A shell seeded from the hostname therefore does not merely mislabel itself — it
+ * DROPS the reader's choice on the way out, which is why this one surface reset the whole tour.
+ *
+ * Checked against the source rather than a render because this suite has no DOM by design (see
+ * `render.test.ts`), and because the defect is exactly one identifier: the check that would have
+ * caught it is the check that reads which identifier is there.
+ */
+describe('the shell seeds the bar from the viewed network', () => {
+  const shell = readFileSync(
+    fileURLToPath(new URL('../src/components/shell.tsx', import.meta.url)),
+    'utf8',
+  )
+  /** The shell with its comments stripped: this is a rule about CODE, not about the prose. */
+  const code = shell
+    .replace(/\{\/\*[\s\S]*?\*\/\}/g, '')
+    .replace(/\/\*[\s\S]*?\*\//g, '')
+    .split('\n')
+    .filter((line) => !/^\s*\/\//.test(line))
+    .join('\n')
+
+  it('seeds its state from viewedNetwork(), which honours the link', () => {
+    assert.match(code, /useState<PageNetwork>\(viewedNetwork\(\)\)/)
+  })
+
+  it('does not seed it from the hostname', () => {
+    // The whole bug, in one call. `currentNetwork()` answers what this deployment IS, which is the
+    // right question for the faucet and the wrong one for the bar.
+    assert.doesNotMatch(code, /useState<PageNetwork>\(currentNetwork\(\)\)/)
+  })
+
+  it('passes that state to the bar, so the two cannot drift apart', () => {
+    assert.match(code, /networkSwitch=\{\{/)
+    assert.match(code, /selected: viewed/)
   })
 })

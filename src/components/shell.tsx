@@ -44,9 +44,9 @@ import { useState } from 'react'
 import { NavLink, Outlet } from 'react-router-dom'
 import { STANDING_STATE } from '../content/copy.ts'
 import { useSession } from '../lib/auth.tsx'
-import { PRODUCT, currentNetwork, hosts } from '../lib/hosts.ts'
+import { PRODUCT, hosts } from '../lib/hosts.ts'
 import type { PageNetwork } from '../lib/hosts.ts'
-import { setViewedNetwork } from '../lib/viewed.ts'
+import { setViewedNetwork, viewedNetwork } from '../lib/viewed.ts'
 import { NAV } from '../lib/routes.ts'
 import { Note } from './parts.tsx'
 
@@ -55,7 +55,22 @@ export function AppShell({ unregistered = false }: { unregistered?: boolean }) {
   // The viewed network: in-tab memory, defaulting to the hostname's own (micro-org#459 stage 3).
   // setViewedNetwork runs first in the switcher handler so the remounted tree reads the new value
   // on its very first render.
-  const [viewed, setViewed] = useState<PageNetwork>(currentNetwork())
+  //
+  // SEEDED FROM `viewedNetwork()`, NEVER FROM `currentNetwork()`. It read the hostname once, and
+  // that one word is the whole of the reported bug:
+  //
+  //     "if you have testnet and you choose forge network it return you to mainnet,
+  //      the rest products seems to keep it"
+  //
+  // `lib/viewed.ts` already honours the `?net=testnet` the link arrived carrying, so the chain
+  // panels below were reading testnet correctly. This state is what the BAR is told, and the bar
+  // spends it three ways (`ui/packages/ui/src/index.tsx`): it labels the switcher, it decides
+  // whether `TestnetBand` renders, and — the one that made the fault travel — it is passed to
+  // `resolveProducts` as the network every onward product link is composed for. Seeded from the
+  // hostname, the bar said Mainnet over testnet data, showed no amber band, and stripped `?net=`
+  // off every link out. That is why this surface alone looked like it "reset", and why leaving it
+  // reset everything reached FROM it.
+  const [viewed, setViewed] = useState<PageNetwork>(viewedNetwork())
 
   return (
     <>
