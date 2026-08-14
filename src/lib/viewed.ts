@@ -17,6 +17,7 @@
  */
 
 import { envLabel, networkFromQuery, splitEnvLabel } from '@cloudsforge/ui'
+import { keepNetworkInTheAddressBar } from '@cloudsforge/ui/network-view'
 import { chainIndexBase } from './hosts.ts'
 import type { PageNetwork } from './hosts.ts'
 import { currentNetwork } from './hosts.ts'
@@ -51,6 +52,26 @@ function fromLink(): PageNetwork | null {
 
 let viewed: PageNetwork | null = fromLink()
 
+/**
+ * The address bar says what the reader is viewing, and keeps saying it.
+ *
+ *     "if we have testnet selected and we refresh the page it goes to mainnet"
+ *
+ * It did, and for exactly the reason the paragraph above treated as a virtue: the choice was
+ * module memory, and a reload discards module memory. `keepNetworkInTheAddressBar` writes `?net=`
+ * in place on every change — see it for why a reload reproducing what is on screen is not the
+ * stored default this estate refuses. Nothing is stored: no `localStorage`, no cookie, no
+ * preference; the FAUCET is untouched either way, since it stays pinned to the estate the address
+ * bar names and the address bar cannot be moved by this.
+ *
+ * `local` is not a network anything can be viewed on — `fromLink` already refuses off-registry —
+ * so it reads as no override, and the parameter is never composed for a development host.
+ */
+const syncAddressBar = keepNetworkInTheAddressBar(() =>
+  viewed === 'mainnet' || viewed === 'testnet' ? viewed : null,
+)
+syncAddressBar()
+
 /** The network the reader is viewing: their in-tab choice, or the hostname's network. */
 export function viewedNetwork(): PageNetwork {
   return viewed ?? currentNetwork()
@@ -59,6 +80,7 @@ export function viewedNetwork(): PageNetwork {
 /** Record the reader's choice. Choosing the hostname's own network clears the override. */
 export function setViewedNetwork(network: PageNetwork): void {
   viewed = network === currentNetwork() ? null : network
+  syncAddressBar()
 }
 
 /**
