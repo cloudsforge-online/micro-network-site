@@ -40,15 +40,22 @@
  * most likely to have formed the wrong impression.
  */
 import { CloudsForgeBar, CookieBanner, Mark, miningOnHub } from '@cloudsforge/ui'
+import { useState } from 'react'
 import { NavLink, Outlet } from 'react-router-dom'
 import { STANDING_STATE } from '../content/copy.ts'
 import { useSession } from '../lib/auth.tsx'
-import { PRODUCT, hosts } from '../lib/hosts.ts'
+import { PRODUCT, currentNetwork, hosts } from '../lib/hosts.ts'
+import type { PageNetwork } from '../lib/hosts.ts'
+import { setViewedNetwork } from '../lib/viewed.ts'
 import { NAV } from '../lib/routes.ts'
 import { Note } from './parts.tsx'
 
 export function AppShell({ unregistered = false }: { unregistered?: boolean }) {
   const { account, signIn, signOut } = useSession()
+  // The viewed network: in-tab memory, defaulting to the hostname's own (micro-org#459 stage 3).
+  // setViewedNetwork runs first in the switcher handler so the remounted tree reads the new value
+  // on its very first render.
+  const [viewed, setViewed] = useState<PageNetwork>(currentNetwork())
 
   return (
     <>
@@ -70,12 +77,24 @@ export function AppShell({ unregistered = false }: { unregistered?: boolean }) {
         `miningOnHub()` — the miner is a WebSocket and two Web Workers on ONE origin, and this
         bundle is not served from it, so this renders an anchor to the surface that can start it.
       */}
+      {/* In-app network context (micro-org#459 stage 3). The choice lives in lib/viewed.ts —
+          memory only, never storage — and the key on the Outlet below is the refetch mechanism.
+          The chain panels switch; the FAUCET does not, because it pays out and a write must never
+          silently target a network the address bar does not name. The band follows the SELECTED
+          network, so testnet figures under a mainnet address bar are unmistakable. */}
       <CloudsForgeBar
         current={PRODUCT}
         account={account}
         onSignIn={() => signIn()}
         onSignOut={signOut}
         mining={miningOnHub(hosts().hub)}
+        networkSwitch={{
+          selected: viewed === 'testnet' ? 'testnet' : 'mainnet',
+          onSelect: (n) => {
+            setViewedNetwork(n)
+            setViewed(n)
+          },
+        }}
       />
       {/*
         The sub-nav is sticky at exactly `var(--cf-bar-h)` — the bar's own height token, not a
@@ -119,7 +138,7 @@ export function AppShell({ unregistered = false }: { unregistered?: boolean }) {
         <Note tone="warn" title={STANDING_STATE.headline}>
           <p>{STANDING_STATE.body}</p>
         </Note>
-        <Outlet />
+        <Outlet key={viewed} />
       </main>
       {/*
         Last in the DOM so it is last in the tab order: the gate is a decision about this visit, not

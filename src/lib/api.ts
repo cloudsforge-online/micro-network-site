@@ -28,6 +28,7 @@
  */
 import { attemptSilentSignIn, consumeAuthCallback, signInRedirect, signOutRedirect } from '@cloudsforge/ui'
 import { APP_NAME, chainIndexBase, faucetBase, hosts, pageOrigin } from './hosts.ts'
+import { viewedChainIndexBase } from './viewed.ts'
 import { report } from './obs.ts'
 
 /** Nimbus issues and refreshes tokens; it is cross-origin from every app, always. */
@@ -422,8 +423,16 @@ async function request<T>(base: string, path: string, opts: RequestOptions = {})
  * Cross-origin from this page in every environment that exists today, and the header of
  * `src/lib/hosts.ts` records the two upstream changes that would make it relative.
  */
-export const chainIndex = <T,>(path: string, opts?: RequestOptions): Promise<T> =>
-  request<T>(chainIndexBase(), path, opts)
+export const chainIndex = <T,>(path: string, opts?: RequestOptions): Promise<T> => {
+  // The VIEWED network's chain index (micro-org#459 stage 3). Own network: the base this surface
+  // has always used. Other network: the sibling estate's explorer host, anonymously — the
+  // indexer's public-read `*` is what admits the read, and auth:false is what keeps the request
+  // simple (a bearer means nothing at the other estate until stage 2, and would buy a preflight
+  // for a request that fails anyway).
+  const base = viewedChainIndexBase()
+  if (base === chainIndexBase()) return request<T>(base, path, opts)
+  return request<T>(base, path, { ...opts, auth: false })
+}
 
 /** The faucet — `micro-faucet`, whose registry row is a page on this host. See hosts.ts. */
 export const faucet = <T,>(path: string, opts?: RequestOptions): Promise<T> =>
