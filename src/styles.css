@@ -157,7 +157,23 @@ body {
 
 /* ---- page furniture --------------------------------------------------- */
 
+/*
+ * THE PAGE IS A QUERY CONTAINER, AND `.ns-cards--four` ASKS IT RATHER THAN THE WINDOW.
+ *
+ * `.ns-main` is `min(100vw - 2 * --cf-space-xl, --cf-max-w)`, so a grid inside a page stops
+ * growing at 1200px however wide the window gets. A `@media` rule would be asking about the wrong
+ * number: the same 1440px viewport hands this element 1200px today, and would hand it less the
+ * day anything sits beside it, while the media query went on saying 1440.
+ *
+ * `inline-size` rather than `size`: only the width is contained, and the height still comes from
+ * the content every child here depends on. Nothing inside `.ns-page` is positioned — the skip
+ * link and the sticky sub-navigation are both in the shell, above it — so the containing-block
+ * change that comes with layout containment moves nothing. The same reasoning, and the same
+ * measurement, is written out at `foresight-web/src/styles.css` on `.fs-page`.
+ */
 .ns-page {
+  container-type: inline-size;
+  container-name: ns-page;
   display: flex;
   flex-direction: column;
   gap: var(--cf-space-2xl);
@@ -268,7 +284,54 @@ body {
 .ns-cards {
   display: grid;
   gap: var(--cf-space-lg);
-  grid-template-columns: repeat(auto-fill, minmax(20rem, 1fr));
+  /*
+   * `min(100%, 20rem)`, not `20rem`. A bare floor is one the track keeps even when the grid is
+   * narrower than it, so at a 320px viewport this laid out 320px tiles in a 288px page and the
+   * whole document scrolled sideways. `min(100%, …)` keeps the floor as an intent — do not go
+   * under 20rem if there is room — rather than a promise the box cannot keep.
+   */
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 20rem), 1fr));
+}
+
+/*
+ * ── THE FOUR-TILE "WHAT IT IS" GRID, AND WHY IT IS NOT `auto-fill` ────────────────────────────
+ *
+ * `home.tsx` opens with four things a reader who has never heard of Hearth needs. Four tiles in
+ * the intrinsic grid above laid out as THREE AND THEN ONE — "The reward never falls to nothing"
+ * alone on its own row — at every width from 1024px up: the page's measure caps at 1200px, and
+ * three 320px tracks plus two 12px gaps is 984px while four is 1316px, so three columns was not
+ * the answer at one unlucky window size but the answer for ever. Measured in headless Chrome
+ * against this stylesheet, before the fix: rows [3, 1] at viewports 1024, 1100, 1200, 1280, 1440
+ * and 1920. A row of one reads as a tile that failed to load.
+ *
+ * No `minmax()` floor could have fixed it, and that is arithmetic rather than taste. With four
+ * items the orphan-free column counts are 1, 2 and 4; `auto-fill` and `auto-fit` produce a
+ * MONOTONE count — as the container grows it goes 1, 2, 3, 4 — and three columns fit strictly
+ * more easily than four, so no floor admits four while skipping three. Every possible floor has a
+ * band of widths that orphans; the floor only chooses which band, and with the measure capped at
+ * 1168px the band that matters is every desktop there is.
+ *
+ * So the count is named and the container says when: 1 → 2 → 4, never 3. The two thresholds are
+ * derived from the smallest tile each count may produce rather than from any device —
+ *   34rem: two tiles of at least (544 − 12) / 2 = 266px
+ *   64rem: four tiles of at least (1024 − 36) / 4 = 247px
+ * — which is why they are `rem` against the container and not `px` against a phone.
+ *
+ * `test/layout.test.ts` holds the invariant; `foresight-web` states the same rule for the same
+ * reason on `.fs-rules--primer`, which is the grid this one was made to match.
+ */
+.ns-cards--four {
+  grid-template-columns: 1fr;
+}
+@container ns-page (min-width: 34rem) {
+  .ns-cards--four {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+@container ns-page (min-width: 64rem) {
+  .ns-cards--four {
+    grid-template-columns: repeat(4, 1fr);
+  }
 }
 
 .ns-card {
@@ -308,7 +371,9 @@ body {
 .ns-details {
   margin: 0;
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(22rem, 1fr));
+  /* `min(100%, …)` for the reason given on `.ns-cards`: a 22rem floor is 64px wider than the page
+     a 320px phone gets, and a floor the track cannot go under scrolls the document sideways. */
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 22rem), 1fr));
   gap: var(--cf-space-md) var(--cf-space-xl);
 }
 
