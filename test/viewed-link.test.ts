@@ -131,3 +131,46 @@ describe('the shell seeds the bar from the viewed network', () => {
     assert.match(code, /selected: viewed/)
   })
 })
+
+/**
+ * AND THE CHOICE SURVIVES A RELOAD, BECAUSE THE ADDRESS BAR CARRIES IT.
+ *
+ *     "if we have testnet selected and we refresh the page it goes to mainnet"   — 2026-08-14
+ *
+ * The mechanism is `keepNetworkInTheAddressBar` in `@cloudsforge/ui/network-view`, tested there
+ * against a full history stub. These cases pin THIS module's wiring to it — and that the FAUCET is
+ * unaffected, which it is by construction: it reads the address bar's own network, and nothing
+ * here can move the address bar off `network.cloudsforge.online`.
+ */
+describe('the viewed network survives a reload', () => {
+  it('is written into the address bar when the reader switches', async () => {
+    const browser = installWindow('https://network.cloudsforge.online/chain')
+    seq += 1
+    const m = (await import(`../src/lib/viewed.ts?case=${seq}`)) as typeof import('../src/lib/viewed.ts')
+    m.setViewedNetwork('testnet')
+    assert.deepEqual(browser.replaced, ['/chain?net=testnet'])
+  })
+
+  it('and a fresh load at that address is viewing testnet — the reload, end to end', async () => {
+    const m = await loadAt('https://network.cloudsforge.online/chain?net=testnet')
+    assert.equal(m.viewedNetwork(), 'testnet')
+    assert.equal(m.viewedChainIndexBase(), 'https://explorer-testnet.cloudsforge.online')
+  })
+
+  it('and switching back leaves the URL as it was found', async () => {
+    const browser = installWindow('https://network.cloudsforge.online/chain')
+    seq += 1
+    const m = (await import(`../src/lib/viewed.ts?case=${seq}`)) as typeof import('../src/lib/viewed.ts')
+    m.setViewedNetwork('testnet')
+    m.setViewedNetwork('mainnet')
+    assert.deepEqual(browser.replaced, ['/chain?net=testnet', '/chain'])
+  })
+
+  it('writes nothing on a development host, where there is no sibling estate', async () => {
+    const browser = installWindow('http://localhost:3003/chain')
+    seq += 1
+    const m = (await import(`../src/lib/viewed.ts?case=${seq}`)) as typeof import('../src/lib/viewed.ts')
+    m.setViewedNetwork('testnet')
+    assert.deepEqual(browser.replaced, [])
+  })
+})
