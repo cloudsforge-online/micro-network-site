@@ -24,7 +24,14 @@ export function HomePage() {
       <PageHead eyebrow={HOME.eyebrow} title={HOME.title} standfirst={HOME.standfirst} />
 
       <Section title={HOME.what.title} id="what">
-        <div className="ns-cards">
+        {/*
+          `ns-cards--four` IS LOAD-BEARING, AND THE COUNT IS WHY. Plain `.ns-cards` is the
+          intrinsic grid the rest of this bundle uses, and four items in it lay out three and then
+          one — the fourth alone on its own row — at every width from 1024px up. The modifier names
+          the column counts instead: 1 → 2 → 4, never 3. Adding a fifth tile here without moving
+          the steps in `styles.css` re-opens the orphan; `test/layout.test.ts` fails if you do.
+        */}
+        <div className="ns-cards ns-cards--four">
           {HOME.what.items.map((item) => (
             <article className="ns-card" key={item.title}>
               <h3 className="ns-card__title">{item.title}</h3>
