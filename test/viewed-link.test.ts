@@ -229,21 +229,27 @@ describe('the viewed network survives a reload', () => {
 })
 
 /**
- * ── THE LINK OUT, AND THE ONE HOSTNAME THAT DOES NOT EXIST ────────────────────────────────────
+ * ── THE LINK OUT, AND WHY A HOSTNAME CANNOT CARRY THE NETWORK ─────────────────────────────────
  *
  * `carryNetwork` is the composition the home grid's two exchange tiles use, and it exists because
  * the composition beside it — `chainIndexBaseOn`, rewriting the first label — is the wrong answer
- * for a WEB surface. Measured 2026-08-16, from off the estate:
+ * for a WEB surface. Measured 2026-08-16, from off the estate, twice in one day:
  *
- *   market-testnet    302 → https://market.cloudsforge.online/
- *   network-testnet   302 → https://network.cloudsforge.online/
- *   hub-testnet       302 → https://hub.cloudsforge.online/
- *   pool-testnet      302 → https://pool.cloudsforge.online/
- *   exchange-testnet  no DNS record, connection refused before TLS
+ *                     morning                              evening
+ *   market-testnet    → https://market.cloudsforge.online/   unchanged
+ *   network-testnet   → https://network.cloudsforge.online/  unchanged
+ *   hub-testnet       → https://hub.cloudsforge.online/      unchanged
+ *   pool-testnet      → https://pool.cloudsforge.online/     unchanged
+ *   exchange-testnet  no DNS record, refused before TLS    → https://exchange.cloudsforge.online/
  *
- * Four of those lose the network on the redirect, which is a silent wrong answer. The fifth is the
- * tile this file is about, and it does not resolve at all. The assertions below are the pair:
- * `?net=` on the address that exists, and NO composed `-testnet` hostname anywhere.
+ * The second column is the record being taken in the Cloudflare dashboard between the two readings
+ * — an owner-only action no file in this repository could have performed. It is recorded here
+ * because it is the kind of fact a comment gets WRONG by ageing, and because it changes nothing:
+ * every one of those five now redirects, and a redirect preserves the query it was given while a
+ * hostname-composed link was given none. So all five lose the network, which is a silent wrong
+ * answer, and the exchange stopped being the loud one. The assertions below are unchanged and are
+ * the pair: `?net=` on the address that serves both networks, and NO composed `-testnet` hostname
+ * anywhere.
  */
 describe('a link out of this surface carries the viewed network', () => {
   const EXCHANGE = 'https://exchange.cloudsforge.online'
