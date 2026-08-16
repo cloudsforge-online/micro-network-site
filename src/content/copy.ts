@@ -387,9 +387,10 @@ export const HOME = {
           'it — the one instrument here that is somebody\'s promise rather than a contract holding ' +
           'both sides, which is why it is called a receipt. The contract, the attestation it must ' +
           'be shown before it may issue, and the redemption path are deployed and exercised on ' +
-          'the test network. On the main network nothing has been issued and the reserve is ' +
-          'empty; the contract cannot issue against a reserve it has not been shown, so the ' +
-          'absence is the design working rather than a service that is down.',
+          'the test network. On the main network there is no receipt at all: the addresses that ' +
+          'would back one were counted over the whole Litecoin output set, the total came back ' +
+          'zero, and the deployment refused itself rather than publish a claim on nothing. That ' +
+          'is a decision the design made, not a service that is down.',
       },
       {
         thing: 'The proof of work at the size the documents promised',
