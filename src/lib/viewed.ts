@@ -165,14 +165,21 @@ export function chainIndexBaseOn(network: PageNetwork): string {
  * for testnet and been silently answered with the other network. A round trip to lose the thing it
  * was composed to carry.
  *
- * SECOND, AND ONLY FOR THE EXCHANGE, IT DOES NOT RESOLVE AT ALL. Measured 2026-08-16:
- * `market-testnet`, `network-testnet`, `hub-testnet` and `pool-testnet` all answer 302; the
- * exchange's own `exchange-testnet.<apex>` has no DNS record — the record is an owner-only action
- * in the Cloudflare dashboard and no file in any of these repositories can take it, exactly as
- * `site/src/content/stages.ts` says about the mainnet name it waited three days for. So the
- * composed link fails at connect, and `viewedSurfaceUrl`'s own note in
- * `ui/packages/ui/src/network-view.ts` says what that costs: "a link that fails tells the reader
- * the service is gone rather than that the page is confused."
+ * SECOND — AND THIS ONE HAS SINCE EXPIRED, WHICH IS WHY IT IS STILL WRITTEN DOWN. Measured
+ * earlier on 2026-08-16, `market-testnet`, `network-testnet`, `hub-testnet` and `pool-testnet` all
+ * answered a redirect and the exchange's own `exchange-testnet.<apex>` had no DNS record at all, so
+ * a composed link failed at connect — and `viewedSurfaceUrl`'s note in
+ * `ui/packages/ui/src/network-view.ts` says what that costs: "a link that fails tells the reader the
+ * service is gone rather than that the page is confused." Re-measured the same evening, after the
+ * record was taken: `exchange-testnet.<apex>` resolves to Cloudflare and redirects to
+ * `exchange.<apex>` preserving path AND query, indistinguishable from `pool-testnet`. The hostname
+ * no longer fails; it just joins the four.
+ *
+ * WHICH CHANGES NOTHING HERE, because the first reason was always the sufficient one. A hostname
+ * has no query to preserve, so a reader sent to `exchange-testnet.<apex>` is redirected to the
+ * mainnet exchange viewing MAINNET — having asked for testnet and been silently answered with the
+ * other network. That was true when the record did not exist and it is true now that it does. The
+ * second reason only ever decided how LOUD the wrong answer was.
  *
  * `?net=` has neither problem. It is the channel the combined view actually runs on — read once at
  * load by `networkFromQuery` above, attached by `resolveProducts` to every product link the bar
