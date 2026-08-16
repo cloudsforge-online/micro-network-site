@@ -204,3 +204,30 @@ describe('the failed state on the chain page explains itself', () => {
     assert.match(code('chain.tsx'), /onRetry=\{status\.reload\}/)
   })
 })
+
+/**
+ * THE "WALKED NOWHERE" CAVEAT IS SHOWN TO A PANEL THAT WALKED NOWHERE, AND TO NO OTHER.
+ *
+ * It used to be unconditional, and that was defensible only while one of the two panels on this
+ * page was always the un-walked one — every read went to the switcher's estate and each estate's
+ * index follows one network. Both panels are read from the index that follows them since
+ * 2026-08-16, so an unconditional caveat is a sentence about nothing on the screen, on a surface
+ * whose standing complaint is text that is not about anything.
+ *
+ * Checked against the source because this suite has no DOM by design (see the top of this file),
+ * and the rule is exactly one condition: the words and the branch cannot be separated.
+ */
+describe('the un-walked caveat is branched, not standing', () => {
+  const chain = code('chain.tsx')
+
+  it('says "as far as nowhere" only where the walked head is null', () => {
+    const caveat = chain.indexOf('as far as nowhere')
+    assert.ok(caveat > 0, 'the caveat is gone entirely — an index that walked nothing now claims a clean history')
+    const branch = chain.indexOf('status.indexedHeight === null')
+    assert.ok(branch > 0 && branch < caveat, 'the caveat is not inside a walked-head check')
+  })
+
+  it('and the walked panel gets the finding without it', () => {
+    assert.match(chain, /No reorg has been recorded, as far as this index has walked\.</)
+  })
+})

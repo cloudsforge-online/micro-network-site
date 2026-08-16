@@ -354,14 +354,25 @@ function Providers({ status }: { status: ChainStatus }) {
  * unlike every other empty on this page it is not a gap in what we know: `recentReorgs(exec, scope, 5)`
  * (`indexer/src/reads.ts`) returns what the index recorded, and nothing recorded means nothing
  * happened as far as it walked. That is the one place on this surface where "none" is a finding.
+ *
+ * ── EXCEPT WHEN IT HAS WALKED NOWHERE, WHICH IS WHY THE SENTENCE BRANCHES ─────────────────────
+ *
+ * "Nothing happened as far as it walked" is worth nothing if it walked no blocks, and this page
+ * used to say so IN EVERY CASE — one sentence carrying the caveat permanently, because until
+ * 2026-08-16 one of the two panels was always the un-walked one (see `HEARTH_SCOPES`). Both panels
+ * are read from the index that follows them now, so the un-walked panel is the exception it was
+ * always meant to be, and a caveat that applies to nothing on screen is the "useless text" this
+ * surface has been cut of twice. It is kept, and shown only when it is about something.
  */
 function Reorgs({ status }: { status: ChainStatus }) {
   if (status.recentReorgs.length === 0) {
-    return (
+    return status.indexedHeight === null ? (
       <p className="ns-prose">
-        No reorg has been recorded, as far as this index has walked — which, when the walked head is
-        not observed, is as far as nowhere.
+        No reorg has been recorded, as far as this index has walked — which, with no walked head
+        observed at all, is as far as nowhere.
       </p>
+    ) : (
+      <p className="ns-prose">No reorg has been recorded, as far as this index has walked.</p>
     )
   }
   return (
