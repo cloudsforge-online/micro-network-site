@@ -8,12 +8,16 @@
  *
  * ── WHAT SWITCHES HERE, AND WHAT DELIBERATELY DOES NOT ────────────────────────────────────────
  *
- * The CHAIN INDEX reads switch: they go to the sibling estate's explorer host, anonymously, and
- * ride the indexer's documented public-read `*`. The FAUCET does not switch — `POST /v1/faucet`
- * pays out, it is this estate's one write on this surface, and a write must never silently target
- * a network the address bar does not name (#459's standing rule). A reader who switches the view
- * to testnet and wants the testnet faucet is one click from the real testnet page, where the
- * address bar agrees with the payout.
+ * The FAUCET does not switch — `POST /v1/faucet` pays out, it is this estate's one write on this
+ * surface, and a write must never silently target a network the address bar does not name (#459's
+ * standing rule). A reader who switches the view to testnet and wants the testnet faucet is one
+ * click from the real testnet page, where the address bar agrees with the payout.
+ *
+ * AND NEITHER DO THE CHAIN-INDEX READS, WHICH IS A REVERSAL — see `chainIndexBaseOn` below for
+ * why, measured. They used to follow the switcher, through a `viewedChainIndexBase()` that read
+ * the module state this file holds. What survives of the switcher on this surface is everything
+ * that is ABOUT the reader's position rather than about a chain: the bar's label, the amber band,
+ * and whether each outgoing product link carries `?net=`.
  */
 
 import { envLabel, networkFromQuery, splitEnvLabel } from '@cloudsforge/ui'
@@ -37,10 +41,10 @@ import { currentNetwork } from './hosts.ts'
  * a statement the LINK made for one navigation, not a preference the tab keeps. Navigate in-app
  * and it is gone.
  *
- * Off-registry (`local`) it answers null. There is no sibling estate to view from localhost,
- * `NetworkSwitcher` hides itself there, and a non-null `viewed` would send `viewedChainIndexBase`
- * rewriting a hostname it does not understand. The FAUCET is unaffected either way — it is this
- * surface's one write and stays pinned to the estate the address bar names.
+ * Off-registry (`local`) it answers null. There is no sibling estate to view from localhost and
+ * `NetworkSwitcher` hides itself there, so no click could produce the state either. The FAUCET is
+ * unaffected either way — it is this surface's one write and stays pinned to the estate the
+ * address bar names.
  */
 function fromLink(): PageNetwork | null {
   const here = currentNetwork()
@@ -84,24 +88,59 @@ export function setViewedNetwork(network: PageNetwork): void {
 }
 
 /**
- * The chain-index base for the viewed network.
+ * The chain index that FOLLOWS a given network — a function of the chain being asked about, and
+ * of nothing else.
+ *
+ * ════════════════════════════════════════════════════════════════════════════════════════════════
+ * THIS TOOK A NETWORK PARAMETER INSTEAD OF READING THE SWITCHER ON 2026-08-16, AND THE REASON IS
+ * A MEASUREMENT.
+ *
+ * It was `viewedChainIndexBase()`: no argument, the module state above, every chain-index read on
+ * the surface re-pointed at whichever estate the reader had selected. On a page with ONE scope that
+ * is exactly right, and it is what `/chain` is not. `/chain` renders `HEARTH_SCOPES` — ember on
+ * mainnet AND ember on testnet, side by side — and each estate's indexer follows exactly one EMBER
+ * network (`deploy/compose/env/chain.mainnet.env`: "exactly one of this file and
+ * `chain.testnet.env` is ever read, and no deploy can have half of each"). Sending both panels to
+ * one indexer therefore guaranteed one of them was asking an index about a chain it does not walk,
+ * whichever way the switcher was set. Measured on `network.cloudsforge.online/chain`:
+ *
+ *   before the click   ember:mainnet  walked head 40,977 / tip 40,977 / lag 0
+ *                      ember:testnet  "not observed — this chain index does not follow this chain"
+ *   after Testnet      ember:mainnet  "not observed — this chain index does not follow this chain"
+ *                      ember:testnet  walked head 18,468 / tip 18,468 / lag 0
+ *
+ * The page was never dishonest about it — `CHAIN.notFollowed` says the figures are absences rather
+ * than zeroes — but one empty panel was a compromise made when there was no way to read the other
+ * estate, and the combined view is that way. Pinning the origin to the SCOPE fills both at once.
+ *
+ * The consequence is worth stating plainly, because it looks like a regression to anyone who reads
+ * the switcher as "change what I am looking at": pressing Testnet no longer moves a number on
+ * `/chain`, because both networks are already on screen. What it still does is everything it does
+ * everywhere else — the amber band, the bar's label, and `?net=` on the way to the next product.
+ * ════════════════════════════════════════════════════════════════════════════════════════════════
  *
  * The own-network case returns `chainIndexBase()` untouched — the exact URL this surface has
- * always used. The other-network case rewrites the EXPLORER host's first label between env
- * spellings with the registry's own pair (`envLabel`/`splitEnvLabel`), because the chain index
- * lives behind the explorer surface on BOTH estates and the label translation is the one
- * operation those two functions exist to make unambiguous.
+ * always used, and the only one that carries a session. The other-network case rewrites the
+ * EXPLORER host's first label between env spellings with the registry's own pair
+ * (`envLabel`/`splitEnvLabel`), because the chain index lives behind the explorer surface on BOTH
+ * estates and the label translation is the one operation those two functions exist to make
+ * unambiguous.
+ *
+ * Off-registry there is one indexer and no sibling to compose an address for, so `local` — as the
+ * page's network or as the network asked about — is the base untouched. A dev host would otherwise
+ * have this rewriting a label it does not understand.
  */
-export function viewedChainIndexBase(): string {
+export function chainIndexBaseOn(network: PageNetwork): string {
   const base = chainIndexBase()
-  if (viewed === null) return base
+  const here = currentNetwork()
+  if (here === 'local' || network === 'local' || network === here) return base
   try {
     const url = new URL(base)
     const parts = url.hostname.split('.')
     if (parts.length < 3) return base
     const env = splitEnvLabel(parts[0] ?? '')
     const sub = env ? env.subdomain : (parts[0] ?? '')
-    const label = envLabel(sub, viewed === 'testnet' ? 'testnet' : '')
+    const label = envLabel(sub, network === 'testnet' ? 'testnet' : '')
     url.hostname = [label, ...parts.slice(1)].join('.')
     return url.origin
   } catch {
