@@ -107,6 +107,32 @@ export const DEEP_LINK_PATH = '/faucet'
 export const EXPLORER_SURFACE = 'explorer' as const
 
 /**
+ * Where the exchange lives, and the one page under it this site names.
+ *
+ * A KEY for the same reason `EXPLORER_SURFACE` is one. What is different here is the second
+ * constant: `RECEIPTS_PATH` is a PATH, and the registry holds hostnames and nothing else, so no
+ * amount of key-resolving will produce it. It is written here rather than inline in the page for
+ * the reason every path constant in this bundle is — one place to change when the route moves, and
+ * one place a reader can find the note about where the route is actually defined.
+ *
+ * THE ROUTE IS `exchange-web/src/app.tsx` — `<Route path="receipts">` under the shell — and it is
+ * not checked from this repository. A link to another bundle's path is a promise this repository's
+ * CI cannot keep; what makes it acceptable is that the receipt page is the whole reason the tile
+ * exists, and a tile called Forge Receipt that lands on a swap form has failed the reader more
+ * surely than a link that might one day rot. If it does rot, the exchange answers its own 404 with
+ * its navigation on it.
+ *
+ * ONE HOSTNAME, BOTH NETWORKS. There is no `exchange-testnet` here and there must not be: the
+ * combined view retired the `-testnet` web hostnames, so a reader viewing testnet is carried by
+ * `?net=testnet` on this same address — see `carryNetwork` in `src/lib/viewed.ts`. The exchange
+ * declares `viewsAnyNetwork: true` in the registry, which is the flag that says it will honour it.
+ */
+export const EXCHANGE_SURFACE = 'exchange' as const
+
+/** The receipt page under {@link EXCHANGE_SURFACE}. See that constant for why a path is here. */
+export const RECEIPTS_PATH = '/receipts'
+
+/**
  * Hearth's own repository, which is where everything technical on this surface points.
  *
  * **It is a literal URL and it is the only one in this bundle, deliberately.** `github.com` is not

@@ -14,11 +14,21 @@
  */
 import { Link } from 'react-router-dom'
 import { hosts } from '../lib/hosts.ts'
-import { EXPLORER_SURFACE, HEARTH_REPO } from '../lib/routes.ts'
+import { EXCHANGE_SURFACE, EXPLORER_SURFACE, HEARTH_REPO, RECEIPTS_PATH } from '../lib/routes.ts'
+import { carryNetwork } from '../lib/viewed.ts'
 import { HOME } from '../content/copy.ts'
 import { Detail, Page, PageHead, Section } from '../components/parts.tsx'
 
 export function HomePage() {
+  // The two links in the grid below that leave this origin, with the reader's viewed network on
+  // them. `carryNetwork` is in `lib/viewed.ts` beside the rest of the network handling and carries
+  // the whole argument for `?net=` over a composed `-testnet` hostname; the short version is that
+  // one of those hostnames does not resolve and the other four drop the network on the redirect.
+  //
+  // Read once per render, and the render is per switch: `<Outlet key={viewed} />` in the shell
+  // remounts this page when the bar's network changes, so these are never a stale choice.
+  const exchange = carryNetwork(hosts()[EXCHANGE_SURFACE])
+  const receipts = carryNetwork(`${hosts()[EXCHANGE_SURFACE]}${RECEIPTS_PATH}`)
   return (
     <Page>
       <PageHead eyebrow={HOME.eyebrow} title={HOME.title} standfirst={HOME.standfirst} />
@@ -141,6 +151,37 @@ export function HomePage() {
               greps `src` for `cloudsforge.online` and fails on one. `EXPLORER_SURFACE` is the key.
             */}
             <a className="cf-btn ns-card__go" href={hosts()[EXPLORER_SURFACE]}>
+              Open
+            </a>
+          </article>
+          {/*
+            THESE TWO ARRIVED TOGETHER, AND THE PAIR IS THE POINT — a chain nobody trades on is a
+            demonstration, and a claim nobody can check is a press release. They are also two
+            rather than one because this grid is plain `.ns-cards`, the auto-fill one: with the six
+            tiles it had, three columns gave two full rows, and a seventh would have left a row of
+            one — the failure `.ns-cards--four` exists to prevent, described at the top of
+            `test/layout.test.ts`. Eight tiles end on a row of two, which reads as a row.
+          */}
+          <article className="ns-card">
+            <h3 className="ns-card__title">Forge Exchange</h3>
+            <p className="ns-card__body">
+              Swap EMBER and the tokens issued on Hearth from your own wallet. Pools rather than an
+              order book, no account, and the pair contracts answer any client that can reach the
+              chain.
+            </p>
+            <a className="cf-btn ns-card__go" href={exchange}>
+              Open
+            </a>
+          </article>
+          <article className="ns-card">
+            <h3 className="ns-card__title">Forge Receipt</h3>
+            <p className="ns-card__body">
+              A token on Hearth standing for a coin held off it — the one thing here that is a
+              promise rather than a contract holding both sides. The page prints what has been
+              issued, what has been attested, and the command that counts the backing on your own
+              node.
+            </p>
+            <a className="cf-btn ns-card__go" href={receipts}>
               Open
             </a>
           </article>
