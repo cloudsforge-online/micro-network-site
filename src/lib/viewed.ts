@@ -20,7 +20,7 @@
  * and whether each outgoing product link carries `?net=`.
  */
 
-import { envLabel, networkFromQuery, splitEnvLabel } from '@cloudsforge/ui'
+import { envLabel, networkFromQuery, splitEnvLabel, withNetwork } from '@cloudsforge/ui'
 import { keepNetworkInTheAddressBar } from '@cloudsforge/ui/network-view'
 import { chainIndexBase } from './hosts.ts'
 import type { PageNetwork } from './hosts.ts'
@@ -146,4 +146,47 @@ export function chainIndexBaseOn(network: PageNetwork): string {
   } catch {
     return base
   }
+}
+
+/**
+ * Put the reader's viewed network into a link that LEAVES this origin.
+ *
+ * ── WHY A QUERY PARAMETER AND NOT A HOSTNAME ────────────────────────────────────────────────────
+ *
+ * The obvious composition is the one `chainIndexBaseOn` above uses and the one this estate used
+ * everywhere before the combined view: rewrite the first label and send the reader to
+ * `<sub>-testnet.<apex>`. That is right for the chain index — its `/v1` paths still answer on the
+ * testnet explorer host, which is why the retirement router carries `!PathPrefix('/v1')` — and it
+ * is wrong for a WEB surface, twice over.
+ *
+ * FIRST, THE REDIRECT DROPS THE NETWORK. micro-org#459 turned every `*-testnet` web hostname into
+ * a 302 to its mainnet counterpart. The redirect preserves path and query, but a hostname-composed
+ * link carries no query, so the reader arrives at the mainnet page viewing mainnet — having asked
+ * for testnet and been silently answered with the other network. A round trip to lose the thing it
+ * was composed to carry.
+ *
+ * SECOND, AND ONLY FOR THE EXCHANGE, IT DOES NOT RESOLVE AT ALL. Measured 2026-08-16:
+ * `market-testnet`, `network-testnet`, `hub-testnet` and `pool-testnet` all answer 302; the
+ * exchange's own `exchange-testnet.<apex>` has no DNS record — the record is an owner-only action
+ * in the Cloudflare dashboard and no file in any of these repositories can take it, exactly as
+ * `site/src/content/stages.ts` says about the mainnet name it waited three days for. So the
+ * composed link fails at connect, and `viewedSurfaceUrl`'s own note in
+ * `ui/packages/ui/src/network-view.ts` says what that costs: "a link that fails tells the reader
+ * the service is gone rather than that the page is confused."
+ *
+ * `?net=` has neither problem. It is the channel the combined view actually runs on — read once at
+ * load by `networkFromQuery` above, attached by `resolveProducts` to every product link the bar
+ * composes, and it survives a redirect. This is that mechanism, exposed for the links a page
+ * composes itself.
+ *
+ * ONLY WHEN THE TWO DIFFER, which is `resolveProducts`'s rule and is kept for its reason: a reader
+ * viewing the network they are already served is the ordinary case, and `?net=mainnet` on every
+ * link out of a mainnet page is a parameter that changes nothing, in an address bar, for ever.
+ * `local` is the dev checkout — one estate, no sibling to name — and the URL is returned untouched.
+ */
+export function carryNetwork(url: string): string {
+  const here = currentNetwork()
+  const viewed = viewedNetwork()
+  if (here === 'local' || viewed === 'local' || viewed === here) return url
+  return withNetwork(url, viewed)
 }

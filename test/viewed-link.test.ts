@@ -227,3 +227,87 @@ describe('the viewed network survives a reload', () => {
     assert.deepEqual(browser.replaced, [])
   })
 })
+
+/**
+ * ── THE LINK OUT, AND THE ONE HOSTNAME THAT DOES NOT EXIST ────────────────────────────────────
+ *
+ * `carryNetwork` is the composition the home grid's two exchange tiles use, and it exists because
+ * the composition beside it — `chainIndexBaseOn`, rewriting the first label — is the wrong answer
+ * for a WEB surface. Measured 2026-08-16, from off the estate:
+ *
+ *   market-testnet    302 → https://market.cloudsforge.online/
+ *   network-testnet   302 → https://network.cloudsforge.online/
+ *   hub-testnet       302 → https://hub.cloudsforge.online/
+ *   pool-testnet      302 → https://pool.cloudsforge.online/
+ *   exchange-testnet  no DNS record, connection refused before TLS
+ *
+ * Four of those lose the network on the redirect, which is a silent wrong answer. The fifth is the
+ * tile this file is about, and it does not resolve at all. The assertions below are the pair:
+ * `?net=` on the address that exists, and NO composed `-testnet` hostname anywhere.
+ */
+describe('a link out of this surface carries the viewed network', () => {
+  const EXCHANGE = 'https://exchange.cloudsforge.online'
+
+  it('attaches ?net= when the reader is viewing the other network', async () => {
+    const m = await loadAt('https://network.cloudsforge.online/?net=testnet')
+    assert.equal(m.carryNetwork(EXCHANGE), `${EXCHANGE}/?net=testnet`)
+  })
+
+  it('keeps the path, which is how the receipt tile survives this', async () => {
+    // The receipt page is `${exchange}/receipts` — a path, because the registry holds hostnames.
+    const m = await loadAt('https://network.cloudsforge.online/?net=testnet')
+    assert.equal(m.carryNetwork(`${EXCHANGE}/receipts`), `${EXCHANGE}/receipts?net=testnet`)
+  })
+
+  it('composes no `-testnet` hostname, because one of them has no DNS record', async () => {
+    const m = await loadAt('https://network.cloudsforge.online/?net=testnet')
+    for (const url of [EXCHANGE, `${EXCHANGE}/receipts`]) {
+      assert.doesNotMatch(m.carryNetwork(url), /-testnet\./, url)
+    }
+  })
+
+  it('leaves the URL alone when the reader is viewing the network they are served', async () => {
+    // `?net=mainnet` on every link out of a mainnet page is a parameter that changes nothing, in
+    // an address bar, for ever.
+    const m = await loadAt('https://network.cloudsforge.online/')
+    assert.equal(m.carryNetwork(EXCHANGE), EXCHANGE)
+  })
+
+  it('follows the switcher, not just the link', async () => {
+    const m = await loadAt('https://network.cloudsforge.online/')
+    m.setViewedNetwork('testnet')
+    assert.equal(m.carryNetwork(EXCHANGE), `${EXCHANGE}/?net=testnet`)
+    m.setViewedNetwork('mainnet')
+    assert.equal(m.carryNetwork(EXCHANGE), EXCHANGE)
+  })
+
+  it('does nothing off-registry, where there is no sibling estate', async () => {
+    const m = await loadAt('http://localhost:3003/?net=testnet')
+    assert.equal(m.carryNetwork('http://localhost:5194'), 'http://localhost:5194')
+  })
+})
+
+/**
+ * The home grid's two exchange tiles resolve through the registry and through `carryNetwork`.
+ *
+ * Read rather than rendered, which is this bundle's convention for page assertions — there is no
+ * component render harness here and adding one for two anchors would be a heavier dependency than
+ * the thing it checks. `test/hosts.test.ts` separately forbids a literal hostname in this file, so
+ * between them the tile cannot be pointed at a name typed by hand.
+ */
+describe('the exchange tiles on the home page', () => {
+  const home = readFileSync(fileURLToPath(new URL('../src/pages/home.tsx', import.meta.url)), 'utf8')
+
+  it('resolve the hostname through the registry key', () => {
+    assert.match(home, /carryNetwork\(hosts\(\)\[EXCHANGE_SURFACE\]\)/)
+  })
+
+  it('reach the receipt page by its own constant, not an inline path', () => {
+    assert.match(home, /carryNetwork\(`\$\{hosts\(\)\[EXCHANGE_SURFACE\]\}\$\{RECEIPTS_PATH\}`\)/)
+  })
+
+  it('are both rendered as links a reader can follow', () => {
+    assert.match(home, /href=\{exchange\}/)
+    assert.match(home, /href=\{receipts\}/)
+  })
+})

@@ -259,12 +259,28 @@ export const HOME = {
      * the proof of work, where the thing the documents describe has not been written. Carrying the
      * old sentence over the new table would tell a reader the pad size is a maturity question.
      */
+    /*
+     * ── AND IT DESCRIBED THE TABLE AGAIN ON 2026-08-16, FOR THE SAME REASON ────────────────────
+     *
+     * The sentence above this one records a lede that outlived its table. This is the same repair
+     * made deliberately rather than late: the receipt row added below is the FIRST row marked in
+     * progress that is not a gap in the proof of work, so "it is two gaps in the proof of work"
+     * became false at the moment the row landed. Adding a row and leaving this paragraph would
+     * have told a reader that an unfunded reserve is a question about pad sizes.
+     *
+     * The distinction the lede exists to draw is kept and widened: what is in progress here is
+     * still not half-finished work, but it is now two KINDS of thing — a design that has not been
+     * found, and an instrument that has been built and not yet backed. A reader deciding what to
+     * build on needs to tell those apart, and they fail in completely different ways.
+     */
     lede:
       'The engine, the consensus rules and the tooling are finished and tested against ' +
       "Ethereum's own published vectors, both networks answer on the public internet, and there " +
-      'are contracts running on them. What is still marked in progress is not half-finished work ' +
-      'and will not become finished by being left alone — it is two gaps in the proof of work ' +
-      'that need a redesign, and you should know which is which before you build on any of it.',
+      'are contracts running on them — including an exchange with liquidity in it. What is still ' +
+      'marked in progress is not half-finished work and will not become finished by being left ' +
+      'alone: two gaps in the proof of work that need a redesign rather than time, and one ' +
+      'instrument that is deployed and exercised on the test network with nothing behind it on ' +
+      'the main one. You should know which is which before you build on any of it.',
     rows: [
       {
         thing: 'The EVM: interpreter, gas, opcodes, precompiles',
@@ -339,6 +355,42 @@ export const HOME = {
           'EVM. They are the estate running its own code rather than a fixture put up for you to ' +
           'practise against, and this page publishes no address for them.',
       },
+      /*
+       * ── THE EXCHANGE AND THE RECEIPT ARE TWO ROWS BECAUSE THEY ARE TWO CLAIMS ─────────────────
+       *
+       * They shipped together and they are one product, and putting them on one row would have
+       * forced a single badge over a sentence that needs two. The exchange IS built on both
+       * networks — deployed, seeded, traded. The receipt is deployed on one of them and backed on
+       * neither, which is `open` and would have dragged the exchange's badge down with it, or,
+       * worse, been hidden under the exchange's.
+       *
+       * The row below them is the older lesson in the same file: three rows once read "in
+       * progress" over detail sentences beginning "Published and answering", and the badge won
+       * that argument. This table is scanned rather than read, so a row earns exactly one badge
+       * and the badge has to be about the row's own words.
+       */
+      {
+        thing: 'An exchange running on it',
+        state: 'built' as const,
+        detail:
+          'Forge Exchange is a constant-product exchange deployed on both networks and seeded ' +
+          'with liquidity: pools you trade against from your own wallet, with no account and no ' +
+          'order book. It is the estate trading its own coin on its own chain rather than a ' +
+          'fixture put up to be practised against, and the pair contracts answer calls from any ' +
+          'client that can reach the endpoint above.',
+      },
+      {
+        thing: 'A coin from another chain, standing on this one',
+        state: 'open' as const,
+        detail:
+          'A Forge Receipt is a token on Hearth that stands for a Litecoin this project holds off ' +
+          'it — the one instrument here that is somebody\'s promise rather than a contract holding ' +
+          'both sides, which is why it is called a receipt. The contract, the attestation it must ' +
+          'be shown before it may issue, and the redemption path are deployed and exercised on ' +
+          'the test network. On the main network nothing has been issued and the reserve is ' +
+          'empty; the contract cannot issue against a reserve it has not been shown, so the ' +
+          'absence is the design working rather than a service that is down.',
+      },
       {
         thing: 'The proof of work at the size the documents promised',
         state: 'open' as const,
@@ -361,7 +413,19 @@ export const HOME = {
 
   where: {
     title: 'Where to go next',
-    lede: 'Everything below is a thing you can actually run today, on your own machine.',
+    /*
+     * THIS SAID "a thing you can actually run today, on your own machine", AND THE GRID BELOW IT
+     * OUTGREW IT. The block explorer was already a surface rather than a program, and the two
+     * tiles added on 2026-08-16 — the exchange and the receipt page — are emphatically not
+     * something a reader runs: they are contracts on a chain, read through a page. The old
+     * sentence was a promise the second half of the grid could not keep.
+     *
+     * What is kept is the thing it was actually promising, which was never "software you install"
+     * but "nothing here is a mockup". Every tile below opens something that exists.
+     */
+    lede:
+      'Everything below opens something that exists today: the parts you run on your own ' +
+      'machine, and the parts that run on the chain where anyone can read them.',
   },
 }
 
