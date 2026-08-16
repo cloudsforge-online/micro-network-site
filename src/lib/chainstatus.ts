@@ -198,14 +198,20 @@ export interface Scope {
  * `ui/packages/ui/src/surfaces.ts`), the wildcard covers them, and
  * `rpc-testnet.cloudsforge.online` answers `eth_chainId` with `0x1cf4` from off the estate.
  *
- * **AND A THIRD FACT, WHICH IS ABOUT THE INDEX RATHER THAN ABOUT THE CHAINS.** Both scopes have a
- * chain behind them and no single deployment can answer for both: each estate's chain index follows
- * exactly one EMBER network, and `deploy/compose/env/chain.mainnet.env` opens by saying so —
- * "exactly one of this file and `chain.testnet.env` is ever read, and no deploy can have half of
- * each". So one of these two panels is always about a chain the index this page talks to is not
- * walking. That panel is kept rather than dropped, because the reader's question is "is there a
- * testnet" and the answer is yes, over there — see `CHAIN.notFollowed` and the `followed` field.
- * Dropping it was the alternative and it hides the question instead of answering it.
+ * **AND A THIRD FACT, WHICH IS ABOUT THE INDEX RATHER THAN ABOUT THE CHAINS — AND WHICH HAS NOW
+ * BEEN ACTED ON.** Both scopes have a chain behind them and no single deployment can answer for
+ * both: each estate's chain index follows exactly one EMBER network, and
+ * `deploy/compose/env/chain.mainnet.env` opens by saying so — "exactly one of this file and
+ * `chain.testnet.env` is ever read, and no deploy can have half of each".
+ *
+ * This paragraph used to end "so one of these two panels is always about a chain the index this
+ * page talks to is not walking", and defended keeping the empty one: the reader's question is "is
+ * there a testnet", the answer is yes, over there, and `CHAIN.notFollowed` says the figures are
+ * absences rather than zeroes. All of that was true and it was a compromise, forced by there being
+ * one origin to ask. The combined view removed the force. Since 2026-08-16 each panel is read from
+ * the estate whose index follows ITS OWN network (`getChainStatus` → `chainIndexBaseOn`), so both
+ * are full at once and `notFollowed` is what it should always have been — a real answer to a real
+ * misconfiguration, not the ordinary state of half this page.
  *
  * So BOTH scopes now have a chain behind them, and "the more absent of the two" is no longer the
  * argument for this order. The argument that replaces it is about what a reader is looking at:
@@ -382,9 +388,16 @@ const seg = (value: string): string => encodeURIComponent(value)
  * handed, and an expired token turns a public page into a 401. One helper makes "this bundle
  * presents no credential" a property of the module instead of a habit —
  * `test/chainstatus.test.ts` asserts that nothing here reaches `chainIndex()` directly.
+ *
+ * THE NETWORK IS THE FIRST PARAMETER, AHEAD OF THE PATH, BECAUSE IT DECIDES WHO IS ASKED. Every
+ * route this file will ever carry is scoped by `(chain, network)` — `indexer/src/chains.ts` says
+ * there is no function upstream that takes a chain without one — and the network in the path and
+ * the network in the origin must be the same one, or the request asks an index about a chain it
+ * does not walk and gets a truthful "never observed" back (`src/lib/viewed.ts`). Taking it as an
+ * argument rather than reading the switcher is what makes that a type error instead of a habit.
  */
-function publicRead<T>(path: string, opts: { signal?: AbortSignal } = {}) {
-  return chainIndex<T>(path, {
+function publicRead<T>(network: Network, path: string, opts: { signal?: AbortSignal } = {}) {
+  return chainIndex<T>(network, path, {
     auth: false,
     ...(opts.signal ? { signal: opts.signal } : {}),
   })
@@ -405,7 +418,11 @@ function publicRead<T>(path: string, opts: { signal?: AbortSignal } = {}) {
  * branches on the CODE rather than on the status for exactly that reason.
  */
 export function getChainStatus(scope: Scope, signal?: AbortSignal): Promise<ChainStatus> {
-  return publicRead<ChainStatus>(`/v1/chains/${seg(scope.chain)}/${seg(scope.network)}/status`, {
-    ...(signal ? { signal } : {}),
-  })
+  // `scope.network` twice, deliberately: once to say WHICH chain is being asked about, and once to
+  // pick the estate whose index walks it. They are the same value and they answer two questions.
+  return publicRead<ChainStatus>(
+    scope.network,
+    `/v1/chains/${seg(scope.chain)}/${seg(scope.network)}/status`,
+    { ...(signal ? { signal } : {}) },
+  )
 }

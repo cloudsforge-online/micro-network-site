@@ -122,10 +122,26 @@ describe('the request URLs are the ones the registry resolves', () => {
   it('the chain read goes to the explorer host, cross-origin from this page', () => {
     signedIn()
     stub = installFetch(() => json(200, {}))
+    return getChainStatus({ chain: 'ember', network: 'mainnet' }).then(() => {
+      assert.equal(
+        stub?.calls[0]?.url,
+        'https://explorer.cloudsforge.online/v1/chains/ember/mainnet/status',
+      )
+    })
+  })
+
+  it('and the TESTNET scope goes to the testnet explorer, from this same mainnet page', () => {
+    // This asserted `explorer.cloudsforge.online` for a testnet scope until 2026-08-16, which is
+    // the defect rather than the contract: this page is `network.cloudsforge.online`, it renders a
+    // mainnet panel and a testnet panel side by side, and the mainnet estate's index does not walk
+    // testnet — so that request could only ever come back "never observed". The network in the
+    // path and the network in the origin are one decision now (`src/lib/viewed.ts`).
+    signedIn()
+    stub = installFetch(() => json(200, {}))
     return getChainStatus({ chain: 'ember', network: 'testnet' }).then(() => {
       assert.equal(
         stub?.calls[0]?.url,
-        'https://explorer.cloudsforge.online/v1/chains/ember/testnet/status',
+        'https://explorer-testnet.cloudsforge.online/v1/chains/ember/testnet/status',
       )
     })
   })
