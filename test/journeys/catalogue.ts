@@ -1063,6 +1063,7 @@ export const CATALOGUE: readonly Scenario[] = [
               links: [...(shared?.querySelectorAll('a[href]') ?? [])].map((a) => ({
                 label: (a.textContent ?? '').trim(),
                 href: (a as HTMLAnchorElement).href,
+                current: a.getAttribute('aria-current') === 'page',
               })),
             }
           })
@@ -1080,19 +1081,24 @@ export const CATALOGUE: readonly Scenario[] = [
             `${path}: the Journal link leads back to this surface`,
           )
 
-          // …and this surface's own column, resolved to absolute addresses on this origin.
-          for (const label of ['Hearth', 'The chain', 'Mining', 'Run a node', 'Faucet']) {
-            const own = found.links.find((l) => l.label === label)
-            assert.ok(own, `${path}: the footer does not list this site's own ${label} page`)
-            assert.equal(
-              new URL(own.href).origin,
-              new URL(surface.origin).origin,
-              `${path}: the footer's ${label} link points off this surface`,
-            )
-          }
+          // Forge Network's own entry, marked as the page you are standing on. Every other link
+          // here leaves; this one is the reader's confirmation of where "here" is, and it is the
+          // proof that `current` was passed — a footer mounted without it marks nothing.
+          //
+          // Its ADDRESS is not asserted. This harness serves the bundle from an ephemeral port and
+          // the registry resolves `network` off-registry to the development host, so the two never
+          // agree here and the disagreement says nothing about the deployment.
+          const here = found.links.filter((l) => l.current)
+          assert.equal(here.length, 1, `${path}: ${here.length} footer links claim to be this page`)
+          assert.match(
+            here[0]!.label,
+            /forge network/i,
+            `${path}: the footer marks "${here[0]!.label}" as the surface you are standing on`,
+          )
 
-          // The source repository. It is the one address a reader who wants to check any claim on
-          // this surface needs, and the registry has no key for github.com to resolve it from.
+          // The source repository, which lives in this surface's closing sentence. It is the one
+          // address a reader who wants to check any claim here needs, and the surface registry has
+          // no key for github.com to resolve it from — everything else in this footer has one.
           assert.ok(
             found.links.some((l) => /^https:\/\/github\.com\//.test(l.href)),
             `${path}: the footer offers no way to the source`,

@@ -218,11 +218,12 @@ describe('the footer is the shared one, and its links carry the viewed network',
     assert.doesNotMatch(code, /surfaceUrls=\{hosts\(\)\}/)
   })
 
-  it('and its own column is composed against this origin, not written as paths', () => {
-    // `columns` takes absolute URLs (`CloudsForgeFooterProps` in @cloudsforge/ui). A relative
-    // `to` would render as an href the browser resolves against whatever page it is on, which is
-    // correct today and wrong the first time this surface serves a route more than one level deep.
-    assert.match(code, /carryNetwork\(`\$\{pageOrigin\(\)\}\$\{item\.to\}`\)/)
+  it('closes with this surface’s own sentence, and the one link the registry cannot resolve', () => {
+    // `note` is the only place a surface may put words of its own (`CloudsForgeFooterProps` in
+    // @cloudsforge/ui), and github.com is the only address in this footer that is not a surface
+    // key — which is why it is the one that has to be named rather than resolved.
+    assert.match(code, /note=\{/)
+    assert.match(code, /href=\{HEARTH_REPO\}/)
   })
 })
 

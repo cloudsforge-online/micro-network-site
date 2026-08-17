@@ -66,13 +66,19 @@
  * worked around here: a second footer, or a wrapper that rewrote its output, would be the
  * hand-rolled footer this mount exists to avoid.
  *
- * ── AND ONE COLUMN OF OUR OWN ─────────────────────────────────────────────────────────────────
+ * ── THE CLOSING SENTENCE, AND THE ONE LINK THE REGISTRY HAS NO KEY FOR ────────────────────────
  *
- * `columns` takes ABSOLUTE addresses, so the routes are composed against this page's own origin
- * rather than written as paths. It repeats the sub-navigation on purpose: the sub-nav scrolls
- * sideways on a phone, so it is the one place the whole of this site is visible at once. The
- * source repository goes in it too — it is the thing a reader who wants to check any claim on this
- * surface actually needs, and the registry has no key for github.com.
+ * `note` is the prop `CloudsForgeFooter` provides for "one sentence this surface wants to close
+ * with", and the sentence this surface owes is the one the whole site is built around: EMBER is
+ * mined and not sold. The source repository goes in it because it is what a reader who wants to
+ * check any claim here actually needs, and the surface registry has no key for github.com — every
+ * other link in this footer resolves through it.
+ *
+ * A COLUMN OF THIS SITE'S OWN ROUTES WOULD BE BETTER AND IS NOT AVAILABLE. `CloudsForgeFooterProps`
+ * takes `current`, `account`, `surfaceUrls` and `note`, and nothing that lets a surface add a
+ * column, so the five pages of Forge Network are reachable from the sub-nav and from nowhere in
+ * the footer. Requested from micro-ui rather than worked around: a second `<footer>` beside this
+ * one would be the hand-rolled footer this mount exists to avoid.
  * ══════════════════════════════════════════════════════════════════════════════════════════════
  */
 import { CloudsForgeBar, CloudsForgeFooter, CookieBanner, Mark, miningOnHub } from '@cloudsforge/ui'
@@ -81,7 +87,7 @@ import { useState } from 'react'
 import { NavLink, Outlet } from 'react-router-dom'
 import { STANDING_STATE } from '../content/copy.ts'
 import { useSession } from '../lib/auth.tsx'
-import { PRODUCT, hosts, pageOrigin } from '../lib/hosts.ts'
+import { PRODUCT, hosts } from '../lib/hosts.ts'
 import type { PageNetwork } from '../lib/hosts.ts'
 import { carryNetwork, setViewedNetwork, viewedNetwork } from '../lib/viewed.ts'
 import { HEARTH_REPO, NAV } from '../lib/routes.ts'
@@ -210,15 +216,15 @@ export function AppShell({ unregistered = false }: { unregistered?: boolean }) {
         current={PRODUCT}
         account={account}
         surfaceUrls={footerUrls()}
-        columns={[
-          {
-            title: 'Forge Network',
-            links: [
-              ...NAV.map((item) => ({ href: carryNetwork(`${pageOrigin()}${item.to}`), label: item.label })),
-              { href: HEARTH_REPO, label: 'Source on GitHub' },
-            ],
-          },
-        ]}
+        note={
+          <>
+            EMBER is mined here, never sold, and every claim on this surface is checkable in{' '}
+            <a className="cf-foot__link" href={HEARTH_REPO}>
+              the Hearth repository
+            </a>
+            .
+          </>
+        }
       />
       {/*
         Last in the DOM so it is last in the tab order: the gate is a decision about this visit, not
