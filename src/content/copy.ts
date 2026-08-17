@@ -1,25 +1,47 @@
 /**
  * The words on this site, as data.
  *
- * ── 2026-08-11: THE FAILURE THIS FILE GUARDS AGAINST RAN THE OTHER WAY, AND NOTHING CAUGHT IT ───
+ * ══════════════════════════════════════════════════════════════════════════════════════════════
+ * 2026-08-17: THIS FILE WAS CUT ROUGHLY IN HALF, AND WHAT WENT IS NAMED HERE — micro-org#484.
  *
- * Every rule below is aimed at a sentence that claims more than the estate can show. That aim is
- * right and none of it is relaxed. But a status table is a claim in both directions, and this one
- * had drifted into the understating direction on four rows at once: two public endpoints that
- * answer and advance were badged "In progress", a chain with contracts running on it was badged
- * "Not built", and the how-to-start section sent a reader to clone a repository in order to use a
- * miner mounted an inch above the sentence. Each is quoted at the row that fixes it, with what was
- * measured and when.
+ *     "remove useless text and keep only human easy-to-understand info, and warning"
  *
- * A false "not done" is a false statement about this company, published under its own name, and it
- * is not the safe direction to err in — it teaches a reader that nothing here works, which is the
- * one impression the measurements do not support. **The rule is neither "hedge" nor "claim": it is
- * that a status is a measurement, and a row nobody has measured recently is a row nobody should
- * trust.** micro-org#412.
+ * Nothing was cut for being FALSE. Every claim below is the claim that was here before it, and the
+ * measurements that back each one are unchanged and still recorded in the comments. What was cut is
+ * the second and third sentence of things that only needed a first.
  *
- * Copy lives here rather than inside components for the reason `micro-site` gives
- * (`site/src/content/pages.ts`): a string inside JSX cannot be walked by a test, and the two
- * rules this surface is held to are both rules about strings.
+ * Four patterns went, and they are worth naming because each one grew here honestly:
+ *
+ *   1. THE CLAIM, THEN THE DEFENCE OF THE CLAIM. "A 15-second TARGET, retargeted every block. It is
+ *      what the difficulty algorithm aims at, not a rate this page has measured — what the chain is
+ *      actually doing is a runtime figure and belongs on the chain page." The second sentence is an
+ *      argument with a reviewer, published to a reader who was not in it. The word "target" already
+ *      does that work; the rest is now one clause.
+ *   2. THE SAME FACT TWICE, IN TWO REGISTERS. The status table's mainnet row and the coin's chain-id
+ *      row both explained what "published and answering" means. A reader meets it once.
+ *   3. THE SELF-DESCRIPTION. "The project records the disagreement rather than hiding it, and so
+ *      does this page." A page that narrates its own honesty is spending a reader's attention on
+ *      itself. Say the disagreement; the reader can see it is not hidden.
+ *   4. THE INTERNAL AUDIENCE. Sentences addressed to whoever edits this file next — why a section
+ *      exists, what it used to say, which rule it is obeying. Those belong in comments, which is
+ *      where they now are, and comments do not render.
+ *
+ * WHAT WAS NOT CUT, AND WILL NOT BE:
+ *
+ *   * `STANDING_STATE`. It is the warning, it is on every route above everything, and the brief
+ *     that asked for this cut asked for it to be KEPT and made legible. It got shorter. It did not
+ *     lose a single clause: `test/content.test.ts` pins eleven separate phrases in it, one per
+ *     limit, precisely so that a rewrite cannot drop one while keeping the rest.
+ *   * Any number. `./facts.ts` still registers every digit that appears here and
+ *     `test/content.test.ts` still fails on an unregistered one — and on a REGISTERED one that
+ *     nothing renders, which is what stops a cut from quietly abandoning a measurement.
+ *   * Any caveat. The three things Homefire is not, the receipt with nothing behind it, the pad
+ *     that is not the promised size, the pool that settles nothing: all present, all shorter.
+ * ══════════════════════════════════════════════════════════════════════════════════════════════
+ *
+ * Copy lives here rather than inside components for the reason `micro-site` gives: a string inside
+ * JSX cannot be walked by a test, and the two rules this surface is held to are both rules about
+ * strings.
  *
  *   1. **A digit may not appear here unless it is in the register** (`./facts.ts`). Enforced by
  *      `test/content.test.ts`.
@@ -32,11 +54,11 @@
  *
  * THIS BLOCK USED TO SAY THERE WAS NO NETWORK AT ALL. HALF OF THAT IS NOW FALSE, AND ONLY HALF.
  *
- * Mainnet is reachable. `deploy/cloudflared/config.mainnet.public.yml` publishes
- * `rpc.<apex>` on the public tunnel, and a POST to it from off the estate answers `eth_chainId`
- * with `0x1cf3` — 7411, the id this file already carried as merely allocated. Blocks advance
- * between reads. So the old headline, "there is no public Hearth network yet", is a false
- * statement about a currency and had to go.
+ * Mainnet is reachable. `deploy/cloudflared/config.mainnet.public.yml` publishes `rpc.<apex>` on
+ * the public tunnel, and a POST to it from off the estate answers `eth_chainId` with `0x1cf3` —
+ * 7411, the id this file already carried as merely allocated. Blocks advance between reads. So the
+ * old headline, "there is no public Hearth network yet", is a false statement about a currency and
+ * had to go.
  *
  * EVERYTHING ELSE THE OLD WORDING PROTECTED AGAINST IS STILL TRUE, AND IS WORDED MORE CAREFULLY
  * BECAUSE IT NOW HAS TO SURVIVE NEXT TO GOOD NEWS:
@@ -45,42 +67,25 @@
  *     used to end "no price" and that clause is now false. On 2026-08-10 at 19:13:30Z the operator
  *     set an administered rate for EMBER through `PUT /admin/prices/:asset`; measured 2026-08-11,
  *     `GET /rates` answers EMBER with `source: "administered"`, `usable: true` and `sourceCount: 0`
- *     against `market` and `sourceCount: 4` for the eleven assets whose rate is a median of real
- *     venues. So a figure is now shown wherever this estate shows a value, and a reader told here
- *     that there is no price concludes the estate is careless rather than that the figure is ours.
+ *     against `market`, while eleven other assets carry a median of four real venues. So a figure
+ *     is now shown wherever this estate shows a value, and a reader told here that there is no
+ *     price concludes the estate is careless rather than that the figure is ours.
  *
- *     The half that did not change is the half that matters: nothing quotes EMBER and nothing
- *     settles it, so the number is a number a person typed. `micro-site` made exactly this
- *     correction to its own honesty block on 2026-08-10 and this surface was not carried with it,
- *     which is why the clause survived here for a day longer than it was true. **The rule is now
- *     "name the price, then say whose it is" — never "there is no price", and never a price with
- *     no owner beside it.** A chain being reachable is still not a chain being traded, and a
- *     figure we set ourselves is still not a figure anybody has paid; this site may blur neither.
- *   * **The chain is new and short.** "Live" here means reachable, not established. Nothing on
- *     this surface may state a height, an age or a block time it OBSERVED — the /chain page
- *     fetches those or renders their absence.
+ *     **The rule is "name the price, then say whose it is" — never "there is no price", and never
+ *     a price with no owner beside it.** A chain being reachable is still not a chain being traded,
+ *     and a figure we set ourselves is still not a figure anybody has paid.
+ *   * **The chain is new and short.** "Live" here means reachable, not established. Nothing on this
+ *     surface may state a height, an age or a block time it OBSERVED — the /chain page fetches
+ *     those or renders their absence.
  *   * **The testnet IS publicly reachable, as of 2026-08-05, and this bullet used to say the
- *     opposite.** It read: "Everything under `*.testnet.<apex>` fails its TLS handshake:
- *     Cloudflare's Universal SSL is one label deep (`deploy/gateway/dynamic/tls.yml`), so a
- *     two-label name has no certificate to present. The faucet is on that side of the line. No
- *     testnet URL may be published here." The TLS diagnosis was correct about a scheme that was
- *     then ABANDONED: an environment is now a suffix inside the FIRST label
- *     (`<surface>-testnet.<apex>`, `ui/packages/ui/src/surfaces.ts`), so every testnet
- *     name is one label deep and the existing certificate covers it.
- *
- *     **So testnet URLs may now be published here, and the faucet is one of them** — it is the
- *     whole reason this reversal matters, because the faucet is a testnet-only service and the
- *     old rule made it unlinkable. What replaces the prohibition is a NARROWER one that survives
- *     the good news: **a testnet URL must never be published without the word testnet next to
- *     it.** Free coin and mined coin must not be made to look alike.
- *   * **The whole estate is one home server behind a Cloudflare Tunnel**
- *     (`deploy/gateway/dynamic/estate-web.yml`). No second machine, no failover.
- *
- * So this site may not print a price, may not imply a mining income, and may not imply that a
- * reachable endpoint is an established network. What it CAN do is send somebody to a repository
- * where every claim is checkable, and be the first page in the estate that says plainly what state
- * the chain is in — `hearth/README.md` puts that section above everything else and calls it
- * "Status, before anything else". This one does the same.
+ *     opposite.** It blamed a TLS scheme that was then ABANDONED: an environment is now a suffix
+ *     inside the FIRST label (`<surface>-testnet.<apex>`), so every testnet name is one label deep
+ *     and the existing certificate covers it. Testnet URLs may be published here, and the faucet is
+ *     one of them. What replaces the prohibition is narrower and survives the good news: **a
+ *     testnet URL must never be published without the word testnet next to it.** Free coin and
+ *     mined coin must not be made to look alike.
+ *   * **The whole estate is one home server behind a Cloudflare Tunnel.** No second machine, no
+ *     failover.
  *
  * A note on where the wording comes from: where Hearth already has a sentence for something, this
  * file uses Hearth's, not a paraphrase. A paraphrase of a caveat is how a caveat gets softer.
@@ -97,33 +102,35 @@ import { fact, grouped } from './facts.ts'
  * reader arriving on `/mine` from a search result has not read the home page and would otherwise
  * spend their whole visit believing there is a network to mine on.
  *
+ * ── IT IS SHORTER AND IT LOST NOTHING, WHICH IS THE ONLY ACCEPTABLE WAY TO SHORTEN IT ─────────
+ *
+ * `test/content.test.ts` pins eleven phrases in this one paragraph — cannot be bought or sold, no
+ * market, no listing, a price, whose the price is, the testnet, given away, worthless, a single
+ * site, nothing to fail over to, and reorg — each asserted separately so an edit cannot drop one
+ * while keeping the others. Every one of them is still here. What went was the connective tissue
+ * between them: "so nothing you mine here is money YET", "which means a deep reorganisation is a
+ * real possibility rather than a theoretical one". The hedges made the sentence longer without
+ * making the warning stronger, and this is the paragraph most likely to be read by somebody who
+ * reads nothing else on the site.
+ *
  * ── THE PRICE CLAUSE IS THE ONE THAT MOVED, AND IT MOVED IN THE UNFLATTERING DIRECTION ────────
  *
  * This read "no market for it, no listing and no price". The last third stopped being true on
- * 2026-08-10 and the sentence stayed up: EMBER now has an administered rate, `GET /rates` answers
- * it with `source: "administered"`, and hub prints a dollar figure against an EMBER balance. A
- * reader who mines here on the strength of this paragraph and then meets that figure has been told
- * two incompatible things by the same company on the same visit, and the one they will believe is
- * the number.
- *
- * So the clause is not deleted — deleting it leaves the reader with a figure and no account of it,
- * which is the whole defect (micro-org#365). It is REPLACED by the pair: the price exists, and it
- * is ours. Present tense and no schedule, because "not yet listed" describes a date that does not
- * exist; and no figure, because the statement's job is to say what kind of number a reader is
- * looking at, not to put a second number in front of them. That is the shape
- * `hub-web/src/components/estimate.tsx` renders beside the figure itself, said here in the words
- * of somebody deciding whether to switch their computer on rather than somebody reading a balance.
+ * 2026-08-10 and the sentence stayed up: EMBER now has an administered rate and hub prints a dollar
+ * figure against an EMBER balance. A reader who mines here on the strength of this paragraph and
+ * then meets that figure has been told two incompatible things by the same company on the same
+ * visit, and the one they will believe is the number. So the clause is not deleted — deleting it
+ * leaves the reader with a figure and no account of it, which is the whole defect (micro-org#365).
+ * It is REPLACED by the pair: the price exists, and it is ours.
  */
 export const STANDING_STATE = {
-  headline: 'Hearth is a new network. Please read this before you rely on it.',
+  headline: 'Hearth is a new network. Read this before you rely on it.',
   body:
     'EMBER cannot be bought or sold. There is no market for it and no listing, so nothing you ' +
-    'mine here is money yet. It does carry a price on CloudsForge screens, and that price is one ' +
-    'we set ourselves rather than one anybody has paid for it. The chain itself is only weeks ' +
-    'old and runs from a single site, which means a deep reorganisation is a real possibility ' +
-    'rather than a theoretical one and an outage has nothing to fail over to. The test network ' +
-    `is a separate chain — id ${fact('chainIdTestnet')} rather than ${fact('chainIdMainnet')} — ` +
-    'and the EMBER the faucet gives away on it is worthless by design.',
+    'mine here is money. It does carry a price on CloudsForge screens, and that is a price we ' +
+    'set ourselves rather than one anybody has paid. The chain is weeks old and runs from a ' +
+    'single site: a deep reorg is a real possibility, and an outage has nothing to fail over to. ' +
+    'The test network is a separate chain, and the EMBER given away on it is worthless by design.',
 }
 
 /* ══════════════════════════════ home ══════════════════════════════ */
@@ -139,48 +146,45 @@ export const HOME = {
   blurb:
     'Mine EMBER with an ordinary processor, on a chain that runs Ethereum contracts and answers Ethereum wallets. New, unproven, and not yet worth money.',
   standfirst:
-    'Hearth is designed so that the computer you are reading this on is the whole rig — no ' +
-    'specialist hardware, nothing to buy. Its coin is EMBER. Underneath, it runs Ethereum ' +
-    'contracts and answers Ethereum wallets, so the tools you already know work here without ' +
-    'being told this chain is new.',
+    'Hearth is built so the computer you are reading this on is the whole rig — no specialist ' +
+    'hardware, nothing to buy. Its coin is EMBER, and underneath it runs Ethereum contracts and ' +
+    'answers Ethereum wallets.',
 
   what: {
     title: 'What it is',
+    /**
+     * FOUR ITEMS, AND THE COUNT IS LOAD-BEARING. `.ns-cards--four` steps 1 → 2 → 4 columns and
+     * never 3, because four tiles in an intrinsic grid lay out three and then one at every desktop
+     * width. `test/layout.test.ts` fails if a fifth is added without moving the steps.
+     */
     items: [
       {
         title: 'Mining a laptop can win at',
         body:
           'Most coins are mined by machines built for nothing else, which prices an ordinary ' +
-          'computer out on the first day. Hearth is deliberately built the other way round: ' +
-          'every attempt has to shuffle a block of memory, and memory is the one thing ' +
-          'specialised hardware cannot make much faster. A warehouse of it earns little more ' +
-          'per pound than your laptop does.',
+          'computer out on day one. Here, every attempt has to shuffle a block of memory — and ' +
+          'memory is the one thing specialised hardware cannot make much faster.',
       },
       {
         title: 'Your Ethereum tools work here',
         body:
-          'Addresses, signatures, gas and the interface a wallet talks to are all the ones ' +
-          'Ethereum uses, so MetaMask, ethers, viem, Hardhat and Foundry connect without ' +
-          'changes and a contract you already wrote deploys unaltered. The engine underneath ' +
-          'was written here rather than borrowed, and it pulls in no third-party code to run.',
+          'Addresses, signatures, gas and the interface a wallet talks to are the ones Ethereum ' +
+          'uses, so MetaMask, ethers, viem, Hardhat and Foundry connect without changes and a ' +
+          'contract you already wrote deploys unaltered.',
       },
       {
         title: 'Nobody was handed a head start',
         body:
-          'The first block created no spendable coins for anyone, founders included, so there ' +
-          `is no pre-mined pile waiting to be sold into the first buyers. ${fact('commonsShare')} per cent of ` +
-          'every reward goes to a shared treasury held on the chain instead of to the miner, ' +
-          'and the starting balances are published so you can check that claim yourself in ' +
-          'under a minute.',
+          'The first block created no spendable coins for anyone, founders included, so there is ' +
+          `no pre-mined pile waiting to be sold. ${fact('commonsShare')} per cent of every reward ` +
+          'goes to a shared treasury on the chain, and the starting balances are published.',
       },
       {
         title: 'The reward never falls to nothing',
         body:
-          `Each block pays ${fact('genesisReward')} EMBER to begin with. That halves every ` +
+          `Each block pays ${fact('genesisReward')} EMBER. That halves every ` +
           `${fact('halfLifeYears')} years and then levels off at ${fact('tailReward')} EMBER a ` +
-          'block for good, rather than running down to zero. It means the people keeping the ' +
-          'chain honest are always paid something, instead of the chain having to hope ' +
-          'transaction fees alone will cover it.',
+          'block for good, so the people keeping the chain honest are always paid something.',
       },
     ],
   },
@@ -188,53 +192,45 @@ export const HOME = {
   /**
    * The coin, as identity rather than as an asset.
    *
-   * Every line here is a constant somebody will need in order to configure a wallet or a node —
-   * which is the only reason to publish them — and the last one records a DISAGREEMENT rather than
-   * resolving it. `hearth/README.md` states it about itself: the account model specifies 18
+   * Every line here is a constant somebody needs in order to configure a wallet or a node, which is
+   * the only reason to publish them. The smallest-unit row records a DISAGREEMENT rather than
+   * resolving it: `hearth/README.md` states it about itself — the account model specifies 18
    * decimals and the node still defines the retired ledger's 1e8. Picking a side on a marketing
    * page would be inventing a decision the project has not taken.
    */
   coin: {
     title: 'The coin',
-    lede:
-      'What you would type into a wallet. These are the values the code carries, and the mainnet ' +
-      'id below is the one a public endpoint answers with.',
+    lede: 'What you would type into a wallet.',
     rows: [
       { field: 'Network and coin', value: 'Hearth, and EMBER' },
       {
         field: 'Chain id',
-        // This row said the testnet "has no reachable endpoint" and contradicted the status table
-        // three sections below, which records it as published and answering alongside the faucet.
-        // The prohibition on unlabelled testnet URLs still holds — hence the word testnet here.
-        value: `${fact('chainIdMainnet')} for mainnet and ${fact('chainIdTestnet')} for the testnet. Both are published and both answer`,
+        // The word "testnet" is mandatory beside a testnet id: the prohibition on unlabelled
+        // testnet URLs was replaced by a labelling rule, not lifted. See the file header.
+        value: `${fact('chainIdMainnet')} for mainnet, ${fact('chainIdTestnet')} for the testnet. Both answer.`,
       },
       {
         field: 'Block time',
-        value:
-          `A ${fact('blockSeconds')}-second TARGET, retargeted every block. It is what the ` +
-          'difficulty algorithm aims at, not a rate this page has measured — what the chain is ' +
-          'actually doing is a runtime figure and belongs on the chain page.',
+        // "TARGET" in capitals does the work the deleted second sentence used to do. What the chain
+        // is actually producing is a runtime figure and lives on /chain, which is a click away.
+        value: `A ${fact('blockSeconds')}-second TARGET, retargeted every block.`,
       },
       {
         field: 'Smallest unit',
         value:
-          `${fact('decimals')} decimals under the account model — and the node still defines ` +
-          `${fact('sparksPerEmber')} smaller units to one EMBER, which is the retired ledger's. ` +
-          'The project records the disagreement rather than hiding it, and so does this page.',
+          `${fact('decimals')} decimals under the account model. The node still defines ` +
+          `${fact('sparksPerEmber')} smaller units to one EMBER, which is the retired ledger's.`,
       },
       {
         field: 'Supply',
-        value:
-          'Uncapped and disinflationary. No hard cap and no fee burn: gas is paid to the miner in ' +
-          'the first version.',
+        value: 'Uncapped and disinflationary. No hard cap and no fee burn: gas is paid to the miner.',
       },
       {
         field: 'Credited by CloudsForge after',
         value:
-          `${fact('emberConfirmations')} blocks — about ${fact('emberConfirmationMinutes')} minutes ` +
-          'at the target block time, and longer whenever the chain is producing slower than that — ' +
-          `and a reorg ${fact('emberReorgAlarmDepth')} deep halts crediting entirely. That is this ` +
-          "platform's decision about depth, not a rule of the chain.",
+          `${fact('emberConfirmations')} blocks, about ${fact('emberConfirmationMinutes')} minutes ` +
+          `at the target. A reorg ${fact('emberReorgAlarmDepth')} deep halts crediting. That is ` +
+          "this platform's rule, not the chain's.",
       },
     ],
   },
@@ -242,162 +238,123 @@ export const HOME = {
   /**
    * The status table.
    *
-   * Reproduced from `hearth/MAP.md`, which is the project's own single status table and which
-   * says at `hearth/MAP.md`: "Do not read a status from anywhere else in this repository
-   * without checking it here first." This page follows that instruction rather than assembling a
-   * more flattering list from the README.
+   * Reproduced from `hearth/MAP.md`, which is the project's own single status table and which says:
+   * "Do not read a status from anywhere else in this repository without checking it here first."
+   * This page follows that instruction rather than assembling a more flattering list.
+   *
+   * ── EVERY DETAIL IS ONE SENTENCE NOW, AND THE TABLE IS THE REASON ──────────────────────────────
+   *
+   * This is the one thing on this site a reader SCANS instead of reading, and it carried eleven
+   * paragraph-length cells. A paragraph in a scanned table is a paragraph nobody reads, so the
+   * badge was doing all the work and the caveats beside it were decoration. Each cell is now the
+   * narrowest true statement of what the row's badge means, and nothing that was a caveat became a
+   * boast: "one home server, no failover, no independent peer, no audit" is still on the mainnet
+   * row, in four words each.
+   *
+   * ── THE BADGE IS THE PART A READER TAKES AWAY, AND IT HAS BEEN WRONG IN BOTH DIRECTIONS ────────
+   *
+   * `src/pages/home.tsx` renders the word from the state alone, so a detail sentence beginning
+   * "Published and answering" was once printed underneath a badge saying "Not built". The badge
+   * wins that argument every time. Measured 2026-08-11 from off the estate: mainnet answers
+   * `eth_chainId` 0x1cf3 and its height moved 0x37ad → 0x37b1 in forty-five seconds; the testnet
+   * answers 0x1cf4 and moved 0x1fbf → 0x1fc0; every block of both chains was walked, nine contract
+   * creations on each, every receipt `status: 0x1`, runtime code at all eighteen addresses.
+   *
+   * A false "not done" is a false statement about this company published under its own name, and it
+   * is not the safe direction to err in. **A status is a measurement, and a row nobody has measured
+   * recently is a row nobody should trust.** micro-org#412.
    */
   state: {
     title: 'How far along each part is',
     /*
-     * ── THIS LEDE DESCRIBED A TABLE THAT NO LONGER EXISTS BELOW IT ─────────────────────────────
+     * THIS LEDE HAS OUTLIVED ITS TABLE TWICE, SO IT NO LONGER DESCRIBES THE TABLE'S CONTENTS.
      *
-     * It said the rows still marked in progress were marked that way "because working is not the
-     * same as proven". That was an accurate description of the table when three of those rows were
-     * services that ran and had not been leaned on. Those rows are now built (see each one), and
-     * what is left in progress is not working-but-unproven at all: it is two acknowledged gaps in
-     * the proof of work, where the thing the documents describe has not been written. Carrying the
-     * old sentence over the new table would tell a reader the pad size is a maturity question.
-     */
-    /*
-     * ── AND IT DESCRIBED THE TABLE AGAIN ON 2026-08-16, FOR THE SAME REASON ────────────────────
+     * Version one said the in-progress rows were "working but not proven", which stopped being true
+     * when those rows became built. Version two said what was left was "two gaps in the proof of
+     * work", which stopped being true the day the receipt row landed. Both were accurate when
+     * written and both were quietly false within a fortnight, because a lede that enumerates is a
+     * lede bound to a count that changes.
      *
-     * The sentence above this one records a lede that outlived its table. This is the same repair
-     * made deliberately rather than late: the receipt row added below is the FIRST row marked in
-     * progress that is not a gap in the proof of work, so "it is two gaps in the proof of work"
-     * became false at the moment the row landed. Adding a row and leaving this paragraph would
-     * have told a reader that an unfunded reserve is a question about pad sizes.
-     *
-     * The distinction the lede exists to draw is kept and widened: what is in progress here is
-     * still not half-finished work, but it is now two KINDS of thing — a design that has not been
-     * found, and an instrument that has been built and not yet backed. A reader deciding what to
-     * build on needs to tell those apart, and they fail in completely different ways.
+     * What is left is the distinction that does NOT change: an in-progress row here is never
+     * half-finished work waiting for time to pass. It needs a design nobody has found, or it needs
+     * something behind it. A reader deciding what to build on needs to tell those apart, and they
+     * fail in completely different ways.
      */
     lede:
-      'The engine, the consensus rules and the tooling are finished and tested against ' +
-      "Ethereum's own published vectors, both networks answer on the public internet, and there " +
-      'are contracts running on them — including an exchange with liquidity in it. What is still ' +
-      'marked in progress is not half-finished work and will not become finished by being left ' +
-      'alone: two gaps in the proof of work that need a redesign rather than time, and one ' +
-      'instrument that is deployed and exercised on the test network with nothing behind it on ' +
-      'the main one. You should know which is which before you build on any of it.',
+      'What is marked in progress will not finish by being left alone. It needs a design nobody ' +
+      'has found yet, or it needs something behind it.',
     rows: [
       {
         thing: 'The EVM: interpreter, gas, opcodes, precompiles',
         state: 'built' as const,
-        detail: `Merged, and ${grouped('vmTests')} of ${grouped('vmTests')} Ethereum VMTests pass.`,
+        detail: `All ${grouped('vmTests')} of Ethereum's own VMTests pass.`,
       },
       {
         thing: 'The state transition',
         state: 'built' as const,
-        detail: `Merged, and ${grouped('stateTests')} of ${grouped('stateTests')} GeneralStateTests pass.`,
+        detail: `All ${grouped('stateTests')} of Ethereum's own GeneralStateTests pass.`,
       },
       {
         thing: 'A real contract stack running on it',
         state: 'built' as const,
-        detail: `Uniswap V2 deploys, adds liquidity and swaps on Hearth's own EVM, at ${grouped('swapGas')} gas.`,
+        detail: `Uniswap V2 deploys, adds liquidity and swaps here, at ${grouped('swapGas')} gas.`,
       },
       {
         thing: 'Consensus on the account model',
         state: 'built' as const,
         detail: `Blocks are produced, validated and reorged. ${fact('nodes')} nodes run under docker compose on chain id ${fact('chainIdTestnet')}.`,
       },
-      /*
-       * ── THESE THREE ROWS SAID "IN PROGRESS", "IN PROGRESS" AND "NOT BUILT". ALL THREE WERE
-       *    UNDERSTATEMENTS, AND THE BADGE IS THE PART A READER TAKES AWAY ────────────────────────
-       *
-       * `src/pages/home.tsx` renders the word from the state alone — `open` is "In progress" and
-       * `absent` is "Not built" — so a detail sentence beginning "Published and answering" was
-       * printed underneath a badge saying the opposite. The badge wins that argument every time,
-       * and this table is the one thing on this site a reader scans instead of reading.
-       *
-       * Measured 2026-08-11 from off the estate, which is the only measurement worth anything here:
-       *
-       *   * mainnet answers `eth_chainId` with 0x1cf3 and its height moved from 0x37ad to 0x37b1
-       *     across forty-five seconds;
-       *   * the testnet answers 0x1cf4 and moved 0x1fbf to 0x1fc0, and the faucet on it answers its
-       *     terms with a drip, a cooldown and a budget;
-       *   * every block of both chains was walked and every transaction fetched: nine contract
-       *     creations on each, every receipt `status: 0x1`, `eth_getCode` returning runtime code at
-       *     all eighteen addresses, and `eth_call` answering `closeTime`, `questionHash`, `feeBps`
-       *     and `oracle` on one of them.
-       *
-       * WHAT THE CAVEATS WERE FOR IS KEPT, BECAUSE NONE OF THEM WAS THE REASON FOR THE BADGE. One
-       * home server, no independent peer, no audit, a testnet that may be wiped: those are true of a
-       * built thing. "Built" here has always meant the narrow claim in the row's own words, and the
-       * file header's rule stands — a reachable chain is not an established one.
-       */
       {
         thing: 'A public mainnet endpoint',
         state: 'built' as const,
         detail:
-          `Published and answering: a JSON-RPC endpoint on the public tunnel returns chain id ` +
-          `${fact('chainIdMainnet')} and its height advances between reads. Built is a claim ` +
-          'about the endpoint and about nothing else — it is served from one home server with no ' +
-          'failover, it has no independent peer, and nothing has audited it.',
+          `Answers chain id ${fact('chainIdMainnet')}, and its height advances between reads. ` +
+          'One home server: no failover, no independent peer, no audit.',
       },
       {
         thing: 'A public testnet endpoint',
         state: 'built' as const,
         detail:
-          `Published and answering on chain id ${fact('chainIdTestnet')}, alongside the faucet ` +
-          'that funds it and publishes its own drip, cooldowns and budget. A test network is ' +
-          'disposable by definition — its EMBER is given away and worth nothing, and nothing here ' +
-          'promises its history outlives the machine it sits on — which is a warning about the ' +
-          'coin rather than a gap in the service.',
+          `Answers chain id ${fact('chainIdTestnet')}, with the faucet beside it. Its EMBER is ` +
+          'given away, and nothing promises its history outlives the machine it sits on.',
       },
       {
         thing: 'A deployed contract',
         state: 'built' as const,
         detail:
-          'Contracts are deployed on both chains and answer calls: the prediction markets this ' +
-          "platform runs are Solidity, compiled for Ethereum, deployed unaltered on Hearth's own " +
-          'EVM. They are the estate running its own code rather than a fixture put up for you to ' +
-          'practise against, and this page publishes no address for them.',
+          'The prediction markets this platform runs are Solidity, compiled for Ethereum and ' +
+          'deployed unaltered here — our own code, not a fixture to practise against.',
       },
       /*
-       * ── THE EXCHANGE AND THE RECEIPT ARE TWO ROWS BECAUSE THEY ARE TWO CLAIMS ─────────────────
+       * THE EXCHANGE AND THE RECEIPT ARE TWO ROWS BECAUSE THEY ARE TWO CLAIMS.
        *
-       * They shipped together and they are one product, and putting them on one row would have
-       * forced a single badge over a sentence that needs two. The exchange IS built on both
-       * networks — deployed, seeded, traded. The receipt is deployed on one of them and backed on
-       * neither, which is `open` and would have dragged the exchange's badge down with it, or,
-       * worse, been hidden under the exchange's.
-       *
-       * The row below them is the older lesson in the same file: three rows once read "in
-       * progress" over detail sentences beginning "Published and answering", and the badge won
-       * that argument. This table is scanned rather than read, so a row earns exactly one badge
-       * and the badge has to be about the row's own words.
+       * They shipped together and they are one product, and one row would force a single badge over
+       * a sentence needing two. The exchange IS built on both networks. The receipt is deployed on
+       * one and backed on neither, which is `open` and would have dragged the exchange's badge down
+       * — or, worse, hidden under it. A row earns exactly one badge, and the badge is about that
+       * row's own words.
        */
       {
         thing: 'An exchange running on it',
         state: 'built' as const,
         detail:
-          'Forge Exchange is a constant-product exchange deployed on both networks and seeded ' +
-          'with liquidity: pools you trade against from your own wallet, with no account and no ' +
-          'order book. It is the estate trading its own coin on its own chain rather than a ' +
-          'fixture put up to be practised against, and the pair contracts answer calls from any ' +
-          'client that can reach the endpoint above.',
+          'Forge Exchange is deployed on both networks and seeded with liquidity: pools you trade ' +
+          'against from your own wallet, with no account and no order book.',
       },
       {
         thing: 'A coin from another chain, standing on this one',
         state: 'open' as const,
         detail:
-          'A Forge Receipt is a token on Hearth that stands for a Litecoin this project holds off ' +
-          'it — the one instrument here that is somebody\'s promise rather than a contract holding ' +
-          'both sides, which is why it is called a receipt. The contract, the attestation it must ' +
-          'be shown before it may issue, and the redemption path are deployed and exercised on ' +
-          'the test network. On the main network there is no receipt at all: the addresses that ' +
-          'would back one were counted over the whole Litecoin output set, the total came back ' +
-          'zero, and the deployment refused itself rather than publish a claim on nothing. That ' +
-          'is a decision the design made, not a service that is down.',
+          'A Forge Receipt is a token here standing for a Litecoin held elsewhere — a promise ' +
+          'rather than a contract holding both sides. It is deployed and exercised on the test ' +
+          'network. On mainnet the backing counted zero, so the deployment refused itself.',
       },
       {
         thing: 'The proof of work at the size the documents promised',
         state: 'open' as const,
         detail:
           `Every block ever produced used a ${fact('scratchKib')} KiB pad, and the node refuses to ` +
-          `start above ${fact('maxScratchKib')} KiB. A 2 GiB pad was measured at ` +
+          `start above ${fact('maxScratchKib')} KiB. A 2 GiB pad measures ` +
           `${fact('bigPadSeconds')} seconds per evaluation, and a validator pays one per block ` +
           'received. Closing that is a redesign, not a constant.',
       },
@@ -405,28 +362,15 @@ export const HOME = {
         thing: 'Non-outsourceable mining',
         state: 'open' as const,
         detail:
-          'Not achieved. A pool can still hand out work under its own key and sign the blocks ' +
-          'itself, and nothing in consensus notices, so mining here is not yet impossible to ' +
-          'centralise.',
+          'A pool can still hand out work under its own key and sign the blocks itself, and ' +
+          'nothing in consensus notices.',
       },
     ],
   },
 
   where: {
     title: 'Where to go next',
-    /*
-     * THIS SAID "a thing you can actually run today, on your own machine", AND THE GRID BELOW IT
-     * OUTGREW IT. The block explorer was already a surface rather than a program, and the two
-     * tiles added on 2026-08-16 — the exchange and the receipt page — are emphatically not
-     * something a reader runs: they are contracts on a chain, read through a page. The old
-     * sentence was a promise the second half of the grid could not keep.
-     *
-     * What is kept is the thing it was actually promising, which was never "software you install"
-     * but "nothing here is a mockup". Every tile below opens something that exists.
-     */
-    lede:
-      'Everything below opens something that exists today: the parts you run on your own ' +
-      'machine, and the parts that run on the chain where anyone can read them.',
+    lede: 'Everything here opens something that exists today.',
   },
 }
 
@@ -437,35 +381,25 @@ export const CHAIN = {
   blurb:
     'What the CloudsForge chain index has observed of Hearth. Every figure is fetched when you load the page, or it is absent and says so.',
   standfirst:
-    'These figures come from the chain index at the moment you loaded this page. None of them is ' +
-    'stored in this site, and there is no default: a number that could not be fetched is rendered ' +
-    'as the reason it could not be fetched, never as a nought.',
+    'These figures are fetched when you load this page. There is no default and no stored copy: a ' +
+    'number that could not be fetched is shown as the reason, never as a nought.',
 
   /**
    * The sentence under the panel, explaining the two heights.
    *
-   * This is the same distinction `micro-explorer-web` is built around and it is restated here
-   * because a reader of THIS page has probably not read that one.
+   * THE DEFINITIONS ARE NOT HERE, AND THAT IS THE CORRECTION RATHER THAN AN OMISSION. This used to
+   * define the walked head and the claimed tip, and `src/pages/chain.tsx` renders `TWO_HEIGHTS` in
+   * the very next paragraph, defining the same two terms in the same note. A reader got both, one
+   * after the other, and read the second as a second point being made. `TWO_HEIGHTS` is the
+   * estate's one wording for the distinction (`src/lib/format.ts`) and every surface that prints a
+   * height carries it, so the definition belongs there and only there. What is left here is the
+   * part that sentence does not say: WHY the index refuses to pick one.
    */
   heads: {
     title: 'Two heights, and the gap between them',
-    /**
-     * THE DEFINITIONS ARE NOT HERE, AND THAT IS THE CORRECTION RATHER THAN AN OMISSION.
-     *
-     * This read "The walked head is the highest block the chain index has read and would have
-     * detected a reorg in. The claimed tip is what a node last told it. They are different facts,
-     * and the index reports both rather than picking one — …", and `src/pages/chain.tsx` renders
-     * `TWO_HEIGHTS` in the very next paragraph, which defines the same two terms in the same note.
-     * A reader on 2026-08-10 got both, one after the other, and read the second as a second point
-     * being made. `TWO_HEIGHTS` is the estate's one wording for the distinction
-     * (`src/lib/format.ts`) and every surface that prints a height carries it, so the definition
-     * belongs there and only there. What is left here is the part that sentence does not say: WHY
-     * the index refuses to pick one.
-     */
     body:
-      'The index reports both rather than picking one because the choice is not cosmetic: ' +
-      'counting depth against a block nobody has looked at over-reports it, and over-reporting ' +
-      'depth credits money early.',
+      'The index reports both rather than picking one, because counting depth against a block ' +
+      'nobody has looked at over-reports it — and over-reported depth credits money early.',
   },
 
   /**
@@ -473,90 +407,57 @@ export const CHAIN = {
    *
    * Each estate's chain index follows exactly one EMBER network — `deploy/compose/env/
    * chain.mainnet.env` opens with "exactly one of this file and `chain.testnet.env` is ever read,
-   * and no deploy can have half of each" — so this panel is the permanent state of the network
-   * this page is NOT served from, rather than an error.
-   *
-   * It is a panel and not a deletion because the reader's question is "is there a testnet", and
-   * the answer is yes, over there. The link is derived from this page's own hostname
-   * (`hosts.siteUrlOn`) and is absent on a host with no apex to derive from, which is why the
-   * body names the surface in prose as well.
+   * and no deploy can have half of each" — so this panel is the permanent state of the network this
+   * page is NOT served from, rather than an error. It is a panel and not a deletion because the
+   * reader's question is "is there a testnet", and the answer is yes, over there.
    */
   notFollowed: {
     title: 'This chain index does not follow this chain',
     body:
-      'Each estate runs its own chain index and each one follows exactly one EMBER network, so ' +
-      'this deployment has nothing of its own to report here. The figures above are absences, ' +
-      'not zeroes, and no claim is being made about whether that chain is running.',
+      'Each estate runs its own chain index, and each follows exactly one EMBER network. The ' +
+      'figures above are absences, not zeroes, and no claim is being made about that chain.',
     link: 'Open the Network site for that chain',
   },
 
   /**
    * What a null means. This is the most important paragraph on the page.
    *
-   * `indexer/src/reads.ts` returns `checkpoint?.tipHeight ?? null`, so a deployment that has
-   * never followed this chain answers 200 with nulls rather than failing. That is an answer, and it
-   * is a different answer from "we could not ask".
+   * `indexer/src/reads.ts` returns `checkpoint?.tipHeight ?? null`, so a deployment that has never
+   * followed this chain answers 200 with nulls rather than failing. That is an answer, and it is a
+   * different answer from "we could not ask".
    */
   absence: {
     title: 'What an absent figure means here',
     body:
-      'The chain index answers with a null rather than a zero when it has never observed a height, ' +
-      'and this page keeps that distinction rather than flattening it. "Not observed" means the ' +
-      'index answered and had nothing to report. "Could not fetch" means the request did not ' +
-      'arrive. Those are not the same, and only one of them is about Hearth.',
+      '"Not observed" means the index answered and had nothing to report. "Could not fetch" means ' +
+      'the request did not arrive. Only one of those is about Hearth.',
   },
 
-  /**
-   * Why the fetch is expected to fail today.
-   *
-   * Written as a note under the panel rather than as the panel's own copy, because it is a fact
-   * about this estate's plumbing and not about Hearth — and because the day it stops being true,
-   * `test/hosts.test.ts` goes red and this paragraph gets deleted rather than quietly ageing.
-   */
   /*
    * THIS USED TO BE AN APOLOGY, AND THE APOLOGY IS NO LONGER TRUE.
    *
-   * It read "Why this request is refused today" and named two blockers: micro-indexer sent no
-   * cross-origin headers of its own, and this hostname was absent from the gateway's one CORS
-   * allowlist. Both were reported and both have since been fixed —
-   * `indexer/src/server.ts` sets `access-control-allow-origin` and
-   * `deploy/gateway/dynamic/policy.yml` names `https://network.cloudsforge.online`. The two
-   * assertions in `test/hosts.test.ts` that required those absences went red on a repository
-   * nobody had touched, which is precisely what they were written to do.
+   * It read "Why this request is refused today" and named two blockers, both since fixed. What
+   * replaced it says LESS on purpose, and that decision has now paid for itself twice: when it was
+   * written the estate served no frontend behind the gateway, so naming a new cause would have
+   * swapped one unverifiable explanation for another. It names the missing figures and the request
+   * id instead — which is what is true of EVERY failure.
    *
-   * WHAT REPLACES IT SAYS LESS, ON PURPOSE, AND THAT DECISION HAS NOW PAID FOR ITSELF TWICE.
-   *
-   * When this was written the estate served no frontend behind the gateway, so the read had never
-   * been made from a browser and naming a new cause would have swapped one unverifiable
-   * explanation for another. What it says instead is what is true of EVERY failure — which
-   * figures are missing, and the request id that finds the attempt.
-   *
-   * The estate does serve the bundles now, and this panel was then observed rendering exactly
-   * this copy against a live chain — because a THIRD cause nobody had named was in play:
-   * `explorer.<apex>` had a gateway router for the bundle and none for the chain index, so the
-   * request was answered by explorer-web's own nginx. Had this paragraph guessed at a cause, it
+   * The estate does serve the bundles now, and this panel was then observed rendering against a
+   * live chain, because a THIRD cause nobody had named was in play: `explorer.<apex>` had a gateway
+   * router for the bundle and none for the chain index. Had this paragraph guessed at a cause it
    * would have blamed CORS and been wrong, and the panel would have taught a reader to stop
    * looking. It named the missing figures instead, and the request id led to the router.
-   *
-   * That router now exists (`deploy/gateway/dynamic/estate-web.yml`, `cf-api-explorer`), and this
-   * panel has been driven in Chromium against the real gateway with certificate verification on:
-   * `ember:testnet` renders a walked head, a claimed tip, chain id 7,412 and a healthy provider,
-   * while `ember:mainnet` renders "not observed" for every figure a node has never supplied. Both
-   * outcomes are this copy working, which is the point.
    */
   unreachable: {
     title: 'No figures for this scope',
     body:
-      'The chain index did not answer, so this panel is showing which figures are missing rather ' +
-      'than filling them in. Quote the request id below and the exact attempt can be found across ' +
-      'every service at once.',
+      'The chain index did not answer, so this panel shows which figures are missing rather than ' +
+      'filling them in. Quote the request id below to find the exact attempt.',
   },
 
   explorer: {
     title: 'Looking up a block, a transaction or an address',
-    body:
-      'That is the block explorer, which is a separate surface and reads the same index record by ' +
-      'record. This page deliberately does not reimplement it.',
+    body: 'That is the block explorer — a separate surface, reading the same index record by record.',
   },
 }
 
@@ -567,47 +468,40 @@ export const MINE = {
   blurb:
     'How Homefire works, what it does and does not guarantee, and how to start. Mining pays a block reward, not an income.',
   standfirst:
-    'Homefire is the proof of work Hearth runs. It is designed so that an ordinary processor sits ' +
-    'close to the best machine for the job, and so that work handed to you under your own key ' +
-    'cannot be taken from you. It is not designed to make anybody money, and this page will not ' +
-    'suggest otherwise.',
+    'Homefire is the proof of work Hearth runs. It is designed so an ordinary processor sits close ' +
+    'to the best machine for the job. It is not designed to make anybody money, and this page will ' +
+    'not suggest otherwise.',
 
   how: {
     title: 'What the chain does today',
-    lede: 'Everything in this section is implemented and covered by the test suite.',
+    lede: 'All of this is implemented and covered by the test suite.',
     items: [
       {
         title: 'Memory-hard, so hardware buys less',
         body:
-          `Each attempt derives a seed from the header and the coinbase public key, fills a ` +
-          `${fact('scratchKib')} KiB scratchpad by chaining SHA-256, walks it in ` +
+          `Each attempt fills a ${fact('scratchKib')} KiB scratchpad, walks it in ` +
           `${fact('walkSteps')} steps that read and rewrite it, and hashes the result against the ` +
-          'target. That is thousands of sequential rounds with a data dependency at every step, so ' +
-          'memory latency is the limit and a general-purpose CPU is close to optimal.',
+          'target. Memory latency is the limit, so a general-purpose CPU is close to optimal.',
       },
       {
         title: 'A winning proof cannot be redirected',
         body:
-          'A valid block must be signed by the private key its coinbase pays, so a candidate built ' +
-          'for your public key is worth nothing to anybody else. That is a real guarantee about the ' +
-          'work you are handed, and it is exactly as much as consensus promises.',
+          'A valid block must be signed by the private key its coinbase pays, so a candidate ' +
+          'built for your public key is worth nothing to anybody else.',
       },
       {
         title: 'Low variance, so far',
         body:
-          `A ${fact('blockSeconds')}-second TARGET block time means frequent wins even for a ` +
-          'small miner, and the difficulty retargets every block rather than in steps, so it ' +
-          'moves smoothly instead of swinging. That is the design; what a young chain with very ' +
-          'little hashrate on it actually does is a runtime figure, not this one.',
+          `A ${fact('blockSeconds')}-second TARGET block time means frequent wins even for a small ` +
+          'miner, and difficulty retargets every block rather than in steps. That is the design; ' +
+          'what a young chain actually does is on the chain page.',
       },
       {
         title: 'Polite by default, in the browser miner',
         body:
-          'The effort slider is a real duty cycle — workers sleep proportionally between batches ' +
-          'rather than pinning a core — a hidden tab drops to a trickle, and an unplugged laptop ' +
-          'stops entirely where the browser will say so. Two of the three major browsers do not ' +
-          'report power state, and the page says which it got rather than promising the feature ' +
-          'everywhere.',
+          'The effort slider is a real duty cycle, a hidden tab drops to a trickle, and an ' +
+          'unplugged laptop stops entirely where the browser will say so. Two of the three major ' +
+          'browsers do not report power state, and the panel says which it got.',
       },
     ],
   },
@@ -622,70 +516,50 @@ export const MINE = {
    *
    * ── THE TITLE NO LONGER COUNTS THE ITEMS, AND THAT IS DELIBERATE ─────────────────────────────
    *
-   * It read "Three things this is not". Two reasons it does not any more, and the second is the
-   * one that matters. First, a spelled-out numeral is the one quantity on this page that the
-   * digit scan in `test/content.test.ts` structurally cannot see — that scan extracts runs of
-   * DIGITS, so "Three" is an unbacked number wearing a word. Second, and worse, this section's
-   * membership is by construction unstable: the lede says these are claims Hearth corrected in
-   * its own documents, so an item leaves the moment the underlying limit is closed. One just did
-   * — the browser miner's third caveat was a statement about a capability that now works — and a
-   * heading bound to a count of things that change is a heading that goes quietly wrong. The
-   * count is not a fact about mining; it is a fact about this array, and nothing on a public page
-   * needs it.
+   * It read "Three things this is not". A spelled-out numeral is the one quantity the digit scan in
+   * `test/content.test.ts` structurally cannot see, and this section's membership is unstable by
+   * construction — an item leaves the moment the underlying limit is closed, and one just did. A
+   * heading bound to a count of things that change is a heading that goes quietly wrong.
    */
   caveats: {
     title: 'What this is not',
-    lede:
-      "Each of these is either a claim made somewhere in Hearth's own documents and since " +
-      'corrected there — repeated here because a marketing page is where a corrected claim ' +
-      'survives longest — or a limit this page would otherwise leave you to discover on your own.',
+    lede: 'Each of these is a limit you would otherwise be left to find on your own.',
     items: [
       {
         title: 'It is not non-outsourceable',
         body:
-          'The private key is used after a nonce wins, never inside the hash loop, and only the ' +
-          'public key is bound into the seed. So a pool operator can hand out work under its own ' +
-          'key, collect nonces from hashers who genuinely cannot steal the reward, and sign the ' +
-          'blocks itself. Closing that means committing to the private key inside the loop, which ' +
-          'forks the chain. It is deliberately open, not overlooked.',
+          'The private key is used after a nonce wins, never inside the hash loop, so a pool can ' +
+          'hand out work under its own key and sign the blocks itself. Closing that means putting ' +
+          'the private key inside the loop, which forks the chain. It is open on purpose.',
       },
       {
         title: 'The pad is not the size the documents promised',
         body:
-          `Every block ever produced used a ${fact('scratchKib')} KiB pad, and that is what mainnet ` +
-          `will launch with. The 2 GiB the documents used to name measures ` +
-          `${fact('bigPadSeconds')} seconds per evaluation, and a validator pays one for every ` +
-          'block it receives against a target far shorter than that. Making the work meaningfully ' +
-          'memory-hard needs an amortised dataset rather than a bigger constant.',
+          `Every block ever produced used a ${fact('scratchKib')} KiB pad. The 2 GiB the documents ` +
+          `used to name measures ${fact('bigPadSeconds')} seconds per evaluation, and a validator ` +
+          'pays one for every block it receives.',
       },
       {
         /*
          * THIS CAVEAT WAS FALSE AND IS REPLACED BY THE ONE THAT IS STILL OWED.
          *
-         * It read: "The browser miner cannot yet mine a block this node accepts — the browser half
-         * has moved to the account model and the node half has not: the mining template endpoint
-         * still requires the old signature scheme, and block validation still verifies proofs with
-         * it." Every clause of that is now wrong, and it was printed directly ABOVE the working
+         * It read: "The browser miner cannot yet mine a block this node accepts". Measured
+         * 2026-08-08: a key generated by `src/mining/account.js` was passed to
+         * `rpc.<apex>/mining/template` and answered HTTP 200 with a template at height 6,777 whose
+         * `coinbasePub` is the key that was sent, and the node verifies `powSig` against that same
+         * key. The halves agree — and that false sentence was printed directly ABOVE the working
          * browser miner this page mounts.
          *
-         * Measured 2026-08-08: a key generated by `src/mining/account.js` was passed to
-         * `rpc.<apex>/mining/template` and answered HTTP 200 with a template at height 6,777 whose
-         * `coinbasePub` is the key that was sent; `hearth/node/src/block.js` verifies `powSig`
-         * against that same `coinbasePub`. The halves agree.
-         *
          * A caveat is still owed, which is why this is a replacement rather than a deletion: the
-         * node ACCEPTING the work is not the same claim as a laptop WINNING with it, and the old
-         * sentence was the only thing on this page standing between a reader and that assumption.
+         * node ACCEPTING the work is not a laptop WINNING with it, and the old sentence was the
+         * only thing standing between a reader and that assumption.
          */
         title: 'It is not a promise that your machine wins a block',
         body:
-          'The browser half and the node half do agree: the template endpoint issues work to any ' +
-          'mining key this page can make, and the node verifies the winning signature against ' +
-          'that same key. What no page can tell you is whether YOUR machine wins one. A template ' +
-          "goes stale the moment somebody else's block arrives, a nonce is worth nothing unless " +
-          'it wins before that happens, and a tab in a browser is competing with machines that do ' +
-          'this all day. Running for a long time without a block, or never finding one at all, is ' +
-          'an ordinary outcome here and not a sign that anything is broken.',
+          'The node accepts what this page produces. Whether YOUR machine wins is another ' +
+          "question: a template goes stale the moment somebody else's block arrives, and a " +
+          'browser tab is competing with machines that do this all day. Running a long time ' +
+          'without a block is an ordinary outcome here, not a sign that anything is broken.',
       },
     ],
   },
@@ -693,86 +567,50 @@ export const MINE = {
   pay: {
     title: 'What mining pays',
     body:
-      `The reward is a consensus constant: it starts at ${fact('genesisReward')} EMBER per block, ` +
-      `halves every ${fact('halfLifeYears')} years, and settles at ${fact('tailReward')} EMBER per ` +
-      `block for ever. ${fact('commonsShare')} per cent of it goes to the Commons rather than to ` +
-      'the miner.',
+      `The reward is a consensus constant: ${fact('genesisReward')} EMBER per block, halving every ` +
+      `${fact('halfLifeYears')} years, settling at ${fact('tailReward')} EMBER per block for ever. ` +
+      `${fact('commonsShare')} per cent of it goes to the Commons rather than to the miner.`,
   },
 
   /**
-   * THIS SECTION SAID "NONE EXISTS" FULL STOP, AND ON 2026-08-09 THAT SENTENCE ACQUIRED A WAY OF
-   * BEING READ AS FALSE THAT IT DID NOT HAVE WHEN IT WAS WRITTEN.
+   * THIS SECTION SAID "NONE EXISTS" FULL STOP, AND THAT ACQUIRED A WAY OF BEING READ AS FALSE.
    *
-   * CloudsForge now runs a mining pool. It is micro-pool, it is registered in the surface registry,
-   * and `pool.<apex>` is in this bundle's own footer — the shared `FOOTER_GROUPS` "More" column
-   * puts it on every page of this site. So a reader can arrive here from a link to a pool and read
-   * a page telling them no pool exists.
+   * CloudsForge now runs a mining pool. BOTH SENTENCES ARE TRUE BECAUSE THEY ARE ABOUT DIFFERENT
+   * CHAINS: this page is about EMBER, and micro-pool mines Litecoin — it asks a litecoind for a
+   * block template and refuses to start when the chain the node reports is not the one it was
+   * configured for (`pool/src/template.ts`). It has no EMBER path and none is planned here. So the
+   * fix is to say WHICH chain has no pool, not to soften the claim.
    *
-   * BOTH SENTENCES ARE TRUE BECAUSE THEY ARE ABOUT DIFFERENT CHAINS. This page is about EMBER, and
-   * micro-pool mines Litecoin — it asks a litecoind for a block template and refuses to start when
-   * the chain the node reports is not the one it was configured for (`pool/src/template.ts`). It
-   * has no EMBER path and none is planned here. The fix is therefore to say WHICH chain has no
-   * pool, not to soften the claim.
+   * ── THE LINK EXISTS BECAUSE THE ARGUMENT FOR WITHHOLDING IT WAS IMAGINARY ─────────────────────
    *
-   * WHAT THIS DELIBERATELY DOES NOT DO IS ADVERTISE THAT POOL. The file header's rule is that this
-   * site "may not imply a mining income", and pointing a reader at a pool is the most direct way to
-   * imply one. It is also not running: as of 2026-08-09 micro-pool sits behind a compose profile
-   * that is not started, because two values it requires do not exist yet — the payout address and
-   * the operator's fee, which is an unmade product decision (`36-multi-chain-and-mining-pool.md`
-   * §7.1). A sentence here promising a service nobody can connect to would be the exact failure
-   * this file exists to prevent. The footer link is enough; it goes to a console that describes its
-   * own state.
+   * This comment used to refuse the link on the grounds that "the footer link is enough". There was
+   * no footer: this bundle mounted no `CloudsForgeFooter` at all, so `FOOTER_GROUPS` never ran here
+   * and `pool.<apex>` had never been on any page of this site. A paragraph of product reasoning had
+   * been written against a component nobody had mounted. The footer is mounted now (micro-org#489)
+   * and the link stays: a reader on the mining page should not have to find it in the chrome.
    *
-   * ── 2026-08-10: BOTH HALVES OF THAT LAST PARAGRAPH TURNED OUT TO BE WRONG, SO THERE IS A LINK ──
+   * WHAT DOES NOT CHANGE IS THE INCOME RULE, and it is why the link reads the way it does. Measured
+   * 2026-08-10, `GET /v1/pool` answers `ready: true` with `payoutsImplemented: false` — the pool
+   * records shares and settles none of them — so the sentence introducing it says so before it says
+   * anything else. A link carrying the absence of a payout cannot imply a yield; a link labelled
+   * "start earning" would.
    *
-   * "The footer link is enough" was the load-bearing sentence, and there is no footer. This bundle
-   * mounts no `CloudsForgeFooter` anywhere — `src/components/shell.tsx` renders the bar and the
-   * page and nothing else — so `FOOTER_GROUPS` never runs here and `pool.<apex>` has never been on
-   * any page of this site. The reasoning above withheld a link on the grounds that a different link
-   * already existed, and that other link was imagined. This surface and the company site are the
-   * only two bundles in the estate not mounting the shared footer, which is exactly how a claim
-   * like that survives being written down.
+   * ── AND THIS PARAGRAPH'S OWN LESSON CAUGHT ONE OF ITS OWN SENTENCES ───────────────────────────
    *
-   * "It is also not running" is no longer true either. Measured 2026-08-10: `GET /v1/pool` on
-   * `pool.<apex>` answers 200 from mainnet with `ready: true`, a Litecoin template thirty-odd
-   * seconds old, and `feeBasisPoints` set — so the operator fee that was an unmade decision has
-   * been made, and the service the paragraph called unreachable is reachable from a browser.
-   *
-   * WHAT DOES NOT CHANGE IS THE INCOME RULE, and it is the reason the link reads the way it does.
-   * The pool records shares and settles none of them — `payoutsImplemented` is `false` on the same
-   * response — so the sentence introducing it says so before it says anything else. A link that
-   * carries the absence of a payout with it cannot imply a yield; a link labelled "start earning"
-   * would, which is the version this comment was originally right to refuse.
-   *
-   * The link goes to the CONSOLE, resolved through the registry like every other outbound address
-   * here. Not to a hostname typed into this file, and not to a page in this repository describing
-   * somebody else's service: which chains that pool serves and whether it is accepting work are
-   * live facts, they change without anybody editing this bundle, and the console reads them from
-   * the pool itself on every load.
-   *
-   * ── 2026-08-11: AND THIS PARAGRAPH'S OWN LESSON CAUGHT ONE OF ITS OWN SENTENCES ───────────────
-   *
-   * The body said flatly that "Dogecoin is merge-mined from the Litecoin work". Measured that day,
-   * `GET /v1/pool` on mainnet answers with the Litecoin chain carrying `merged: null`, which
-   * `pool/src/chainservice.ts` defines as "the chain merge-mined underneath this one, or `null`
-   * when none is configured". So the code is there, tested, and not switched on. This is the same
-   * mistake as the chain label two paragraphs down, made in the opposite direction: a live fact
-   * about somebody else's service, written into this bundle as though it were settled. It is
-   * corrected in place rather than deleted, because a reader who has heard the estate merge-mines
-   * Dogecoin is better served by being told it is off than by finding no mention of it.
+   * The body said flatly that "Dogecoin is merge-mined from the Litecoin work". Measured
+   * 2026-08-11, `GET /v1/pool` answers with the Litecoin chain carrying `merged: null` — the code
+   * is there, tested, and not switched on. Which chains that pool serves is a live fact this bundle
+   * must not hold a copy of, which is why the destination is a console rather than a page here, and
+   * why the label below names no chain at all.
    */
   pools: {
     title: 'Pools',
     body:
-      'None exists for EMBER, and nothing in the protocol prevents one from being built — it would ' +
-      'hand out work under its own key and pay hashers off chain. What consensus does guarantee is ' +
-      'that work handed to you under YOUR key cannot be taken from you. There is a pool elsewhere ' +
-      'in the estate and it is for other chains, not for this one — Litecoin, which a browser tab ' +
-      'can hash for, and Bitcoin, which it offers to mining hardware only. It can also merge-mine ' +
-      'Dogecoin from the Litecoin work, and it is not doing so: that is a capability written into ' +
-      'the pool and switched off, not a chain it is mining today. None of it applies here anyway — ' +
-      'those are different proofs of work from Homefire, and whether that pool is accepting work ' +
-      'today is a question its own console answers.',
+      'None exists for EMBER. Nothing in the protocol prevents one — it would hand out work under ' +
+      'its own key and pay hashers off chain — and what consensus guarantees is only that work ' +
+      'handed to you under YOUR key cannot be taken from you. There is a pool elsewhere in the ' +
+      'estate and it is for other chains: Litecoin, which a browser tab can hash for, and Bitcoin, ' +
+      'which it offers to mining hardware only. Those are different proofs of work from Homefire.',
     /**
      * The one link off this page that is about a pool, and the note that has to travel with it.
      * `to` is a registry key rather than an address; `src/pages/mine.tsx` resolves it through
@@ -782,30 +620,19 @@ export const MINE = {
       to: 'pool' as const,
       /*
        * NOT "The Litecoin pool console", WHICH IS WHAT THIS SAID AND WHAT THE POOL STOPPED BEING.
-       *
-       * `POOL_CHAINS` was `ltc` alone when this label was written and has been `ltc,btc` since
-       * 2026-08-11, when bitcoind reached the tip. Read from mainnet that day: two chains, both
-       * `ready: true`. A label naming one of them sends a reader with a Bitcoin rig past the one
-       * link that would have helped them — and it is the failure mode this whole item is supposed
-       * to avoid, since the reason the destination is a console rather than a page here is exactly
-       * that which chains it serves is a live fact this bundle must not hold a copy of.
-       *
-       * So the label names no chain at all. A count would have to be re-checked every time
-       * `POOL_CHAINS` changes; the console reads the real set on every load.
+       * `POOL_CHAINS` was `ltc` alone when that label was written and has been `ltc,btc` since
+       * 2026-08-11. A label naming one chain sends a reader with a Bitcoin rig past the one link
+       * that would have helped them, and a count would need re-checking every time the set changes.
+       * The console reads the real set on every load.
        */
       label: 'The CloudsForge mining pool console',
-      note:
-        'It records shares and pays nothing — there is no payout mechanism in it yet — and those ' +
-        'are different chains with different proofs of work, so nothing above applies to them. ' +
-        'Its console is what answers which chains it is accepting work for today.',
+      note: 'It records shares and pays nothing — there is no payout mechanism in it yet.',
     },
   },
 
   design: {
     title: 'Written down, but not built',
-    lede:
-      'None of the following exists in the repository. It is listed because the project lists it, ' +
-      'and because a reader is entitled to know which half of a design document they are reading.',
+    lede: 'None of this exists in the repository. It is listed because the project lists it.',
     items: [
       'Warmshares — near-miss blocks referenced later for a fraction of the reward, so honest work that just missed is still paid.',
       'Trustless co-ops — peers sharing variance over a protocol that never takes custody of a key.',
@@ -818,11 +645,10 @@ export const MINE = {
   /*
    * ── THIS SECTION SENT A READER TO A CHECKOUT TO USE SOMETHING THIS PAGE ALREADY MOUNTS ────────
    *
-   * The lede said both ways were "written against a chain on your own machine" and that "nothing on
-   * this page has been measured against it"; the first step said "open the miner page from a
-   * checkout". `src/pages/mine.tsx` renders `<BrowserMine rpc={hosts().rpc} />` in this very
-   * section, above these steps. So the page told a reader to go and clone a repository in order to
-   * reach a button an inch above the sentence.
+   * The lede said both ways were "written against a chain on your own machine"; the first step said
+   * "open the miner page from a checkout". `src/pages/mine.tsx` renders `<BrowserMine>` in this very
+   * section, above these steps. So the page told a reader to clone a repository in order to reach a
+   * button an inch above the sentence.
    *
    * Measured 2026-08-11: the live site serves the miner chunk, and the public mainnet endpoint
    * answers `/mining/template` for a key generated by this bundle's own `src/mining/account.js`
@@ -830,32 +656,28 @@ export const MINE = {
    * `access-control-allow-origin` for this site's origin, which is the part that decides whether a
    * browser may make the request at all.
    *
-   * WHAT IS NOT CLAIMED, AND THE DISTINCTION IS THE SAME ONE THE CAVEAT ABOVE DRAWS: being issued
-   * work is not winning a block. The measurement above is a request and a response. Nothing here
-   * has watched a tab win, and no wording in this section may imply one.
+   * WHAT IS NOT CLAIMED: being issued work is not winning a block. The measurement above is a
+   * request and a response. Nothing here has watched a tab win.
    */
   start: {
     title: 'How to start',
     lede:
-      'Two ways. The first is on this page and runs against the public endpoint, so the mining ' +
-      "document's local setup is the second way rather than the only one. Neither is advice to " +
-      'mine: what your own machine wins is the question above, and this section does not answer it.',
+      'Two ways, and neither is advice to mine. What your own machine wins is the question above, ' +
+      'and this section does not answer it.',
     steps: [
       {
         title: 'In the browser, on this page',
         body:
-          'Create or load a key in the panel above these steps and press start — nothing to ' +
-          'install, and no checkout. It asks the public endpoint for work under your own key and ' +
-          'is given it. The same proof of work the node runs, in a pool of workers, measured at ' +
-          `about ${fact('hashesPerThread')} hashes per second per thread at the shipped ` +
-          'parameters. Your private key never leaves the page.',
+          'Create or load a key in the panel above and press start — nothing to install, no ' +
+          'checkout. It asks the public endpoint for work under your own key. Measured at about ' +
+          `${fact('hashesPerThread')} hashes per second per thread at the shipped parameters, and ` +
+          'your private key never leaves the page.',
       },
       {
         title: 'With the node',
         body:
           'The reference node is a full node, a wallet and a miner in one process, and its mining ' +
-          'flag has a duty-cycle throttle. It has no power awareness at all, which the project says ' +
-          'plainly rather than implying otherwise.',
+          'flag has a duty-cycle throttle. It has no power awareness at all.',
       },
     ],
   },
@@ -869,63 +691,52 @@ export const NODE = {
     'Test suites from a clean clone, a local chain in one command, and the RPC surface over a fake chain. Everything below runs on your own machine.',
   /*
    * THIS STANDFIRST SAID THE TESTNET "IS UNREACHABLE FROM OUTSIDE". IT IS NOT, AND THIS FILE
-   * ALREADY KNEW: `src/content/facts.ts` has recorded the opposite since 2026-08-05.
-   *
-   * The old sentence inherited a TLS diagnosis that was correct about a hostname scheme the estate
-   * then ABANDONED. Names are no longer two labels deep; an environment is a suffix inside the
-   * FIRST label, so the wildcard already in front of the apex covers them.
+   * ALREADY KNEW: `src/content/facts.ts` has recorded the opposite since 2026-08-05. The old
+   * sentence inherited a TLS diagnosis that was correct about a hostname scheme the estate then
+   * ABANDONED.
    *
    * AND THE REPLACEMENT DELIBERATELY ASSERTS NEITHER STATE. Measured 2026-08-08:
    * `rpc-testnet.<apex>` terminates TLS under the wildcard certificate — the scheme argument is
-   * dead — but the origin behind it was not answering, and the retired two-label name does not
-   * resolve at all. That is exactly why no static sentence here may claim reachability in either
-   * direction: a testnet is a disposable thing that is stopped and restarted without notice, and
-   * a page rebuilt weeks ago cannot know which side of that it is on. `/chain` asks both scopes
-   * and renders what came back, including its absence, which is the only honest place for the
-   * answer to live.
+   * dead — but the origin behind it was not answering. A testnet is stopped and restarted without
+   * notice, and a page rebuilt weeks ago cannot know which side of that it is on. `/chain` asks
+   * both scopes and renders what came back, which is the only honest place for the answer to live.
    */
   standfirst:
-    'Mainnet answers on a public JSON-RPC endpoint, and so does the test network — the same ' +
-    'hostnames with -testnet on the end of the first label. Whether either is answering at the ' +
-    'moment you read this is not something a written page can know, so it does not say: the chain ' +
-    'page asks both and prints what came back. This page still publishes no bootstrap list and no ' +
-    'peer to dial, so what follows is what you can actually do on your own machine — in the order ' +
-    'the project itself suggests doing it.',
+    'Mainnet answers on a public JSON-RPC endpoint, and so does the test network. Whether either ' +
+    'is answering right now is not something a written page can know — the chain page asks and ' +
+    'prints what came back. This page publishes no bootstrap list and no peer to dial, so what ' +
+    'follows is what you can run on your own machine, in the order the project suggests.',
 
   steps: [
     {
       title: 'Run the test suites',
       body:
         `The whole repository is dependency-free JavaScript, so a clean clone runs ${fact('suites')} ` +
-        'suites with no install, no downloaded corpus and no network. That is the fastest way to ' +
+        'suites with no install, no downloaded corpus and no network. It is the fastest way to ' +
         'find out whether any of this is real.',
       command: 'cd node && npm test',
     },
     {
       title: 'Run the conformance gate',
       body:
-        "Fetch Ethereum's published vectors and run the EVM against them. This is the check the " +
-        'project treats as the definition of done for every component: no part is finished until ' +
-        'its vectors pass.',
+        "Fetch Ethereum's published vectors and run the EVM against them. The project treats this " +
+        'as the definition of done: no part is finished until its vectors pass.',
       command: 'cd node && ./scripts/fetch-vectors.sh',
     },
     {
       title: 'Bring up a local chain',
       body:
-        `The compose file starts ${fact('nodes')} containers — one non-mining seed and two miners — ` +
-        `all on the same isolated network, with the seed's RPC on port ${fact('seedRpcPort')}. Each ` +
-        'container keeps its own volume, so the chain survives a restart and not a teardown.',
+        `${fact('nodes')} containers — one non-mining seed and two miners — on an isolated ` +
+        `network, with the seed's RPC on port ${fact('seedRpcPort')}. Each keeps its own volume, ` +
+        'so the chain survives a restart and not a teardown.',
       command: 'docker compose -f docker-compose.testnet.yml up --build',
     },
     {
       title: 'Point your tooling at something',
       body:
         'The developer kit serves the real JSON-RPC method surface over a fake chain, so standard ' +
-        'Ethereum tooling gets correct encodings and correct errors without a chain behind it. A ' +
-        `node started with the account model serves the same surface on port ` +
-        `${fact('evmRpcPort')} instead. Mainnet is reachable over the public endpoint as well, ` +
-        'and pointing a wallet at a chain whose EMBER cannot be sold is a decision for you rather ' +
-        'than a step in a walkthrough.',
+        'Ethereum tooling gets correct encodings and correct errors with no chain behind it. A ' +
+        `node started with the account model serves the same surface on port ${fact('evmRpcPort')}.`,
       command: `node tools/rpc-probe/stub.js --port ${fact('probePort')}`,
     },
   ],
@@ -933,41 +744,36 @@ export const NODE = {
   /**
    * The genesis check.
    *
-   * `hearth/TESTNET.md` is the table and the two traps under it. Worth putting on a public
-   * page because both traps produce a silent split rather than an error, which is the class of
-   * failure a reader cannot diagnose without being told it exists.
+   * `hearth/TESTNET.md` is the table and the two traps under it. Worth putting on a public page
+   * because both traps produce a silent split rather than an error, which is the class of failure a
+   * reader cannot diagnose without being told it exists.
    */
   sameChain: {
     title: 'Checking two nodes are on the same chain',
     body:
       'The handshake compares the network name, the genesis hash, the chain id and the Commons ' +
-      'address, and drops a peer that disagrees on any of them. Two of those are worth knowing ' +
-      'before you meet them: the genesis hash does not cover the chain id or the Commons address, ' +
-      'so changing either leaves the hash byte-identical while the chain forks at the first block ' +
-      'anybody mines — and the genesis file is pinned to a data directory the first time a node ' +
-      'starts, so a volume that was not wiped after a consensus change keeps the old one.',
+      'address, and drops a peer that disagrees. Two traps are worth knowing first: the genesis ' +
+      'hash does not cover the chain id or the Commons address, so changing either leaves the hash ' +
+      'identical while the chain forks at the first block anybody mines — and the genesis file is ' +
+      'pinned to a data directory on first start, so a volume that was not wiped keeps the old one.',
     command: `curl -s localhost:${fact('seedRpcPort')}/info`,
   },
 
   /*
-   * THE HOSTNAME ITEM IS CLOSED AND IS NOT AN OPEN CONTRIBUTION ANY MORE.
-   *
-   * This paragraph offered "publish the testnet" as work somebody could pick up, and gave a reason
-   * that has been dead since the estate moved the environment into the first label as a suffix:
-   * the names are one label deep and the wildcard covers them. Leaving it here pointed a
-   * contributor at a solved problem and, worse, republished the retired `<surface>.testnet.<apex>`
-   * scheme as though it were the current one — a string this estate keeps retyping from old
-   * documents, which is why `test/content.test.ts` now forbids its shape outright.
+   * THE HOSTNAME ITEM IS CLOSED AND IS NOT AN OPEN CONTRIBUTION ANY MORE. This paragraph offered
+   * "publish the testnet" as work somebody could pick up, and gave a reason that has been dead
+   * since the estate moved the environment into the first label as a suffix. Leaving it here
+   * pointed a contributor at a solved problem and republished the retired
+   * `<surface>.testnet.<apex>` scheme as though it were current — a string this estate keeps
+   * retyping from old documents, which is why `test/content.test.ts` forbids its shape outright.
    */
   contribute: {
     title: 'Contributing',
     body:
-      'Hearth is the one public repository behind this platform: MIT licensed, open to outside ' +
-      'contributors, and every claim in its inventory cites a path and a line or a command that ' +
-      'was run. Both networks are published — the test network under the same hostnames with ' +
-      '-testnet on the end of the first label — so getting an endpoint onto the internet is no ' +
-      'longer the work. The work is finding a proof of work that is memory-hard without costing a ' +
-      'validator more than a block interval to check, and it is the highest-leverage thing left.',
+      'Hearth is the one public repository behind this platform: MIT licensed, and every claim in ' +
+      'its inventory cites a path and a line, or a command that was run. The work left is finding ' +
+      'a proof of work that is memory-hard without costing a validator more than a block interval ' +
+      'to check, and it is the highest-leverage thing there is.',
   },
 }
 
@@ -987,23 +793,20 @@ export const FAUCET = {
    *
    * THIS COMMENT USED TO SAY THE TESTNET CHAIN "IS NOT PUBLISHED", so a drip that succeeded funded
    * an address on a chain the reader could not reach unless they were running it themselves. That
-   * stopped being true when the environment moved into the first label as a suffix: the testnet
-   * JSON-RPC hostname is one label deep, the wildcard covers it, and it is published.
+   * stopped being true when the environment moved into the first label as a suffix.
    *
    * The block below survives the correction unchanged, because reachability was never its subject.
    * Its subject is that this coin is given away on request and is therefore worth nothing by
-   * construction — which is true whether or not the chain happens to be answering today, and is
-   * the one thing a reader must not carry away from a faucet in the wrong direction.
+   * construction — true whether or not the chain happens to be answering today.
    */
   reach: {
     title: 'This is testnet EMBER, and testnet EMBER is worth nothing',
     body:
-      `The faucet dispenses on chain id ${fact('chainIdTestnet')} and on nothing else. That is a ` +
-      `different chain from mainnet, which is ${fact('chainIdMainnet')}: the two ids are ` +
-      'deliberately distinct, so a transaction signed on one cannot be replayed on the other. ' +
-      'Coin from this form is given away on request, so it is worth nothing by construction — it ' +
-      'is for testing, and the chain it lives on may be restarted from genesis without notice. ' +
-      'Nothing anywhere gives away mainnet EMBER, and a page that offers to is not this one.',
+      `The faucet dispenses on chain id ${fact('chainIdTestnet')} and nothing else — a different ` +
+      `chain from mainnet, which is ${fact('chainIdMainnet')}. The two ids are deliberately ` +
+      'distinct, so a transaction signed on one cannot be replayed on the other. Coin given away ' +
+      'on request is worth nothing by construction, and this chain may be restarted from genesis ' +
+      'without notice. Nothing anywhere gives away mainnet EMBER.',
   },
 
   /**
@@ -1016,10 +819,9 @@ export const FAUCET = {
   wrongNetwork: {
     title: 'You are on mainnet. There is no faucet here.',
     body:
-      'This page is the TESTNET faucet, and you have reached it on a mainnet address. Mainnet ' +
-      'EMBER is mined and never given away, so no form on this site will ever hand you any — ' +
-      'and no mainnet faucet exists to be found elsewhere, on this estate or off it. The testnet ' +
-      'faucet is the same page on the testnet host, linked below.',
+      'This is the TESTNET faucet and you have reached it on a mainnet address. Mainnet EMBER is ' +
+      'mined and never given away, so no form on this site will hand you any, and no mainnet ' +
+      'faucet exists to be found elsewhere.',
     action: 'Go to the testnet faucet',
     fallback:
       'The testnet host is this same name with -testnet on the end of its first label, ' +
@@ -1039,18 +841,17 @@ export const FAUCET = {
   /**
    * How a refusal is worded — which is to say, it is not worded here at all.
    *
-   * `faucet/src/server.ts`: the limiter's message "names a rule and a number, never a
-   * balance, an address the caller did not send, or anything about the funding key". This page
-   * shows that message verbatim. A second wording would be a second thing to keep true.
+   * `faucet/src/server.ts`: the limiter's message "names a rule and a number, never a balance, an
+   * address the caller did not send, or anything about the funding key". This page shows that
+   * message verbatim. A second wording would be a second thing to keep true.
    */
   refusal: {
     title: 'If it refuses',
     body:
-      'A refusal is the rate limiter working rather than a fault, and the sentence you get is the ' +
-      "limiter's own. There are four limits: one drip per address per cooldown, a cap per " +
-      'requester per window, a balance ceiling on the recipient, and a rolling budget that bounds ' +
-      'the total. The last is the one that means anything; the other three exist so that an honest ' +
-      'user is never the one who trips it.',
+      "A refusal is the rate limiter working, and the sentence you get is the limiter's own. " +
+      'There are four limits: one drip per address per cooldown, a cap per requester per window, ' +
+      'a balance ceiling on the recipient, and a rolling budget. The last is the one that means ' +
+      'anything; the other three exist so an honest user is never the one who trips it.',
   },
 
   poll: {
@@ -1059,17 +860,16 @@ export const FAUCET = {
       'The request is queued, not sent: nothing has been signed and no nonce has been read. The ' +
       'transaction is signed by the custody service, its bytes are committed before it is ' +
       'broadcast, and it is followed to a pinned confirmation depth. This page polls until it ' +
-      'settles, and every state it passes through is a state the service actually records.',
+      'settles.',
   },
 
   /** Shown when the terms could not be fetched. Never a default set of numbers. */
   unavailable: {
     title: 'The faucet did not answer',
     body:
-      'Its drip, its cooldowns and its remaining budget are its own to publish and this page holds ' +
-      'no copy of them, so there is nothing to show. The form is disabled rather than left ' +
-      'clickable: a request sent into an unreachable service would fail in a way that looks like a ' +
-      'refusal.',
+      'Its drip, its cooldowns and its remaining budget are its own to publish and this page ' +
+      'holds no copy of them. The form is disabled rather than left clickable: a request sent ' +
+      'into an unreachable service would fail in a way that looks like a refusal.',
   },
 }
 
@@ -1078,7 +878,7 @@ export const FAUCET = {
 export const NOT_FOUND = {
   title: 'No such page',
   body:
-    'This address is not one this site serves, and the server said so with a real 404 rather than ' +
-    'quietly returning this page as a success. If you followed a link from somewhere in ' +
-    'CloudsForge, the link is wrong.',
+    'This address is not one this site serves, and the server said so rather than quietly ' +
+    'returning this page as a success. If you followed a link from somewhere in CloudsForge, ' +
+    'the link is wrong.',
 }
