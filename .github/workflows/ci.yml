@@ -1230,25 +1230,37 @@ jobs:
             [ "$code" = "200" ] || { echo "::error::/$asset returned $code from the image"; fail=1; }
           done
 
-          # …and the description in the served HTML still names the two limits that have NOT
-          # changed. It is the one string a search engine and a link preview show without the page
-          # around them, which makes it the easiest place on this surface to imply a traded
-          # currency by omission.
+          # …and the description in the served HTML still names the limit that has NOT changed. It
+          # is the one string a search engine and a link preview show without the page around them,
+          # which makes it the easiest place on this surface to imply a traded currency by omission.
           #
-          # THIS USED TO GREP FOR 'no mainnet, no public testnet'. Mainnet is published on the
-          # public tunnel now and answers eth_chainId from off the estate, so that grep could only
-          # be satisfied by serving a false statement about a currency. Narrowed to the two clauses
-          # that are still true, checked separately so one cannot cover for the other.
+          # ── THIS STEP ASSERTED THE OPPOSITE OF THE TEST SUITE, AND BOTH WERE GREEN ──────────────
+          #
+          # It grepped the whole served body for 'no public testnet endpoint' while
+          # test/brand-chrome.test.ts asserts the description does NOT match /no public testnet/i —
+          # the testnet has been public since 2026-08-05, so the CI grep could only be satisfied by
+          # serving a false statement in the one string a search engine shows. It passed anyway,
+          # and so did the second grep for 'no EMBER of any monetary value', because BOTH literals
+          # exist only inside index.html's own HTML COMMENTS explaining why the sentences were
+          # removed. Vite copies comments into dist/index.html verbatim, so this step was reading
+          # the rationale and calling it the page. Editing a comment would have failed a build for
+          # a reason nobody could find.
+          #
+          # So it reads the description ATTRIBUTE now, the same string the test suite reads, and
+          # asserts the same two things in the same directions: the value clause present, the
+          # retired testnet denial absent.
           page=$(curl -s -m 5 http://127.0.0.1:8080/)
-          # `case` on the captured body rather than a pipe into `grep -q`, for the reason given at
-          # the 404 check above — micro-org#347.
-          case "$page" in
-            *'no public testnet endpoint'*) ;;
-            *) echo "::error::the served page no longer states that there is no reachable public testnet"; fail=1 ;;
+          described=$(printf '%s' "$page" | tr '\n' ' ' \
+            | grep -oE '<meta[[:space:]]+name="description"[[:space:]]+content="[^"]*"' | head -1)
+          case "${described:-}" in
+            "") echo "::error::the served page has no meta description at all"; fail=1 ;;
+            *'no monetary value'*) ;;
+            *) echo "::error::the served description no longer states that EMBER has no monetary value"; fail=1 ;;
           esac
-          case "$page" in
-            *'no EMBER of any monetary value'*) ;;
-            *) echo "::error::the served page no longer states that EMBER has no monetary value"; fail=1 ;;
+          # INVERTED, and deliberately — see above. A regression that re-introduces the claim is
+          # caught here as well as in test/brand-chrome.test.ts.
+          case "${described:-}" in
+            *'no public testnet'*) echo "::error::the served description denies a testnet that is public"; fail=1 ;;
           esac
 
           docker rm -f ci-network-site >/dev/null 2>&1 || true
