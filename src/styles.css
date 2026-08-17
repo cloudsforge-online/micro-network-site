@@ -186,22 +186,24 @@ body {
 }
 
 /*
- * The eyebrow, in the accent ramp's LIGHTER step rather than its base.
+ * The eyebrow, in the accent step that exists to be READ.
  *
  * `--cf-accent` on `--cf-bg` measures 4.32:1 — under the 4.5:1 AA threshold — at this size
- * (10.88px, normal weight, which is neither of WCAG's large-text exemptions). `--cf-accent-hover`
- * is the same hue one step lighter and measures 5.8:1, so the eyebrow keeps its accent identity
- * and becomes legible.
+ * (10.88px, normal weight, which is neither of WCAG's large-text exemptions). This used to borrow
+ * `--cf-accent-hover` instead, with a note saying the compromise was using a token named for a
+ * hover state as a static colour, and that what was actually missing upstream was an accent step
+ * guaranteed legible as small text on the page background.
  *
- * Using a token named for a hover state as static colour is a compromise and is worth saying so:
- * what is actually missing upstream is an accent step guaranteed legible as small text on the page
- * background. Raised with micro-ui; when that token exists this should use it. A literal hex here
- * would be worse — it is a hard-coded colour wearing a token's clothes and it stops following the
- * substrate the moment the ash ramp changes, which is the rule stated at the top of this file.
+ * That token now exists, and its whole job is this one. `--cf-accent-text` resolves per surface AND
+ * per scheme in tokens.css: on the ash ground this surface paints it is `#ff5b43` for `network`,
+ * against `#d6412f`'s 3.11:1 — "the worst in the set", says the note beside it — and it re-resolves
+ * to the light ramp under a light scheme rather than staying a fixed colour. Both directions are
+ * measured upstream by `contrast.test.ts` on every ground, which is why no ratio is asserted here.
+ * So the eyebrow keeps its accent identity and becomes legible, without this file knowing a hex.
  */
 .ns-eyebrow {
   margin: 0;
-  color: var(--cf-accent-hover);
+  color: var(--cf-accent-text);
   font-family: var(--cf-font-mono);
   font-size: var(--cf-text-xs);
   letter-spacing: 0.12em;

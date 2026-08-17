@@ -38,17 +38,74 @@
  * It is a `<Note>` rather than a dismissible banner on purpose. A notice somebody can dismiss is a
  * notice that is absent for every reader who has been here before, which is precisely the reader
  * most likely to have formed the wrong impression.
+ *
+ * ══════════════════════════════════════════════════════════════════════════════════════════════
+ * THE FOOTER IS THE SHARED ONE, AND UNTIL micro-org#489 THIS SURFACE HAD NONE AT ALL.
+ *
+ * Not a thin footer, not a hand-rolled one: NO footer. `CloudsForgeFooter` was never mounted here,
+ * so `FOOTER_GROUPS` never ran on this origin and not one of the estate's other surfaces was
+ * reachable from any page of Forge Network — no Forge Hub, no Forge Journal, no Legal, no company
+ * site. The cost was not only navigational. `src/content/copy.ts` withheld a link to the mining
+ * pool on the stated grounds that "the footer link is enough", and that other link was imagined:
+ * the reasoning had been written against a component nobody had mounted.
+ *
+ * ── WHY THE URLS ARE REWRITTEN ON THE WAY IN ──────────────────────────────────────────────────
+ *
+ * `surfaceUrls` overrides what the footer would otherwise resolve from the registry. Every one of
+ * those links LEAVES this origin, and the reader's viewed network is in-tab module memory that
+ * stops at the hostname (`src/lib/viewed.ts`) — so a reader viewing testnet who follows a footer
+ * link arrives on the other surface viewing mainnet, having asked for testnet and been silently
+ * answered with the other network. `carryNetwork` is the estate's answer to exactly that, and the
+ * bar already applies it to every product link it composes; this is the same rule applied to the
+ * links the footer composes. When the two networks agree it returns the URL untouched, so a
+ * mainnet reader gets no parameter at all.
+ *
+ * THE LEGAL LINKS CANNOT BE CARRIED, and that is a gap rather than a decision. `CloudsForgeFooter`
+ * composes them itself as `${hosts.site}${l.path}` and takes no override for them, so the three
+ * links to the company site's terms lose the viewed network. Reported to micro-ui rather than
+ * worked around here: a second footer, or a wrapper that rewrote its output, would be the
+ * hand-rolled footer this mount exists to avoid.
+ *
+ * ── THE CLOSING SENTENCE, AND THE ONE LINK THE REGISTRY HAS NO KEY FOR ────────────────────────
+ *
+ * `note` is the prop `CloudsForgeFooter` provides for "one sentence this surface wants to close
+ * with", and the sentence this surface owes is the one the whole site is built around: EMBER is
+ * mined and not sold. The source repository goes in it because it is what a reader who wants to
+ * check any claim here actually needs, and the surface registry has no key for github.com — every
+ * other link in this footer resolves through it.
+ *
+ * A COLUMN OF THIS SITE'S OWN ROUTES WOULD BE BETTER AND IS NOT AVAILABLE. `CloudsForgeFooterProps`
+ * takes `current`, `account`, `surfaceUrls` and `note`, and nothing that lets a surface add a
+ * column, so the five pages of Forge Network are reachable from the sub-nav and from nowhere in
+ * the footer. Requested from micro-ui rather than worked around: a second `<footer>` beside this
+ * one would be the hand-rolled footer this mount exists to avoid.
+ * ══════════════════════════════════════════════════════════════════════════════════════════════
  */
-import { CloudsForgeBar, CookieBanner, Mark, miningOnHub } from '@cloudsforge/ui'
+import { CloudsForgeBar, CloudsForgeFooter, CookieBanner, Mark, miningOnHub } from '@cloudsforge/ui'
+import type { CloudsForgeHosts, SurfaceKey } from '@cloudsforge/ui'
 import { useState } from 'react'
 import { NavLink, Outlet } from 'react-router-dom'
 import { STANDING_STATE } from '../content/copy.ts'
 import { useSession } from '../lib/auth.tsx'
 import { PRODUCT, hosts } from '../lib/hosts.ts'
 import type { PageNetwork } from '../lib/hosts.ts'
-import { setViewedNetwork, viewedNetwork } from '../lib/viewed.ts'
-import { NAV } from '../lib/routes.ts'
+import { carryNetwork, setViewedNetwork, viewedNetwork } from '../lib/viewed.ts'
+import { HEARTH_REPO, NAV } from '../lib/routes.ts'
 import { Note } from './parts.tsx'
+
+/**
+ * Every estate address the footer may render, with the reader's viewed network attached.
+ *
+ * Read on render rather than memoised: `carryNetwork` reads module state that the switcher changes,
+ * and the shell re-renders on that change. A memo keyed on the network would be the same answer
+ * with a stale-cache hazard added.
+ */
+function footerUrls(): Partial<Record<SurfaceKey, string>> {
+  const all: CloudsForgeHosts = hosts()
+  const out: Partial<Record<SurfaceKey, string>> = {}
+  for (const [key, url] of Object.entries(all)) out[key as SurfaceKey] = carryNetwork(url)
+  return out
+}
 
 export function AppShell({ unregistered = false }: { unregistered?: boolean }) {
   const { account, signIn, signOut } = useSession()
@@ -155,6 +212,20 @@ export function AppShell({ unregistered = false }: { unregistered?: boolean }) {
         </Note>
         <Outlet key={viewed} />
       </main>
+      <CloudsForgeFooter
+        current={PRODUCT}
+        account={account}
+        surfaceUrls={footerUrls()}
+        note={
+          <>
+            EMBER is mined here, never sold, and every claim on this surface is checkable in{' '}
+            <a className="cf-foot__link" href={HEARTH_REPO}>
+              the Hearth repository
+            </a>
+            .
+          </>
+        }
+      />
       {/*
         Last in the DOM so it is last in the tab order: the gate is a decision about this visit, not
         a barrier in front of the page, and a reader who never touches it has still read everything.

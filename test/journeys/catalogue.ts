@@ -1012,6 +1012,103 @@ export const CATALOGUE: readonly Scenario[] = [
       }
     },
   },
+  /**
+   * THIS SURFACE RENDERED NO FOOTER AT ALL, ON ANY ROUTE — micro-org#489.
+   *
+   * Not a thin one, not a stale one: none. `src/components/shell.tsx` mounted the bar, the
+   * sub-navigation and the page, and stopped. So `FOOTER_GROUPS` never ran on this origin and not
+   * one of the estate's other surfaces was reachable from Forge Network — including Forge Journal,
+   * which is `kind: 'surface'` and `servesUi` and therefore appears in the Platform column the
+   * moment a footer exists.
+   *
+   * The cost was not only navigational, and `src/content/copy.ts` records the second half: the
+   * mining page withheld a link to the pool console on the stated grounds that "the footer link is
+   * enough", and that other link was imagined. A whole paragraph of reasoning had been written
+   * against a component nobody had mounted.
+   *
+   * ── WHAT IS ASSERTED, AND WHAT DELIBERATELY IS NOT ────────────────────────────────────────────
+   *
+   * The footer's own contents are `@cloudsforge/ui`'s and are tested there; re-asserting the
+   * registry here would pin another repository's data in this one. What belongs here is that this
+   * surface MOUNTS it, on every route, exactly once, with no second footer beside it — and the two
+   * facts the mount is responsible for: Forge Journal is reachable, and this surface's own column
+   * is composed against this origin rather than left as bare paths.
+   *
+   * `?net=` is NOT asserted here and cannot be. `carryNetwork` returns every URL untouched
+   * off-registry (`src/lib/viewed.ts`), and this harness serves the bundle from localhost, so a
+   * browser assertion would be measuring the development branch. The composition is pinned in
+   * `test/viewed-link.test.ts`, against the shell's source and against the function itself.
+   */
+  {
+    id: 'BJ-NET-FOOT',
+    title: 'every route mounts the shared footer once, and Forge Journal is reachable from it',
+    tier: 2,
+    asserts: 'presentation',
+    async run(surface) {
+      for (const path of [...OWNED, '/nope']) {
+        const session = await renderOnlyWithStubbedNetwork(surface.origin, {
+          path,
+          stubs: [...CHAIN_UP, ...FAUCET_UP],
+        })
+        try {
+          await assertMounted(session)
+          const found = await session.page.evaluate(() => {
+            const feet = [...document.querySelectorAll('footer')]
+            const shared = document.querySelector('footer.cf-foot')
+            return {
+              feet: feet.length,
+              shared: Boolean(shared),
+              // Every link the footer offers, as label and address. Read from the shared footer
+              // alone: a link elsewhere on the page would answer for one that is missing here.
+              links: [...(shared?.querySelectorAll('a[href]') ?? [])].map((a) => ({
+                label: (a.textContent ?? '').trim(),
+                href: (a as HTMLAnchorElement).href,
+                current: a.getAttribute('aria-current') === 'page',
+              })),
+            }
+          })
+
+          assert.equal(found.feet, 1, `${path}: ${found.feet} footers — the shell had none until #489`)
+          assert.ok(found.shared, `${path}: the footer on this page is not the shared one`)
+
+          // Forge Journal, by name. The registry decides which column it lands in; what this
+          // surface is responsible for is that a reader can get there at all.
+          const journal = found.links.find((l) => /journal/i.test(l.label))
+          assert.ok(journal, `${path}: Forge Journal is not reachable from the footer`)
+          assert.notEqual(
+            new URL(journal.href).origin,
+            new URL(surface.origin).origin,
+            `${path}: the Journal link leads back to this surface`,
+          )
+
+          // Forge Network's own entry, marked as the page you are standing on. Every other link
+          // here leaves; this one is the reader's confirmation of where "here" is, and it is the
+          // proof that `current` was passed — a footer mounted without it marks nothing.
+          //
+          // Its ADDRESS is not asserted. This harness serves the bundle from an ephemeral port and
+          // the registry resolves `network` off-registry to the development host, so the two never
+          // agree here and the disagreement says nothing about the deployment.
+          const here = found.links.filter((l) => l.current)
+          assert.equal(here.length, 1, `${path}: ${here.length} footer links claim to be this page`)
+          assert.match(
+            here[0]!.label,
+            /forge network/i,
+            `${path}: the footer marks "${here[0]!.label}" as the surface you are standing on`,
+          )
+
+          // The source repository, which lives in this surface's closing sentence. It is the one
+          // address a reader who wants to check any claim here needs, and the surface registry has
+          // no key for github.com to resolve it from — everything else in this footer has one.
+          assert.ok(
+            found.links.some((l) => /^https:\/\/github\.com\//.test(l.href)),
+            `${path}: the footer offers no way to the source`,
+          )
+        } finally {
+          await session.close()
+        }
+      }
+    },
+  },
   {
     id: 'BJ-A11Y-01',
     title: 'axe finds no serious or critical violation on any route of this surface',

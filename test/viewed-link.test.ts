@@ -157,18 +157,21 @@ describe('the chain index a panel reads follows that panel’s network', () => {
  * `render.test.ts`), and because the defect is exactly one identifier: the check that would have
  * caught it is the check that reads which identifier is there.
  */
+/**
+ * The shell with its comments stripped: the two describes below are rules about CODE, not about
+ * the prose. Stripped rather than searched whole because this shell's header comment NAMES the
+ * identifiers it is warning about — `currentNetwork()`, `surfaceUrls={hosts()}` — so a check
+ * against the raw file would fire on the explanation of the bug instead of the bug.
+ */
+const shellCode = readFileSync(fileURLToPath(new URL('../src/components/shell.tsx', import.meta.url)), 'utf8')
+  .replace(/\{\/\*[\s\S]*?\*\/\}/g, '')
+  .replace(/\/\*[\s\S]*?\*\//g, '')
+  .split('\n')
+  .filter((line) => !/^\s*\/\//.test(line))
+  .join('\n')
+
 describe('the shell seeds the bar from the viewed network', () => {
-  const shell = readFileSync(
-    fileURLToPath(new URL('../src/components/shell.tsx', import.meta.url)),
-    'utf8',
-  )
-  /** The shell with its comments stripped: this is a rule about CODE, not about the prose. */
-  const code = shell
-    .replace(/\{\/\*[\s\S]*?\*\/\}/g, '')
-    .replace(/\/\*[\s\S]*?\*\//g, '')
-    .split('\n')
-    .filter((line) => !/^\s*\/\//.test(line))
-    .join('\n')
+  const code = shellCode
 
   it('seeds its state from viewedNetwork(), which honours the link', () => {
     assert.match(code, /useState<PageNetwork>\(viewedNetwork\(\)\)/)
@@ -183,6 +186,44 @@ describe('the shell seeds the bar from the viewed network', () => {
   it('passes that state to the bar, so the two cannot drift apart', () => {
     assert.match(code, /networkSwitch=\{\{/)
     assert.match(code, /selected: viewed/)
+  })
+})
+
+/**
+ * AND SO DOES THE FOOTER, WHICH THIS SURFACE DID NOT HAVE UNTIL micro-org#489.
+ *
+ * The footer is nine links to other origins. Every one of them is exactly the hop `carryNetwork`
+ * exists for: the viewed network is in-tab module memory that stops at the hostname, so a reader
+ * viewing testnet who follows an un-carried footer link arrives on the next surface viewing
+ * mainnet — having asked for testnet and been silently answered with the other network. The bar
+ * already composes its product links this way (`resolveProducts` in @cloudsforge/ui); nothing was
+ * doing it for the footer, because nothing was rendering one.
+ *
+ * Read from the source rather than rendered, which is this bundle's convention for a shell
+ * assertion (see `render.test.ts` for why there is no DOM here) and is enough for this defect: the
+ * hazard is a `surfaceUrls={hosts()}` that skips the composition, which is one identifier.
+ */
+describe('the footer is the shared one, and its links carry the viewed network', () => {
+  const code = shellCode
+
+  it('mounts CloudsForgeFooter rather than a footer of its own', () => {
+    assert.match(code, /<CloudsForgeFooter\b/, 'the shared footer is not mounted')
+    assert.doesNotMatch(code, /<footer\b/, 'this shell hand-rolls a footer beside the shared one')
+  })
+
+  it('hands it addresses that have been through carryNetwork', () => {
+    assert.match(code, /surfaceUrls=\{footerUrls\(\)\}/)
+    assert.match(code, /out\[key as SurfaceKey\] = carryNetwork\(url\)/)
+    // The whole defect, in one identifier: the registry's own answer, handed straight over.
+    assert.doesNotMatch(code, /surfaceUrls=\{hosts\(\)\}/)
+  })
+
+  it('closes with this surface’s own sentence, and the one link the registry cannot resolve', () => {
+    // `note` is the only place a surface may put words of its own (`CloudsForgeFooterProps` in
+    // @cloudsforge/ui), and github.com is the only address in this footer that is not a surface
+    // key — which is why it is the one that has to be named rather than resolved.
+    assert.match(code, /note=\{/)
+    assert.match(code, /href=\{HEARTH_REPO\}/)
   })
 })
 
