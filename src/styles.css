@@ -223,10 +223,28 @@ body {
   }
 }
 
-/* A stated preference is not a suggestion, and this one is the whole animation. */
+/*
+ * A STATED PREFERENCE IS NOT A SUGGESTION, AND IT IS NOT ONLY ABOUT THE OBVIOUS ONE.
+ *
+ * The strike is the only motion anyone would call an animation, so for a while this block named
+ * only it. That is the mistake micro-ui#23 found upstream: three controls went on transitioning
+ * under `reduce` because the list was REMEMBERED rather than DERIVED, and a remembered list is
+ * missing every rule added after it was written. `test/motion.test.ts` derives it here — it reads
+ * this stylesheet, collects every selector that declares a `transition` or an `animation`, and
+ * fails if one of them is not answered below. Add a transition anywhere and that test tells you.
+ *
+ * `.wt-spinner` is answered in its own block further down, where it is slowed rather than stopped:
+ * a spinner that does not move is a spinner that says the page is dead.
+ */
 @media (prefers-reduced-motion: reduce) {
   .ns-rule--hero {
     animation: none;
+  }
+
+  .ns-subnav__link,
+  .ns-main a:not(.cf-btn),
+  .ns-card {
+    transition: none;
   }
 }
 
