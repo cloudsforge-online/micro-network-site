@@ -78,11 +78,13 @@ export function ChainPage() {
         <p>{CHAIN.absence.body}</p>
       </Note>
 
-      <Section title={CHAIN.explorer.title}>
+      <Section kindling="One record at a time" title={CHAIN.explorer.title}>
         <p className="ns-prose">{CHAIN.explorer.body}</p>
-        <a className="cf-btn" href={hosts()[EXPLORER_SURFACE]}>
-          Open the block explorer
-        </a>
+        <div className="ns-page__acts">
+          <a className="cf-btn" href={hosts()[EXPLORER_SURFACE]}>
+            Open the block explorer
+          </a>
+        </div>
       </Section>
     </Page>
   )
@@ -105,19 +107,33 @@ function ScopePanel({ scope }: { scope: Scope }) {
     [scope.chain, scope.network],
   )
 
-  const title = `${scope.chain}:${scope.network}`
+  /*
+   * THE HEADING IS THE ENGLISH ONE, AND THE SCOPE IS THE LABEL ABOVE IT.
+   *
+   * Both panels were headed `ember:mainnet` and `ember:testnet` — the scope identifier, printed
+   * raw. It is the correct string to send to a service and it is not a heading: a reader who has
+   * just been told this is a new network has no way to know which of the two is the one their
+   * mined EMBER is on, and "mainnet" is a word this surface should be explaining rather than
+   * assuming. So the heading says which network it is, and the identifier moves to the kindling
+   * label above it, where the rest of this surface puts the thing that names the section.
+   *
+   * The identifier is still on screen for the reader who wanted it, and is still exact — nothing
+   * here composes it from a template a network added upstream would not appear in.
+   */
+  const title = NETWORK_TITLE[scope.network] ?? `${scope.chain}:${scope.network}`
+  const id = `${scope.chain}:${scope.network}`
 
   if (status.state === 'loading') {
     return (
-      <Section title={title}>
-        <Loading label={`Asking the chain index about ${title}`} />
+      <Section kindling={id} title={title}>
+        <Loading label={`Asking the chain index about ${id}`} />
       </Section>
     )
   }
 
   if (status.state === 'failed' && status.error) {
     return (
-      <Section title={title}>
+      <Section kindling={id} title={title}>
         <Failed
           notice={status.error}
           onRetry={status.reload}
@@ -157,7 +173,7 @@ function ScopePanel({ scope }: { scope: Scope }) {
     // Unreachable through `useResource`, which is `ok` only with data. Rendered as pending rather
     // than as zeroes, because the alternative to a state that cannot happen must never be a number.
     return (
-      <Section title={title}>
+      <Section kindling={id} title={title}>
         <Figures
           walked={PENDING}
           claimed={PENDING}
@@ -180,7 +196,7 @@ function ScopePanel({ scope }: { scope: Scope }) {
   const elsewhere = siteUrlOn(scope.network === 'testnet' ? 'testnet' : 'mainnet', '/chain')
 
   return (
-    <Section title={title} lede={`${doc.asset} on the ${doc.family} family.`}>
+    <Section kindling={id} title={title} lede={`${doc.asset} on the ${doc.family} family.`}>
       <Figures
         walked={figureOf(doc.indexedHeight)}
         claimed={figureOf(doc.tipHeight)}
@@ -203,7 +219,7 @@ function ScopePanel({ scope }: { scope: Scope }) {
         <Note title={CHAIN.notFollowed.title}>
           <p>{CHAIN.notFollowed.body}</p>
           {elsewhere !== null && (
-            <p>
+            <p className="ns-page__acts">
               <a className="cf-btn" href={elsewhere}>
                 {CHAIN.notFollowed.link}
               </a>
@@ -230,6 +246,18 @@ function ScopePanel({ scope }: { scope: Scope }) {
   )
 }
 
+/**
+ * What each network is called in a sentence.
+ *
+ * Keyed on the network rather than composed, and falling back to the scope identifier: a third
+ * network added to `HEARTH_SCOPES` upstream gets its raw identifier as a heading, which is ugly and
+ * true, rather than a name invented here for a network nobody has described yet.
+ */
+const NETWORK_TITLE: Record<string, string> = {
+  mainnet: 'The main network',
+  testnet: 'The test network',
+}
+
 /** The figures, in one shape so that the failed panel and the answered panel cannot diverge. */
 function Figures(props: {
   walked: ReturnType<typeof figureOf>
@@ -249,11 +277,20 @@ function Figures(props: {
   const seen = when(props.seenAt)
   return (
     <dl className="ns-details">
-      <Detail label="Walked head — blocks the index has read">
+      {/*
+        A LABEL LABELS. The first two used to carry their own gloss in the label itself — "Walked
+        head — blocks the index has read" — which made the label a sentence and made every label in
+        the column a different length. The gloss belongs under the value, where `.ns-detail__aside`
+        already puts the wei-per-EMBER note on the faucet page, and where it does not have to be
+        read before the number it explains.
+      */}
+      <Detail label="Walked head">
         <Figure value={props.walked} />
+        <span className="ns-detail__aside">blocks this index has read</span>
       </Detail>
-      <Detail label="Claimed tip — what a node last said">
+      <Detail label="Claimed tip">
         <Figure value={props.claimed} />
+        <span className="ns-detail__aside">what a node last said</span>
       </Detail>
       <Detail label="Lag between them">
         <Figure value={props.lag} unit="blocks" />
@@ -261,8 +298,9 @@ function Figures(props: {
       <Detail label="Chain id">
         <Figure value={props.chainId} />
       </Detail>
-      <Detail label="Blocks before CloudsForge credits a deposit">
+      <Detail label="Blocks before a deposit is credited">
         <Figure value={props.depth} unit="blocks" />
+        <span className="ns-detail__aside">CloudsForge&rsquo;s rule, not the chain&rsquo;s</span>
       </Detail>
       <Detail label="Reorg depth that halts crediting">
         <Figure value={props.alarm} unit="blocks" />

@@ -225,6 +225,38 @@ describe('the footer is the shared one, and its links carry the viewed network',
     assert.match(code, /note=\{/)
     assert.match(code, /href=\{HEARTH_REPO\}/)
   })
+
+  /*
+   * THE THREE LINKS `surfaceUrls` CANNOT REACH.
+   *
+   * The Legal hrefs are composed inside the component from `hosts.site` and a path, so no entry of
+   * `surfaceUrls` touches them: this surface reported that a reader who had spent the whole visit
+   * on testnet was returned to mainnet by opening the privacy notice, and micro-ui added
+   * `legalUrl` — a decorator applied to every legal link there will ever be — rather than a record
+   * of the three paths, which would miss a fourth silently.
+   *
+   * Asserted as WIRING, in the same style as the surface-URL case above: that the prop is passed
+   * and that what it is passed is `carryNetwork` rather than an identity that would compile,
+   * type-check and quietly do nothing.
+   */
+  it('carries the network onto the legal links, which surfaceUrls cannot reach', () => {
+    assert.match(code, /legalUrl=\{\(url\) => carryNetwork\(url\)\}/)
+  })
+
+  /*
+   * AND IT ADDS NO COLUMN, WHICH IS A DECISION RATHER THAN AN OMISSION.
+   *
+   * `columns` exists for a surface whose own pages are offered nowhere else a reader can still see
+   * — the marketing site, whose header they have scrolled past. This surface's five routes are in
+   * `.ns-subnav`, which is `position: sticky` and therefore on screen at the moment the footer is:
+   * a column of them would be chrome restating chrome. If somebody adds one, the reason above has
+   * to be argued with first.
+   */
+  it('and adds no column, because this surface’s own routes are sticky above the fold', () => {
+    assert.doesNotMatch(code, /columns=\{/)
+    const css = readFileSync(fileURLToPath(new URL('../src/styles.css', import.meta.url)), 'utf8')
+    assert.match(css, /\.ns-subnav\s*\{[^}]*position:\s*sticky/)
+  })
 })
 
 /**

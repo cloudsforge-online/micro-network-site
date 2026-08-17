@@ -144,12 +144,49 @@ describe('the register is well formed', () => {
     }
   })
 
+  /*
+   * ── A FACT A PAGE RENDERS DIRECTLY COUNTS AS RENDERED, AND UNTIL 2026-08-17 IT DID NOT ────────
+   *
+   * This walked `COPY_STRINGS` alone, so the only way to satisfy it was to put the digit in a
+   * sentence in `copy.ts` — even for a number whose whole job is to be a `<code>` element next to
+   * prose. `httpNotFound` is that number: `src/pages/not-found.tsx` renders `fact('httpNotFound')`
+   * inside a `<code>`, and `test/render.test.ts` REQUIRES it to, because a reader sent here by a
+   * broken link is entitled to know the server agreed. The old scan could not see that call, so
+   * `copy.ts` also carried "a real 404" in its prose purely to keep this green, and the page then
+   * printed the status twice — once in the borrowed sentence and once in the element.
+   *
+   * Counting the call sites is faithful to what this test is FOR. The rule is "a registered number
+   * is one a reader can see", not "a registered number lives in copy.ts": an entry nobody renders
+   * is an entry nobody checked, and that is caught either way. What it stops being able to catch is
+   * a number that reaches the screen through a component instead of through prose, which was never
+   * a defect — the digit scan below still holds every string in `copy.ts` to the register, and
+   * `test/render.test.ts` holds the components to naming what they render.
+   */
+  const RENDERED_BY: string[] = []
+  for (const dir of ['src/pages', 'src/components']) {
+    for (const name of readdirSync(at(dir))) {
+      if (name.endsWith('.tsx')) RENDERED_BY.push(readFileSync(join(at(dir), name), 'utf8'))
+    }
+  }
+
   it('is fully used — an unused entry is a number nobody checked', () => {
     const all = COPY_STRINGS.map((s) => s.text).join('\n')
+    const components = RENDERED_BY.join('\n')
     const unused = (Object.keys(FACTS) as FactKey[]).filter(
-      (key) => !all.includes(fact(key)) && !all.includes(grouped(key)),
+      (key) =>
+        !all.includes(fact(key)) &&
+        !all.includes(grouped(key)) &&
+        !components.includes(`fact('${key}')`) &&
+        !components.includes(`grouped('${key}')`),
     )
     assert.deepEqual(unused, [], `these facts are registered and never rendered: ${unused.join(', ')}`)
+  })
+
+  it('and the component half of that scan is not vacuous', () => {
+    // The premise: there really are components calling `fact()`, so a green result above is not
+    // a green result over an empty read of the wrong directory.
+    const calls = RENDERED_BY.join('\n').match(/\bfact\('[a-zA-Z]+'\)/g) ?? []
+    assert.ok(calls.length > 0, 'no component calls fact() — this scan is reading nothing')
   })
 })
 

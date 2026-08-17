@@ -212,10 +212,30 @@ export function AppShell({ unregistered = false }: { unregistered?: boolean }) {
         </Note>
         <Outlet key={viewed} />
       </main>
+      {/*
+        ── WHAT THIS PASSES, AND THE ONE PROP IT DELIBERATELY DOES NOT ──────────────────────────
+
+        `legalUrl` closes the last hole in `?net=` on this surface. Every navigation link the footer
+        draws comes from `surfaceUrls`, so `carryNetwork` has already been applied to it; the three
+        Legal links are composed INSIDE the component as `${hosts.site}${path}` and were the only
+        hrefs it could not reach. A reader who had spent the whole visit on testnet lost the network
+        the moment they opened the privacy notice — and came back to mainnet through the site's own
+        header. micro-ui added this decorator for that report; it is handed the composed absolute
+        address, and `carryNetwork` is a no-op on anything the registry cannot place.
+
+        `columns` is NOT passed, and this surface is the one that looks most entitled to it: it has
+        five routes of its own, which is the test `ui` states for a second consumer. It does not
+        need one. `.ns-subnav` is `position: sticky` under the bar (`src/styles.css`) — those five
+        links are on screen at the moment a reader reaches the footer, and at every moment before
+        it. The site's case for the prop was a header the reader had scrolled a long way past;
+        here there is nothing to scroll past, so a column repeating them would be chrome restating
+        chrome. What this surface has that the footer cannot know is a sentence, and that is `note`.
+      */}
       <CloudsForgeFooter
         current={PRODUCT}
         account={account}
         surfaceUrls={footerUrls()}
+        legalUrl={(url) => carryNetwork(url)}
         note={
           <>
             EMBER is mined here, never sold, and every claim on this surface is checkable in{' '}

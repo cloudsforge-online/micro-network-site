@@ -7,14 +7,26 @@
  * `hearth/docs/mining.md` is a warning the project wrote about its own document: it "previously
  * mixed" what is shipped with what is designed, "and the mixing is what produced the claim that
  * Homefire is non-outsourceable". A marketing surface is where a corrected claim survives longest,
- * because nobody re-reads it — so the three things Homefire is NOT are their own section, above
- * "how to start", rather than a footnote under it.
+ * because nobody re-reads it — so what Homefire is NOT is its own section, above "how to start",
+ * rather than a footnote under it.
  *
  * **Nothing on this page states or implies a yield.** `NOT_AN_INCOME` in `src/lib/format.ts` is the
  * one sentence this surface says about that, and the `rules` job in CI greps every page for the
  * words that would break it — "profit", "earn per", "APY", "return on" and the rest. A block reward
  * is a consensus constant and is stated as one; what a machine earns is its share of that against a
  * difficulty that moves every block, and there is no market to price it in.
+ *
+ * ── THE ORDER CHANGED IN micro-org#484, WITHIN THE TWO CONSTRAINTS ABOVE ──────────────────────
+ *
+ * It ran: caveat, how it works, what it is not, pools, what is not built, how to start. The one
+ * thing a reader can DO on this page — the browser miner, which needs nothing installed — was the
+ * sixth thing they met, behind two sections of protocol design and a list of unbuilt features.
+ * It now runs: caveat, what it is not, how to start, how it works, pools, what is not built.
+ *
+ * Both pinned orders survive, and they are pinned for a reason rather than by accident:
+ *   * `NOT_AN_INCOME` before `MINE.how.title` — BJ-NET-04, and the header above.
+ *   * `MINE.caveats.title` before `MINE.start.title` — BJ-NET-04. The caveats moved UP, not down.
+ * The reader now meets what this is not, and then what they can do about it, with nothing between.
  * ══════════════════════════════════════════════════════════════════════════════════════════════
  */
 import { MINE } from '../content/copy.ts'
@@ -38,18 +50,7 @@ export function MinePage() {
         <p className="ns-note__aside">{MINE.pay.body}</p>
       </Note>
 
-      <Section title={MINE.how.title} lede={MINE.how.lede} id="how">
-        <div className="ns-cards">
-          {MINE.how.items.map((item) => (
-            <article className="ns-card" key={item.title}>
-              <h3 className="ns-card__title">{item.title}</h3>
-              <p className="ns-card__body">{item.body}</p>
-            </article>
-          ))}
-        </div>
-      </Section>
-
-      <Section title={MINE.caveats.title} lede={MINE.caveats.lede} id="caveats">
+      <Section kindling="The limits" title={MINE.caveats.title} lede={MINE.caveats.lede} id="caveats">
         <div className="ns-cards">
           {MINE.caveats.items.map((item) => (
             <article className="ns-card ns-card--warn" key={item.title}>
@@ -60,20 +61,63 @@ export function MinePage() {
         </div>
       </Section>
 
-      <Section title={MINE.pools.title} id="pools">
+      <Section kindling="Two ways" title={MINE.start.title} lede={MINE.start.lede} id="start">
+        {/*
+          The browser miner comes FIRST, ahead of the clone-and-build path. It is the only way to
+          start mining without installing anything, and leaving it below a git command is how a
+          reader concludes this chain wants a toolchain before it will pay them.
+        */}
+        <BrowserMine rpc={hosts().rpc} />
+        {/*
+          A `ul`, and unnumbered. These are two WAYS — the browser and the reference node — and a
+          reader does one of them; numbering them would say do both, in that order. The node page's
+          four steps are the opposite case and keep their `ol` and their numerals.
+        */}
+        <ul className="ns-steps ns-steps--ways">
+          {MINE.start.steps.map((step) => (
+            <li className="ns-step" key={step.title}>
+              <h3 className="ns-step__title">{step.title}</h3>
+              <p className="ns-step__body">{step.body}</p>
+            </li>
+          ))}
+        </ul>
+        {/*
+          One command, and it is a CLONE rather than a download of a binary. There is no release to
+          point at: `hearth/MAP.md` records that nothing is published, and a page offering an
+          installer for software that ships no artefact would be inventing a distribution channel.
+        */}
+        <Command>git clone https://github.com/cloudsforge-online/hearth</Command>
+      </Section>
+
+      <Section kindling="How it works" title={MINE.how.title} lede={MINE.how.lede} id="how">
+        {/*
+          `ns-cards--four`, for the reason written at the top of `test/layout.test.ts`: this
+          section holds FOUR tiles, and plain `.ns-cards` lays four out as three and then one at
+          every width from 1024px up. It shipped that way — "Polite by default, in the browser
+          miner" alone on its own row, which reads as a tile that failed to load — and the home
+          page's identical defect is the one the modifier was written for. The test now scans both.
+        */}
+        <div className="ns-cards ns-cards--four">
+          {MINE.how.items.map((item) => (
+            <article className="ns-card" key={item.title}>
+              <h3 className="ns-card__title">{item.title}</h3>
+              <p className="ns-card__body">{item.body}</p>
+            </article>
+          ))}
+        </div>
+      </Section>
+
+      <Section kindling="Sharing the work" title={MINE.pools.title} id="pools">
         <p className="ns-prose">{MINE.pools.body}</p>
         {/*
-          THE ONE LINK ON THIS SITE TO THE POOL, AND IT IS HERE BECAUSE THERE WAS NOWHERE ELSE.
+          THE ONE LINK ON THIS SITE TO THE POOL, AND IT IS HERE BECAUSE THE FOOTER CANNOT SAY THIS.
 
-          The comment above `MINE.pools` in `src/content/copy.ts` withheld this link on the grounds
-          that the shared footer already carried `pool.<apex>` on every page. It does not: this
-          bundle mounts no `CloudsForgeFooter` at all, so until now this site named the pool in
-          prose — "there is a pool elsewhere in the estate" — and gave a reader no way to reach it.
-
-          The note comes BEFORE the reader can act on the link, in the same paragraph, because the
-          rule in this file's header is that nothing here may imply a yield. What keeps that true
-          is not the absence of a link, it is that the sentence introducing it says the pool
-          settles nothing.
+          The footer does carry `pool.<apex>` now (micro-org#489) and it carries it as a bare
+          surface name in a column of ten. What it cannot carry is the sentence in front of it. The
+          note comes BEFORE the reader can act on the link, in the same paragraph, because the rule
+          in this file's header is that nothing here may imply a yield — and what keeps that true is
+          not the absence of a link, it is that the sentence introducing it says the pool settles
+          nothing. `BJ-NET-POOL` asserts that order rather than the link.
 
           Resolved through `hosts()`, so this is the registry's address and not one typed here.
         */}
@@ -83,39 +127,15 @@ export function MinePage() {
         </p>
       </Section>
 
-      <Section title={MINE.design.title} lede={MINE.design.lede} id="design">
+      <Section kindling="Not built" title={MINE.design.title} lede={MINE.design.lede} id="design">
         <ul className="ns-list">
           {MINE.design.items.map((item) => (
             <li key={item}>{item}</li>
           ))}
         </ul>
-      </Section>
-
-      <Section title={MINE.start.title} lede={MINE.start.lede} id="start">
-        {/*
-          The browser miner comes FIRST, ahead of the clone-and-build path. It is the only way to
-          start mining without installing anything, and leaving it below a git command is how a
-          reader concludes this chain wants a toolchain before it will pay them.
-        */}
-        <BrowserMine rpc={hosts().rpc} />
-        <ol className="ns-steps">
-          {MINE.start.steps.map((step) => (
-            <li className="ns-step" key={step.title}>
-              <h3 className="ns-step__title">{step.title}</h3>
-              <p className="ns-step__body">{step.body}</p>
-            </li>
-          ))}
-        </ol>
-        {/*
-          One command, and it is a CLONE rather than a download of a binary. There is no release to
-          point at: `hearth/MAP.md` records that nothing is published, and a page offering an
-          installer for software that ships no artefact would be inventing a distribution channel.
-        */}
-        <Command>git clone https://github.com/cloudsforge-online/hearth</Command>
         <p className="ns-prose">
-          The mining document is{' '}
-          <a href={hearthFile('docs/mining.md')}>hearth/docs/mining.md</a>, and it is the source for every
-          sentence on this page.
+          The mining document is <a href={hearthFile('docs/mining.md')}>hearth/docs/mining.md</a>,
+          and it is the source for every sentence on this page.
         </p>
       </Section>
     </Page>

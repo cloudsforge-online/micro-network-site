@@ -31,9 +31,29 @@ export function HomePage() {
   const receipts = carryNetwork(`${hosts()[EXCHANGE_SURFACE]}${RECEIPTS_PATH}`)
   return (
     <Page>
-      <PageHead eyebrow={HOME.eyebrow} title={HOME.title} standfirst={HOME.standfirst} />
+      {/*
+        The two things a reader can do from the top of the page, in the order of what they cost:
+        mining is free and needs nothing installed, and looking at the chain is free and needs
+        nothing at all. Neither is an invitation to spend money, because there is nothing here to
+        spend money on — which is the standing notice's first sentence, immediately above.
+      */}
+      <PageHead
+        eyebrow={HOME.eyebrow}
+        title={HOME.title}
+        standfirst={HOME.standfirst}
+        actions={
+          <>
+            <Link className="cf-btn cf-btn--ember" to="/mine">
+              Start mining
+            </Link>
+            <Link className="cf-btn" to="/chain">
+              See the state of the chain
+            </Link>
+          </>
+        }
+      />
 
-      <Section title={HOME.what.title} id="what">
+      <Section kindling="In plain terms" title={HOME.what.title} id="what">
         {/*
           `ns-cards--four` IS LOAD-BEARING, AND THE COUNT IS WHY. Plain `.ns-cards` is the
           intrinsic grid the rest of this bundle uses, and four items in it lay out three and then
@@ -55,7 +75,7 @@ export function HomePage() {
         The coin. A definition list rather than cards: these are values somebody copies, and a card
         grid invites a reader to compare them against each other, which is not what they are for.
       */}
-      <Section title={HOME.coin.title} lede={HOME.coin.lede} id="coin">
+      <Section kindling="The constants" title={HOME.coin.title} lede={HOME.coin.lede} id="coin">
         <dl className="ns-details">
           {HOME.coin.rows.map((row) => (
             <Detail label={row.field} key={row.field}>
@@ -72,7 +92,7 @@ export function HomePage() {
         is on every badge in this bundle. A reader who cannot separate the two greens still reads
         "Not built".
       */}
-      <Section title={HOME.state.title} lede={HOME.state.lede} id="state">
+      <Section kindling="Built and not built" title={HOME.state.title} lede={HOME.state.lede} id="state">
         <div className="ns-tablewrap">
           <table className="ns-table">
             <thead>
@@ -102,12 +122,12 @@ export function HomePage() {
         </div>
       </Section>
 
-      <Section title={HOME.where.title} lede={HOME.where.lede} id="where">
+      <Section kindling="Next" title={HOME.where.title} lede={HOME.where.lede} id="where">
         <div className="ns-cards">
           <article className="ns-card">
             <h3 className="ns-card__title">The state of the chain</h3>
             <p className="ns-card__body">
-              What the CloudsForge chain index has observed, fetched when you open the page.
+              How far along each network is, fetched when you open the page.
             </p>
             <Link className="cf-btn ns-card__go" to="/chain">
               Open
@@ -116,7 +136,7 @@ export function HomePage() {
           <article className="ns-card">
             <h3 className="ns-card__title">Mining</h3>
             <p className="ns-card__body">
-              How the proof of work is built, the three things it is not, and how to start.
+              What the proof of work does, what it does not do, and how to start in the browser.
             </p>
             <Link className="cf-btn ns-card__go" to="/mine">
               Open
@@ -125,7 +145,7 @@ export function HomePage() {
           <article className="ns-card">
             <h3 className="ns-card__title">Run a node</h3>
             <p className="ns-card__body">
-              The test suites, the conformance gate, a local chain in one command.
+              The test suites, the conformance gate, and a local chain in one command.
             </p>
             <Link className="cf-btn ns-card__go" to="/node">
               Open
@@ -143,8 +163,7 @@ export function HomePage() {
           <article className="ns-card">
             <h3 className="ns-card__title">Block explorer</h3>
             <p className="ns-card__body">
-              Blocks, transactions and addresses, read record by record. A separate surface, and the
-              one that owns those questions.
+              Look up a block, a transaction or an address, one record at a time.
             </p>
             {/*
               The hostname comes from the registry at runtime, never from a literal: the `rules` job
@@ -166,8 +185,7 @@ export function HomePage() {
             <h3 className="ns-card__title">Forge Exchange</h3>
             <p className="ns-card__body">
               Swap EMBER and the tokens issued on Hearth from your own wallet. Pools rather than an
-              order book, no account, and the pair contracts answer any client that can reach the
-              chain.
+              order book, and no account.
             </p>
             <a className="cf-btn ns-card__go" href={exchange}>
               Open
@@ -176,10 +194,8 @@ export function HomePage() {
           <article className="ns-card">
             <h3 className="ns-card__title">Forge Receipt</h3>
             <p className="ns-card__body">
-              A token on Hearth standing for a coin held off it — the one thing here that is a
-              promise rather than a contract holding both sides. The page prints what has been
-              issued, what has been attested, and the command that counts the backing on your own
-              node.
+              A token on Hearth standing for a Litecoin held elsewhere. The page prints what has
+              been issued, what has been attested, and how to count the backing yourself.
             </p>
             <a className="cf-btn ns-card__go" href={receipts}>
               Open
@@ -189,7 +205,7 @@ export function HomePage() {
             <h3 className="ns-card__title">The source</h3>
             <p className="ns-card__body">
               Hearth is public and MIT licensed. The node, the mining algorithm and the virtual
-              machine are all there to read, run and check for yourself.
+              machine are all there to read and run yourself.
             </p>
             <a className="cf-btn cf-btn--ember ns-card__go" href={HEARTH_REPO}>
               Read the repository

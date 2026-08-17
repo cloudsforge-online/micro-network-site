@@ -28,6 +28,14 @@
  * number, never a balance, an address the caller did not send, or anything about the funding key."
  * A second wording here would be a second thing to keep true, and the softer of the two is the one
  * a reader would quote.
+ *
+ * ── WHY THE FORM DID NOT MOVE UP (micro-org#484) ──────────────────────────────────────────────
+ *
+ * The redesign moved the one thing a reader can DO to the top of every other page on this surface,
+ * and did not do it here. The terms panel carries the faucet's own disclaimer — "It has no value,
+ * it is not tradeable, and the chain it funds may be reset without notice", served by the service
+ * that has to honour it — and a disclaimer under the button is a disclaimer nobody read before
+ * they acted. So the order stays: the reach caveat, what the faucet will do, and then the field.
  * ══════════════════════════════════════════════════════════════════════════════════════════════
  */
 import { useCallback, useEffect, useRef, useState } from 'react'
@@ -82,9 +90,17 @@ export function FaucetPage() {
         <PageHead title={FAUCET.title} standfirst={FAUCET.standfirst} />
         <Note tone="warn" title={FAUCET.wrongNetwork.title}>
           <p>{FAUCET.wrongNetwork.body}</p>
+          {/*
+            A BUTTON, not a sentence with a link in it. This branch is a dead end — the page a
+            reader wanted is on another host — and the whole of what it owes them is the way there,
+            at the size of the thing they came to do. When the registry cannot compose that address
+            the fallback stays prose, because there is nothing to press.
+          */}
           {url ? (
-            <p className="ns-prose">
-              <a href={url}>{FAUCET.wrongNetwork.action}</a>
+            <p className="ns-page__acts">
+              <a className="cf-btn cf-btn--ember" href={url}>
+                {FAUCET.wrongNetwork.action}
+              </a>
             </p>
           ) : (
             <p className="ns-prose">{FAUCET.wrongNetwork.fallback}</p>
@@ -131,11 +147,11 @@ export function FaucetPage() {
         </>
       )}
 
-      <Section title={FAUCET.refusal.title}>
+      <Section kindling="If it says no" title={FAUCET.refusal.title}>
         <p className="ns-prose">{FAUCET.refusal.body}</p>
       </Section>
 
-      <Section title={FAUCET.poll.title}>
+      <Section kindling="After you ask" title={FAUCET.poll.title}>
         <p className="ns-prose">{FAUCET.poll.body}</p>
       </Section>
     </Page>
@@ -152,7 +168,7 @@ export function FaucetPage() {
  */
 function Terms({ terms }: { terms: FaucetTerms }) {
   return (
-    <Section title="What this faucet will do">
+    <Section kindling="Fetched just now" title="What this faucet will do">
       <dl className="ns-details">
         <Detail label="Network">
           <span className="cf-num">{terms.network}</span>
@@ -267,7 +283,7 @@ function DripForm({ terms }: { terms: FaucetTerms | null }) {
   )
 
   return (
-    <Section title="Ask for testnet EMBER">
+    <Section kindling="The one action" title="Ask for testnet EMBER">
       <form className="ns-form" onSubmit={submit}>
         <div className="ns-field">
           <label className="ns-field__label" htmlFor="drip-address">

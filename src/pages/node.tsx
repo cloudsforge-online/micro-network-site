@@ -26,7 +26,16 @@ export function NodePage() {
     <Page>
       <PageHead title={NODE.title} standfirst={NODE.standfirst} />
 
-      <Section title="Four things you can run today" id="steps">
+      {/*
+        THE ONE PAGE ON THIS SURFACE WHERE THE SECTIONS REALLY ARE A SEQUENCE.
+
+        The kindling labels elsewhere name a KIND of section on purpose — see `Section` in
+        `components/parts.tsx` for why they are not 01 / 02 / 03. Here the four steps beneath the
+        heading ARE ordered, they came from somebody who ran them in that order, and the ordered
+        list renders its own numerals. So the label says the thing the numerals cannot: that all
+        four of them happen on the machine in front of you, and none of them dials a peer.
+      */}
+      <Section kindling="All on one machine" title="Four things you can run today" id="steps">
         <ol className="ns-steps">
           {NODE.steps.map((step) => (
             <li className="ns-step" key={step.title}>
@@ -46,7 +55,7 @@ export function NodePage() {
         pinned to a data directory on first start. A reader cannot diagnose either without being
         told they exist.
       */}
-      <Section title={NODE.sameChain.title} id="same-chain">
+      <Section kindling="A silent failure" title={NODE.sameChain.title} id="same-chain">
         <p className="ns-prose">{NODE.sameChain.body}</p>
         <Command>{NODE.sameChain.command}</Command>
       </Section>
