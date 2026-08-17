@@ -277,11 +277,20 @@ function Figures(props: {
   const seen = when(props.seenAt)
   return (
     <dl className="ns-details">
-      <Detail label="Walked head — blocks the index has read">
+      {/*
+        A LABEL LABELS. The first two used to carry their own gloss in the label itself — "Walked
+        head — blocks the index has read" — which made the label a sentence and made every label in
+        the column a different length. The gloss belongs under the value, where `.ns-detail__aside`
+        already puts the wei-per-EMBER note on the faucet page, and where it does not have to be
+        read before the number it explains.
+      */}
+      <Detail label="Walked head">
         <Figure value={props.walked} />
+        <span className="ns-detail__aside">blocks this index has read</span>
       </Detail>
-      <Detail label="Claimed tip — what a node last said">
+      <Detail label="Claimed tip">
         <Figure value={props.claimed} />
+        <span className="ns-detail__aside">what a node last said</span>
       </Detail>
       <Detail label="Lag between them">
         <Figure value={props.lag} unit="blocks" />
@@ -289,8 +298,9 @@ function Figures(props: {
       <Detail label="Chain id">
         <Figure value={props.chainId} />
       </Detail>
-      <Detail label="Blocks before CloudsForge credits a deposit">
+      <Detail label="Blocks before a deposit is credited">
         <Figure value={props.depth} unit="blocks" />
+        <span className="ns-detail__aside">CloudsForge&rsquo;s rule, not the chain&rsquo;s</span>
       </Detail>
       <Detail label="Reorg depth that halts crediting">
         <Figure value={props.alarm} unit="blocks" />

@@ -366,6 +366,49 @@ body {
   max-width: var(--cf-measure);
 }
 
+/*
+ * ══════════════════════════════════════════════════════════════════════════════════════════════
+ * A LINK IN THE TEXT, WHICH THIS BUNDLE HAD NEVER STYLED.
+ *
+ * Every anchor in the reading column was the user agent's default blue with the user agent's
+ * default underline — `hearth/docs/mining.md` at the foot of the mining page, the pool console
+ * beside the sentence saying it settles nothing, the four repository links on the node page. On a
+ * warm ember-and-parchment palette that blue is the one colour on screen that belongs to no token,
+ * and it is the tell that a page was assembled rather than designed. Nothing caught it because
+ * nothing rendered these pages until micro-org#484 photographed them.
+ *
+ * `--cf-accent-text` rather than `--cf-accent`, for the reason the token exists at all: the accent
+ * is 4.32:1 on this background and this is body-sized text, so the accent would be a measurable
+ * contrast defect. The underline is kept and offset rather than removed — colour alone is not a
+ * link, and a reader who cannot separate ember from ink still sees one.
+ *
+ * `:not(.cf-btn)` is the whole exception, because the design system's button IS an anchor on this
+ * surface — "Open", "Read the repository", "Open the block explorer" — and it brings its own
+ * colour, padding and decoration from `@cloudsforge/ui`.
+ * ══════════════════════════════════════════════════════════════════════════════════════════════
+ */
+.ns-main a:not(.cf-btn) {
+  color: var(--cf-accent-text);
+  text-decoration: underline;
+  text-underline-offset: 0.18em;
+  text-decoration-thickness: 1px;
+  border-radius: var(--cf-radius-sm);
+  transition: color var(--cf-speed) var(--cf-ease);
+}
+
+.ns-main a:not(.cf-btn):hover {
+  color: var(--cf-fg);
+  text-decoration-thickness: 2px;
+}
+
+/* An outline, never a colour swap: a keyboard reader has to see where they are, and a link that
+   only changes hue on focus is invisible to the reader most likely to be tabbing. */
+.ns-main a:not(.cf-btn):focus-visible {
+  color: var(--cf-fg);
+  outline: 2px solid var(--cf-accent);
+  outline-offset: 3px;
+}
+
 .ns-list {
   margin: 0;
   padding-left: var(--cf-space-xl);
@@ -553,12 +596,23 @@ body {
   background-position: left top;
 }
 
+/*
+ * SENTENCE CASE, AND THAT IS THE ONE PLACE THE KINDLING TREATMENT IS NOT USED.
+ *
+ * Every other small label on this surface is mono, uppercase and tracked wide — the eyebrow, the
+ * section kindling, the table headings. Those are all one or two words. These are not: "Blocks
+ * before a deposit is credited" and "Reorg depth that halts crediting" are phrases a reader has to
+ * parse, and setting a phrase in caps is the single most reliable way to slow that down, because
+ * it removes the word shapes people read by. The rule above the pair already says "this is an
+ * entry"; the caps were saying it a second time and charging legibility for it.
+ *
+ * Mono and muted stay, so a label is still visibly a label beside its value.
+ */
 .ns-detail__label {
   color: var(--cf-fg-mute);
   font-family: var(--cf-font-mono);
-  font-size: var(--cf-text-2xs);
-  letter-spacing: var(--cf-tracking-wide);
-  text-transform: uppercase;
+  font-size: var(--cf-text-xs);
+  line-height: var(--cf-leading-snug);
 }
 
 .ns-detail__value {
@@ -827,10 +881,37 @@ body {
   font-size: var(--cf-text-sm);
 }
 
+/*
+ * ── `display: list-item`, AND THE MARKER RULE ABOVE HAD BEEN DEAD SINCE IT WAS WRITTEN ────────
+ *
+ * This was `display: flex; flex-direction: column`, and a flex container is not a list item: the
+ * marker box needs `display: list-item`, so every `li::marker` declaration above it was styling a
+ * box no engine was drawing. The node page's four steps — which really are a sequence, run in the
+ * order somebody who had run them chose — rendered as four unnumbered headings, and the numerals
+ * that would have said so were never on screen to be missed.
+ *
+ * The flex was only ever buying a gap between the title, the body and the command. A margin
+ * between siblings buys the same gap and leaves the box a list item.
+ */
 .ns-step {
-  display: flex;
-  flex-direction: column;
-  gap: var(--cf-space-xs);
+  display: list-item;
+}
+
+.ns-step > * + * {
+  margin-top: var(--cf-space-xs);
+}
+
+/*
+ * TWO WAYS TO DO ONE THING, WHICH IS NOT TWO STEPS OF ONE THING.
+ *
+ * The mining page offers the browser miner and the reference node. A reader does one of them —
+ * numbering them would say do both, in that order, and the second is not a continuation of the
+ * first. So the numerals come off there and stay on the node page, which is the sequence. The
+ * markup follows: `ns-steps--ways` is on a `ul`, the node page's is an `ol`.
+ */
+.ns-steps--ways {
+  padding-left: 0;
+  list-style: none;
 }
 
 .ns-step__title {

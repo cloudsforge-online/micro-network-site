@@ -52,7 +52,7 @@
 import assert from 'node:assert/strict'
 import { readFileSync } from 'node:fs'
 import { describe, it } from 'node:test'
-import { HOME } from '../src/content/copy.ts'
+import { HOME, MINE } from '../src/content/copy.ts'
 
 const css = readFileSync(new URL('../src/styles.css', import.meta.url), 'utf8')
 const home = readFileSync(new URL('../src/pages/home.tsx', import.meta.url), 'utf8')
@@ -129,6 +129,55 @@ describe('the four tiles under "What it is"', () => {
       'the queries name `ns-page`; an unnamed container is not the one they asked for',
     )
   })
+})
+
+/**
+ * AND THE SAME DEFECT SHIPPED A SECOND TIME, ON A PAGE THIS FILE WAS NOT READING.
+ *
+ * The rule above was written for the home page and asserted against the home page, so `/mine`
+ * carried four tiles under "What the chain does today" in plain `.ns-cards` for as long as the
+ * modifier had existed — three and then one, at every desktop width, exactly the row of one the
+ * header calls "a tile that failed to load". It was found in a screenshot rather than by this
+ * suite, which is the definition of a guard scoped too narrowly.
+ *
+ * So the scan is now over EVERY four-item grid this bundle renders, keyed on the content array
+ * rather than on the page: a fifth tile added to either section fails the count case below, and a
+ * new four-item section in plain `.ns-cards` fails the class case. Both are the same one-line fix.
+ */
+describe('every four-tile grid, not merely the first one that shipped the defect', () => {
+  const FOURS = [
+    { what: 'HOME.what.items', tiles: HOME.what.items.length, file: home },
+    {
+      what: 'MINE.how.items',
+      tiles: MINE.how.items.length,
+      file: readFileSync(new URL('../src/pages/mine.tsx', import.meta.url), 'utf8'),
+    },
+  ] as const
+
+  for (const grid of FOURS) {
+    it(`${grid.what} holds a count the steps divide`, () => {
+      assert.ok(grid.tiles > 0, `${grid.what} is empty — this test is looking in the wrong place`)
+      for (const columns of STEPS) {
+        assert.equal(
+          grid.tiles % columns,
+          0,
+          `${grid.tiles} tiles do not fill ${columns} columns, so the last row is short. The grid ` +
+            `steps ${STEPS.join(' → ')}; either write the new tile as a PAIR, or move the steps ` +
+            `in styles.css with it.`,
+        )
+      }
+    })
+
+    it(`${grid.what} is rendered in the named-count grid`, () => {
+      const markup = grid.file.replace(/\{\/\*[\s\S]*?\*\/\}/g, '')
+      assert.match(
+        markup,
+        /className="ns-cards ns-cards--four"/,
+        `${grid.what} has four tiles, and plain \`.ns-cards\` lays four out as three-then-one at ` +
+          'every width from 1024px up',
+      )
+    })
+  }
 })
 
 describe('every intrinsic grid', () => {

@@ -68,14 +68,19 @@ export function MinePage() {
           reader concludes this chain wants a toolchain before it will pay them.
         */}
         <BrowserMine rpc={hosts().rpc} />
-        <ol className="ns-steps">
+        {/*
+          A `ul`, and unnumbered. These are two WAYS — the browser and the reference node — and a
+          reader does one of them; numbering them would say do both, in that order. The node page's
+          four steps are the opposite case and keep their `ol` and their numerals.
+        */}
+        <ul className="ns-steps ns-steps--ways">
           {MINE.start.steps.map((step) => (
             <li className="ns-step" key={step.title}>
               <h3 className="ns-step__title">{step.title}</h3>
               <p className="ns-step__body">{step.body}</p>
             </li>
           ))}
-        </ol>
+        </ul>
         {/*
           One command, and it is a CLONE rather than a download of a binary. There is no release to
           point at: `hearth/MAP.md` records that nothing is published, and a page offering an
@@ -85,7 +90,14 @@ export function MinePage() {
       </Section>
 
       <Section kindling="How it works" title={MINE.how.title} lede={MINE.how.lede} id="how">
-        <div className="ns-cards">
+        {/*
+          `ns-cards--four`, for the reason written at the top of `test/layout.test.ts`: this
+          section holds FOUR tiles, and plain `.ns-cards` lays four out as three and then one at
+          every width from 1024px up. It shipped that way — "Polite by default, in the browser
+          miner" alone on its own row, which reads as a tile that failed to load — and the home
+          page's identical defect is the one the modifier was written for. The test now scans both.
+        */}
+        <div className="ns-cards ns-cards--four">
           {MINE.how.items.map((item) => (
             <article className="ns-card" key={item.title}>
               <h3 className="ns-card__title">{item.title}</h3>
