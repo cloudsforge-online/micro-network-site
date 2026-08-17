@@ -1069,10 +1069,19 @@ jobs:
         # test/tokens.test.ts proves it against the sibling checkout. This is the half that runs
         # without one: the ten property names micro-mint-web invented are refused by name. Comments
         # are stripped first, for the same reason the nginx step strips them.
+        #
+        # A HAND-WRITTEN DENYLIST GOES STALE IN ONE DIRECTION ONLY — it keeps refusing a name after
+        # the design system grows it, and then it fails a correct tree. `--cf-critical` was in this
+        # list. It is now declared by ui/packages/ui/src/tokens.css, in all three schemes, together
+        # with `--cf-critical-text`, `--cf-critical-ink`, `--cf-critical-wash` and
+        # `--cf-critical-edge` — the severity family that `--cf-warn-*` is the other half of, and
+        # the family `.ns-badge--bad` needs if it is to match `.ns-badge--warn`. So it comes out.
+        # The check that reads the real file rather than remembering it is test/tokens.test.ts, and
+        # it is the one to trust when the two disagree: this step can only ever be a subset.
         run: |
           set -uo pipefail
           css=$(perl -0pe 's{/\*.*?\*/}{}gs' src/styles.css)
-          if printf '%s\n' "$css" | grep -nE 'var\(--cf-(border|radius-md|space-[1-5][^a-z0-9-]|status-(good|warn|crit)|critical|warning|font[^-])'; then
+          if printf '%s\n' "$css" | grep -nE 'var\(--cf-(border|radius-md|space-[1-5][^a-z0-9-]|status-(good|warn|crit)|warning|font[^-])'; then
             echo "::error::that custom property does not exist in tokens.css; see the header of src/styles.css"
             exit 1
           fi

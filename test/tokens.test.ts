@@ -158,6 +158,37 @@ describe('the stylesheet names only tokens that exist', () => {
       }
     })
 
+    it('CI’s denylist refuses no name the design system actually declares', () => {
+      // The `rules` job has no micro-ui checkout, so its version of this check is a hand-written
+      // list of names that do not exist. A hand-written list goes stale in one direction only: it
+      // keeps refusing a name after the design system grows it, and then it fails a correct tree
+      // with a message telling the reader their real token is imaginary. That is exactly what
+      // `--cf-critical` did once tokens.css declared the severity family.
+      //
+      // This test is the half that CAN see tokens.css, pointed at CI instead of at the stylesheet.
+      const ci = readFileSync(at('.github/workflows/ci.yml'), 'utf8')
+      const line = ci.split('\n').find((l) => l.includes("grep -nE 'var\\(--cf-("))
+      assert.ok(line, 'the denylist step is gone from ci.yml; it was the check without a checkout')
+      // From the grep's OWN quote, not the first quote on the line — `printf '%s\n'` opens one
+      // first, and slicing from that produces a pattern that matches nothing and a test that
+      // passes for no reason.
+      const ere = line.slice(line.indexOf("grep -nE '") + "grep -nE '".length, line.lastIndexOf("'"))
+      const denied = new RegExp(ere)
+
+      const wrongly = [...defined].filter((name) => denied.test(`var(${name})`)).sort()
+      assert.deepEqual(
+        wrongly,
+        [],
+        `ci.yml refuses ${wrongly.join(', ')}, which tokens.css declares. Take them out of the ` +
+          'alternation in "Every design token this stylesheet names is a real one".',
+      )
+
+      // …and it has not been emptied to make something pass, either.
+      for (const bad of ['--cf-border', '--cf-radius-md', '--cf-space-3', '--cf-status-crit']) {
+        assert.ok(denied.test(`var(${bad})`), `ci.yml stopped refusing ${bad}, which is not real`)
+      }
+    })
+
     it('this surface’s own accent block exists, so nothing falls through to the company ember', () => {
       // index.html sets `data-cf-product="network"`. tokens.css says that "every key
       // an app may set is declared", precisely so a surface cannot fall through in silence — which
