@@ -27,6 +27,33 @@
  * clothes, and it stops following the substrate the moment somebody switches the ash ramp. There
  * is one literal colour in this file and it is `transparent`.
  *
+ * ══════════════════════════════════════════════════════════════════════════════════════════════
+ * THE SIGNATURE: THE HEARTH RULE, AND WHY IT IS THE ONLY ORNAMENT HERE (micro-org#484)
+ *
+ * One device, drawn once per section and once, larger, under the page title:
+ *
+ *     ████████──────────────────────────────────────────────────────────────
+ *     ↑ lit    ↑ ash
+ *
+ * A hairline whose leftmost run is `--cf-accent` and whose remainder is `--cf-line`. It is not
+ * decoration and it is not a divider borrowed from a template — it is this site's own argument,
+ * drawn: **the lit end is short.** Some of Hearth is real and burning, most of it is not built
+ * yet, and the page opens by admitting the proportion before a word is read. The status table
+ * below says the same thing in eleven rows; the rule says it in three pixels.
+ *
+ * It is a gradient rather than two elements so that a section heading needs no extra markup, and
+ * it costs no colour this file did not already have.
+ *
+ * ── AND THE LABELS ARE KINDLING, NOT NUMBERS ──────────────────────────────────────────────────
+ *
+ * Every section carries a small mono uppercase label above its heading, naming the KIND of thing
+ * the section is: THE COIN, HOW FAR ALONG, WHAT THIS IS NOT. It is deliberately not 01 / 02 / 03.
+ * A number promises the reader a sequence, and these sections are not one — nobody reads "the
+ * coin" in order to be ready for "how far along". The two places on this site that ARE a sequence,
+ * the node's four commands and the two ways to start mining, are ordered lists with real numerals
+ * the browser draws.
+ * ══════════════════════════════════════════════════════════════════════════════════════════════
+ *
  * ── The same rule applies to CLASS names ─────────────────────────────────────────────────────
  *
  * A class that does not exist fails exactly as quietly as a property that does: the element renders
@@ -130,9 +157,10 @@ body {
   padding: var(--cf-space-md) var(--cf-space-sm);
   color: var(--cf-fg-dim);
   text-decoration: none;
-  font-size: var(--cf-text-md);
+  font-size: var(--cf-text-sm);
   border-bottom: 2px solid transparent;
   white-space: nowrap;
+  transition: color var(--cf-speed) var(--cf-ease);
 }
 
 .ns-subnav__link:hover {
@@ -150,9 +178,56 @@ body {
   padding: var(--cf-space-2xl) var(--cf-space-xl) var(--cf-space-3xl);
   font-family: var(--cf-font-sans);
   color: var(--cf-fg);
+  line-height: var(--cf-leading);
   display: flex;
   flex-direction: column;
   gap: var(--cf-space-xl);
+}
+
+/* ---- the hearth rule --------------------------------------------------- */
+
+/*
+ * The signature, described at the top of this file. Two sizes and nothing else: a hairline under
+ * every kindling label, and a heavier, longer-lit one under the page title.
+ *
+ * `<hr>` rather than a `::before`, because it is a horizontal rule and that is what the element
+ * means. Screen readers announce a separator, which is what it is; nothing is said twice.
+ */
+.ns-rule {
+  height: 1px;
+  width: 100%;
+  margin: 0;
+  border: 0;
+  background: linear-gradient(to right, var(--cf-accent) 0 2.5rem, var(--cf-line) 2.5rem 100%);
+}
+
+.ns-rule--hero {
+  height: 3px;
+  background: linear-gradient(to right, var(--cf-accent) 0 6rem, var(--cf-line) 6rem 100%);
+  /*
+   * THE ONE PIECE OF MOTION ON THIS SITE. The rule strikes left to right once, on load, and
+   * nothing else here moves — the page's argument is that this chain is young and unproven, and a
+   * surface that animates six things while saying so is selling. `--cf-ease` and a single 520ms
+   * are the design system's own.
+   */
+  transform-origin: left center;
+  animation: ns-strike 520ms var(--cf-ease) both;
+}
+
+@keyframes ns-strike {
+  from {
+    transform: scaleX(0);
+  }
+  to {
+    transform: scaleX(1);
+  }
+}
+
+/* A stated preference is not a suggestion, and this one is the whole animation. */
+@media (prefers-reduced-motion: reduce) {
+  .ns-rule--hero {
+    animation: none;
+  }
 }
 
 /* ---- page furniture --------------------------------------------------- */
@@ -183,6 +258,25 @@ body {
   display: flex;
   flex-direction: column;
   gap: var(--cf-space-sm);
+  padding-bottom: var(--cf-space-xs);
+}
+
+/*
+ * The hero rule sits between the title and the standfirst rather than under the whole block, so
+ * the first thing a reader's eye crosses on the way from the title to the prose is the proportion
+ * of this chain that is actually alight. Its own margin, because the head's flex gap is set for
+ * text and a 3px rule wants more air than a paragraph does.
+ */
+.ns-page__head .ns-rule--hero {
+  margin: var(--cf-space-xs) 0 var(--cf-space-2xs);
+}
+
+/* What a reader can do from the top of a page, without scrolling to find it. */
+.ns-page__acts {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--cf-space-sm);
+  margin-top: var(--cf-space-xs);
 }
 
 /*
@@ -201,28 +295,46 @@ body {
  * measured upstream by `contrast.test.ts` on every ground, which is why no ratio is asserted here.
  * So the eyebrow keeps its accent identity and becomes legible, without this file knowing a hex.
  */
+/*
+ * The kindling label: the page eyebrow and the section labels are the same thing at the same size,
+ * so they are the same class. `--cf-tracking-wide` is the token whose comment upstream reads "the
+ * uppercase mono eyebrow" — this is that, and the 0.12em literal it replaces was a number typed
+ * next to a token set that already had the answer.
+ */
 .ns-eyebrow {
   margin: 0;
   color: var(--cf-accent-text);
   font-family: var(--cf-font-mono);
-  font-size: var(--cf-text-xs);
-  letter-spacing: 0.12em;
+  font-size: var(--cf-text-2xs);
+  font-weight: 500;
+  letter-spacing: var(--cf-tracking-wide);
   text-transform: uppercase;
+  line-height: var(--cf-leading-tight);
 }
 
 .ns-page__title {
   margin: 0;
   font-family: var(--cf-font-display);
-  font-size: var(--cf-text-4xl);
+  /*
+   * `clamp` between the design system's own steps rather than a media query: the title is the one
+   * thing on the page whose size is a function of the WINDOW rather than of the measure, and 44px
+   * over three lines on a 360px phone is a title that has eaten the screen before the first word
+   * of prose. The floor is `--cf-text-2xl` and the ceiling `--cf-text-4xl`; the middle term is the
+   * only viewport unit in this file.
+   */
+  font-size: clamp(var(--cf-text-2xl), 6.5vw, var(--cf-text-4xl));
   font-weight: 600;
-  line-height: 1.1;
+  line-height: var(--cf-leading-tight);
+  letter-spacing: var(--cf-tracking-tight);
+  max-width: 20ch;
 }
 
 .ns-page__standfirst {
   margin: 0;
   color: var(--cf-fg-dim);
   font-size: var(--cf-text-lg);
-  max-width: 52rem;
+  line-height: var(--cf-leading-snug);
+  max-width: var(--cf-measure);
 }
 
 .ns-section {
@@ -231,18 +343,27 @@ body {
   gap: var(--cf-space-md);
 }
 
+/* Label, heading, rule — in that order, and tighter than the section's own gap. */
+.ns-section__head {
+  display: flex;
+  flex-direction: column;
+  gap: var(--cf-space-2xs);
+}
+
 .ns-section__title {
   margin: 0;
   font-family: var(--cf-font-display);
-  font-size: var(--cf-text-xl);
+  font-size: var(--cf-text-2xl);
   font-weight: 600;
+  line-height: var(--cf-leading-tight);
+  letter-spacing: var(--cf-tracking-tight);
 }
 
 .ns-section__lede,
 .ns-prose {
   margin: 0;
   color: var(--cf-fg-dim);
-  max-width: 52rem;
+  max-width: var(--cf-measure);
 }
 
 .ns-list {
@@ -252,7 +373,7 @@ body {
   flex-direction: column;
   gap: var(--cf-space-sm);
   color: var(--cf-fg-dim);
-  max-width: 52rem;
+  max-width: var(--cf-measure);
 }
 
 /*
@@ -336,25 +457,59 @@ body {
   }
 }
 
+/*
+ * A tile is quiet, and its top edge is the one place it can light.
+ *
+ * The hover is a single 1px border-colour change on the top edge alone, which is the same gesture
+ * as the hearth rule at the size of a card — the lit end of something. Nothing lifts, nothing
+ * shadows and nothing scales: a grid of eight tiles that all rise under the pointer is the house
+ * style of every template there is, and this page is trying not to read like one.
+ *
+ * `focus-within` as well as `:hover`, so the keyboard reader gets the same signal as the mouse.
+ */
 .ns-card {
   display: flex;
   flex-direction: column;
   gap: var(--cf-space-sm);
   padding: var(--cf-space-lg);
   border: 1px solid var(--cf-line);
-  border-radius: var(--cf-radius-lg);
+  border-top: 1px solid var(--cf-line-strong);
+  border-radius: var(--cf-radius);
   background: var(--cf-surface-solid);
+  transition: border-top-color var(--cf-speed) var(--cf-ease);
 }
 
-/* A caveat card is bordered on the warn colour, and its heading still carries the word. */
+.ns-card:hover,
+.ns-card:focus-within {
+  border-top-color: var(--cf-accent);
+}
+
+/*
+ * A caveat card is bordered on the warn colour and washed, and its heading still carries the word.
+ * The wash is what makes the three of them read as a set at a glance rather than as three more
+ * tiles: this is the section a reader most needs to notice they have arrived in.
+ */
 .ns-card--warn {
-  border-color: var(--cf-warn);
+  border-color: var(--cf-warn-edge);
+  border-top-color: var(--cf-warn);
+  background: var(--cf-warn-wash);
+}
+
+.ns-card--warn:hover,
+.ns-card--warn:focus-within {
+  border-top-color: var(--cf-warn);
 }
 
 .ns-card__title {
   margin: 0;
+  font-family: var(--cf-font-display);
   font-size: var(--cf-text-md);
   font-weight: 600;
+  line-height: var(--cf-leading-snug);
+}
+
+.ns-card--warn .ns-card__title {
+  color: var(--cf-warn-text);
 }
 
 .ns-card__body {
@@ -379,17 +534,31 @@ body {
   gap: var(--cf-space-md) var(--cf-space-xl);
 }
 
+/*
+ * Each pair is topped by the hearth rule at tile scale. These are the values a reader copies into
+ * a wallet, and the lit tick is what makes a definition list scannable as a column of entries
+ * rather than as an undifferentiated block of hairlines.
+ */
 .ns-detail {
   display: flex;
   flex-direction: column;
   gap: var(--cf-space-3xs);
   padding: var(--cf-space-sm) 0;
-  border-top: 1px solid var(--cf-line);
+  /* The rule is a background rather than a border: `border-image` would have to be sliced out of
+     the same gradient, and a 1px slice of a gradient is a rendering detail to depend on. This is
+     the identical paint with no slicing. */
+  background-image: linear-gradient(to right, var(--cf-accent) 0 1.5rem, var(--cf-line) 1.5rem 100%);
+  background-repeat: no-repeat;
+  background-size: 100% 1px;
+  background-position: left top;
 }
 
 .ns-detail__label {
   color: var(--cf-fg-mute);
-  font-size: var(--cf-text-sm);
+  font-family: var(--cf-font-mono);
+  font-size: var(--cf-text-2xs);
+  letter-spacing: var(--cf-tracking-wide);
+  text-transform: uppercase;
 }
 
 .ns-detail__value {
@@ -427,7 +596,7 @@ body {
 .ns-note {
   display: flex;
   align-items: baseline;
-  gap: var(--cf-space-sm);
+  gap: var(--cf-space-md);
   margin: 0;
   padding: var(--cf-space-lg) var(--cf-space-xl);
   border: 1px solid var(--cf-line-strong);
@@ -447,6 +616,7 @@ body {
   display: flex;
   flex-direction: column;
   gap: var(--cf-space-2xs);
+  max-width: var(--cf-measure);
 }
 
 .ns-note__body p {
@@ -463,16 +633,58 @@ body {
   font-size: var(--cf-text-sm);
 }
 
+/*
+ * ══════════════════════════════════════════════════════════════════════════════════════════════
+ * THE WARNING PLATE, WHICH WAS THE QUIETEST THING ON THE PAGE AND IS NOW THE LOUDEST.
+ *
+ *     "remove useless text and keep only human easy-to-understand info, and warning"
+ *                                                                        — micro-org#484
+ *
+ * `STANDING_STATE` is the paragraph a reader must not miss: EMBER cannot be sold, its price is one
+ * this company set, the chain runs from a single machine, a deep reorg is possible. The shell puts
+ * it above every route. It was drawn as an ordinary bordered note in `--cf-fg-dim` on the page's
+ * own background, differing from a neutral aside by ONE amber hairline — so on a page of six
+ * bordered boxes it read as the sixth, and the estate had achieved the letter of a disclosure
+ * while designing it to be skipped.
+ *
+ * What changes here is only its weight, never its words. It gets its own ground
+ * (`--cf-warn-wash`), a lit left edge, the headline in `--cf-warn-text` at display size, and body
+ * copy at full ink rather than dimmed. It is still not dismissible, and the `<Note>` markup is
+ * untouched — `BJ-NET-04` and `BJ-NET-PRICE` both find this notice by `.ns-note`, which is the
+ * right way round: the browser journeys pin what it SAYS, and this file may only change how loudly.
+ *
+ * `--cf-warn-wash`, `--cf-warn-edge` and `--cf-warn-text` are the design system's own warn family
+ * and resolve per scheme, so this plate follows a reader into a light palette instead of becoming
+ * an amber block with white text on it.
+ * ══════════════════════════════════════════════════════════════════════════════════════════════
+ */
 .ns-note--warn {
-  border-color: var(--cf-warn);
+  border-color: var(--cf-warn-edge);
+  border-left: 3px solid var(--cf-warn);
+  background: var(--cf-warn-wash);
+  color: var(--cf-fg);
+  padding: var(--cf-space-xl);
 }
 
 .ns-note--warn .ns-note__icon {
   color: var(--cf-warn);
+  font-size: var(--cf-text-xl);
+}
+
+.ns-note--warn .ns-note__title {
+  color: var(--cf-warn-text);
+  font-family: var(--cf-font-display);
+  font-size: var(--cf-text-lg);
+  line-height: var(--cf-leading-snug);
+}
+
+.ns-note--warn .ns-note__aside {
+  color: var(--cf-fg-dim);
 }
 
 .ns-note--accent {
   border-color: var(--cf-accent);
+  border-left: 3px solid var(--cf-accent);
 }
 
 .ns-note--accent .ns-note__icon {
@@ -488,7 +700,10 @@ body {
   padding: 0.1rem 0.5rem;
   border: 1px solid var(--cf-line-strong);
   border-radius: var(--cf-radius-sm);
-  font-size: var(--cf-text-xs);
+  font-family: var(--cf-font-mono);
+  font-size: var(--cf-text-2xs);
+  letter-spacing: var(--cf-tracking-wide);
+  text-transform: uppercase;
   white-space: nowrap;
 }
 
@@ -496,20 +711,30 @@ body {
   line-height: 1;
 }
 
-/* Colour is the THIRD channel. The word and the glyph carry the meaning on their own. */
+/*
+ * Colour is the THIRD channel. The word and the glyph carry the meaning on their own.
+ *
+ * The INK is the `-text` step of each family and the ground is the `-wash`, rather than the raw
+ * signal colour used as both border and text. `--cf-success` and `--cf-danger` are chosen to be
+ * seen as a fill; the `-text` steps are the ones tokens.css measures for contrast as small text,
+ * and this badge is 11px mono — neither of WCAG's large-text exemptions.
+ */
 .ns-badge--good {
-  border-color: var(--cf-success);
-  color: var(--cf-success);
+  border-color: var(--cf-good-edge);
+  background: var(--cf-good-wash);
+  color: var(--cf-good-text);
 }
 
 .ns-badge--warn {
-  border-color: var(--cf-warn);
-  color: var(--cf-warn);
+  border-color: var(--cf-warn-edge);
+  background: var(--cf-warn-wash);
+  color: var(--cf-warn-text);
 }
 
 .ns-badge--bad {
-  border-color: var(--cf-danger);
-  color: var(--cf-danger);
+  border-color: var(--cf-critical-edge);
+  background: var(--cf-critical-wash);
+  color: var(--cf-critical-text);
 }
 
 .ns-badge--idle {
@@ -522,27 +747,54 @@ body {
   overflow-x: auto;
   border: 1px solid var(--cf-line);
   border-radius: var(--cf-radius);
+  background: var(--cf-surface-solid);
 }
 
 .ns-table {
   width: 100%;
   border-collapse: collapse;
   font-size: var(--cf-text-sm);
+  line-height: var(--cf-leading-snug);
 }
 
 .ns-table th,
 .ns-table td {
-  padding: var(--cf-space-sm) var(--cf-space-md);
+  padding: var(--cf-space-md);
   text-align: left;
   vertical-align: top;
   border-bottom: 1px solid var(--cf-line);
 }
 
+/*
+ * The column headings are kindling too — mono, uppercase, tracked — which is what tells a reader
+ * at a glance that this is a table of states rather than a table of values. It also stops the
+ * heading row competing with the row headings below it, which are the sentences being scanned.
+ */
 .ns-table thead th {
   color: var(--cf-fg-mute);
-  font-weight: 600;
+  font-family: var(--cf-font-mono);
+  font-size: var(--cf-text-2xs);
+  font-weight: 500;
+  letter-spacing: var(--cf-tracking-wide);
+  text-transform: uppercase;
   white-space: nowrap;
   background: var(--cf-bg-sunken);
+}
+
+/* The thing being reported is the sentence a reader is looking for, so it gets the full ink. */
+.ns-table tbody th {
+  color: var(--cf-fg);
+  font-weight: 600;
+}
+
+/* The badge column is as narrow as its widest word and never wraps. */
+.ns-table tbody td:first-of-type {
+  width: 1%;
+  white-space: nowrap;
+}
+
+.ns-table tbody td {
+  color: var(--cf-fg-dim);
 }
 
 .ns-table tbody tr:last-child th,
@@ -552,12 +804,27 @@ body {
 
 /* ---- steps and commands ----------------------------------------------- */
 
+/*
+ * THE ONE PLACE ON THIS SITE THAT IS NUMBERED, AND IT IS NUMBERED BECAUSE IT IS A SEQUENCE.
+ *
+ * The section labels elsewhere name a KIND rather than a position, for the reason set out at the
+ * top of this file. These are different: the node's four commands are Hearth's own order, chosen
+ * by somebody who had run them, and the two ways to start mining are ordered by which needs less.
+ * So the browser's own list numerals stand, drawn in the accent and the mono face so they read as
+ * step numbers rather than as bullets.
+ */
 .ns-steps {
   margin: 0;
   padding-left: var(--cf-space-xl);
   display: flex;
   flex-direction: column;
   gap: var(--cf-space-xl);
+}
+
+.ns-steps li::marker {
+  color: var(--cf-accent-text);
+  font-family: var(--cf-font-mono);
+  font-size: var(--cf-text-sm);
 }
 
 .ns-step {
@@ -568,6 +835,7 @@ body {
 
 .ns-step__title {
   margin: 0;
+  font-family: var(--cf-font-display);
   font-size: var(--cf-text-md);
   font-weight: 600;
 }
@@ -575,7 +843,7 @@ body {
 .ns-step__body {
   margin: 0;
   color: var(--cf-fg-dim);
-  max-width: 52rem;
+  max-width: var(--cf-measure);
 }
 
 /*

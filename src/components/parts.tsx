@@ -100,30 +100,60 @@ export function Page({ children }: { children: ReactNode }) {
   return <div className="ns-page">{children}</div>
 }
 
+/**
+ * The top of a page: a kindling label, the title, the hearth rule, the standfirst, and whatever
+ * this page lets a reader do without scrolling.
+ *
+ * The rule between the title and the standfirst is this surface's signature and is described in
+ * full at the top of `src/styles.css`. In one sentence: its lit end is short on purpose, because
+ * so is Hearth's.
+ *
+ * `actions` is a node rather than a list of links because the two pages that have them want
+ * different things — the home page sends a reader onward, the faucet sends them to the other
+ * network — and a props shape covering both would be a shape covering neither.
+ */
 export function PageHead({
   eyebrow,
   title,
   standfirst,
+  actions,
 }: {
   eyebrow?: string | undefined
   title: string
   standfirst?: string | undefined
+  actions?: ReactNode
 }) {
   return (
     <header className="ns-page__head">
       {eyebrow && <p className="ns-eyebrow">{eyebrow}</p>}
       <h1 className="ns-page__title">{title}</h1>
+      <hr className="ns-rule ns-rule--hero" />
       {standfirst && <p className="ns-page__standfirst">{standfirst}</p>}
+      {actions && <div className="ns-page__acts">{actions}</div>}
     </header>
   )
 }
 
+/**
+ * A section, under a label naming what KIND of section it is.
+ *
+ * `kindling` is the small mono uppercase line above the heading — THE COIN, HOW FAR ALONG, WHAT
+ * THIS IS NOT. It is not 01 / 02 / 03, and that is a decision rather than an omission: a number
+ * tells a reader the sections are a sequence and that they are three of the way through one, and
+ * neither is true here. Nobody reads "the coin" in order to be ready for "how far along".
+ *
+ * It is `aria-hidden`, because the heading beneath it already names the section and a screen
+ * reader that announced "THE COIN, heading, The coin" would be reading the ornament aloud. Sighted
+ * readers get a scanning aid; everybody gets the heading.
+ */
 export function Section({
+  kindling,
   title,
   lede,
   id,
   children,
 }: {
+  kindling?: string | undefined
   title: string
   lede?: string | undefined
   id?: string | undefined
@@ -131,9 +161,17 @@ export function Section({
 }) {
   return (
     <section className="ns-section" {...(id ? { id, 'aria-labelledby': `${id}-t` } : {})}>
-      <h2 className="ns-section__title" {...(id ? { id: `${id}-t` } : {})}>
-        {title}
-      </h2>
+      <div className="ns-section__head">
+        {kindling && (
+          <p className="ns-eyebrow" aria-hidden="true">
+            {kindling}
+          </p>
+        )}
+        <h2 className="ns-section__title" {...(id ? { id: `${id}-t` } : {})}>
+          {title}
+        </h2>
+        <hr className="ns-rule" />
+      </div>
       {lede && <p className="ns-section__lede">{lede}</p>}
       {children}
     </section>
