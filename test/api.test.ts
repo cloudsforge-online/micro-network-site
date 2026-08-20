@@ -125,7 +125,7 @@ describe('the request URLs are the ones the registry resolves', () => {
     return getChainStatus({ chain: 'ember', network: 'mainnet' }).then(() => {
       assert.equal(
         stub?.calls[0]?.url,
-        'https://explorer.cloudsforge.online/v1/chains/ember/mainnet/status',
+        'https://cloudsforge.online/explorer/v1/chains/ember/mainnet/status',
       )
     })
   })
@@ -141,7 +141,7 @@ describe('the request URLs are the ones the registry resolves', () => {
     return getChainStatus({ chain: 'ember', network: 'testnet' }).then(() => {
       assert.equal(
         stub?.calls[0]?.url,
-        'https://explorer-testnet.cloudsforge.online/v1/chains/ember/testnet/status',
+        'https://testnet.cloudsforge.online/explorer/v1/chains/ember/testnet/status',
       )
     })
   })

@@ -158,7 +158,19 @@ describe('the chain-index read is cross-origin, and three separate things now ma
     // The literal mainnet origins were deleted on purpose — one templated list now renders per
     // environment from CF_WEB_SUFFIX, so a literal `.cloudsforge.online` here would only ever have
     // proved the MAINNET half. Asserting the template proves both.
-    assert.match(policy, /- https:\/\/explorer\{\{ env "CF_WEB_SUFFIX" \}\}/)
+    //
+    // ── THE CONTROL IS `hub`, AND IT USED TO BE `explorer` ────────────────────────────────────
+    //
+    // Wave 3h moved the explorer to `<apex>/explorer` and deleted its grant: the hostname loads no
+    // page in either environment now, so the ORIGIN of every request it makes is the apex, which
+    // the apex's own entry already covers. A control has to be an origin that will still be there,
+    // and the apex consolidation is steadily removing them.
+    //
+    // `hub` is the right choice because it is the one surface the plan says will NEVER move.
+    // `deploy/docs/apex-consolidation.md` §1 keeps it on its own hostname for ORIGIN ISOLATION —
+    // it holds the money session, and an origin is the boundary a browser actually enforces. A
+    // control that cannot be consolidated away is a control that stays a control.
+    assert.match(policy, /- https:\/\/hub\{\{ env "CF_WEB_SUFFIX" \}\}/)
     assert.match(
       policy,
       /- https:\/\/network\{\{ env "CF_WEB_SUFFIX" \}\}/,
@@ -217,7 +229,7 @@ describe('the resolved bases in a real browser', () => {
 
   it('in production the chain index is cross-origin and the faucet is relative', () => {
     installWindow('https://network.cloudsforge.online/faucet')
-    assert.equal(chainIndexBase(), 'https://explorer.cloudsforge.online')
+    assert.equal(chainIndexBase(), 'https://cloudsforge.online/explorer')
     // Relative, because the registry says the faucet is a route on THIS host. Which means the
     // gateway has to route `/v1/...` here — and the README says so.
     assert.equal(faucetBase(), '')

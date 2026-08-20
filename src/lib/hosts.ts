@@ -89,13 +89,8 @@
  * that happened, and did; the assertion is now inverted, so a regression is still caught.
  * ══════════════════════════════════════════════════════════════════════════════════════════════
  */
-import {
-  cloudsforgeHosts,
-  envLabel,
-  splitEnvLabel,
-  type CloudsForgeHosts,
-  type SurfaceKey,
-} from '@cloudsforge/ui'
+import { cloudsforgeHosts, envLabel, splitEnvLabel, type CloudsForgeHosts, type SurfaceKey } from '@cloudsforge/ui'
+import { servesOwnBundle, surface } from '@cloudsforge/ui/surfaces'
 
 /**
  * The surface this application IS.
@@ -151,10 +146,65 @@ export function resolveApiBase(
   key: SurfaceKey,
 ): string {
   const own = hosts[key]
+  // ── DROPPING THE basePath IS RIGHT FOR A ROUTE AND WRONG FOR A MOUNT ────────────────────────
+  //
+  // `originOf` exists because `hosts.faucet` is `https://network.<apex>/faucet` and micro-faucet
+  // serves `/v1/drips`, not `/faucet/v1/drips`. That is still true and the reason is unchanged:
+  // the faucet's basePath is a ROUTE INSIDE THIS BUNDLE, and its API sits at the origin root.
+  //
+  // It became WRONG for `explorer` on 2026-08-20, when wave 3h moved that surface to
+  // `<apex>/explorer`. There the basePath is a MOUNT: the gateway routes `/explorer/v1` and
+  // strips the prefix, so dropping it composes `<apex>/v1/chains/…` — an address micro-site
+  // answers with its SPA shell, 200, HTML where JSON was expected. Every chain reading on this
+  // site's status table would have gone dead while the network tab looked healthy.
+  //
+  // `servesOwnBundle` is the discriminator, and it is the same one `surfaceMeta` in
+  // @cloudsforge/ui uses for exactly this pair of cases:
+  //
+  //   servesOwnBundle    basePath is a mount; the API is UNDER it; keep it
+  //   route-in-a-bundle  basePath is another bundle's route; the API is at the root; drop it
+  //
+  // So this is not a special case for `explorer`. It is the general rule, and it will be right
+  // for the next surface that moves without anyone editing this file.
+  //
+  // ── EXCEPT ON A LOCAL HOST, WHICH HAS NO GATEWAY TO STRIP THE MOUNT ────────────────────────
+  //
+  // The registry composes a dev URL as `http://localhost:<devPort>` PLUS the basePath, and the
+  // service binds that port directly — nothing sits in front of it to take `/explorer` back off,
+  // so a mounted dev URL 404s every read. The mount is a production routing fact.
+  const mounted = servesOwnBundle(surface(key)) && !isLocal(hostnameOf(own))
+  const base = mounted ? withoutTrailingSlash(own) : originOf(own)
   // With no page origin there is nothing for a relative URL to resolve against, so the absolute
   // form is the only correct answer.
-  if (!pageOrigin) return originOf(own)
-  return originOf(own) === pageOrigin ? '' : originOf(own)
+  if (!pageOrigin) return base
+  // Compared on ORIGINS: a mounted surface on this page's own origin is still same-origin, and
+  // the answer is then the mount rather than `''` — a relative `/v1/…` would resolve at the apex
+  // root, which is micro-site's.
+  if (originOf(own) !== pageOrigin) return base
+  return mounted ? pathOf(own) : ''
+}
+
+/** The hostname of a registry URL, or `''` when it does not parse. */
+function hostnameOf(url: string): string {
+  try {
+    return new URL(url).hostname
+  } catch {
+    return ''
+  }
+}
+
+/** A registry URL with any trailing slash removed, so appending `/v1/…` cannot double it. */
+function withoutTrailingSlash(url: string): string {
+  return url.replace(/\/+$/, '')
+}
+
+/** The PATH of a registry URL — its mount — or `''` when it has none. */
+function pathOf(url: string): string {
+  try {
+    return new URL(url).pathname.replace(/\/+$/, '')
+  } catch {
+    return ''
+  }
 }
 
 /**

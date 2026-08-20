@@ -20,7 +20,7 @@
  * and whether each outgoing product link carries `?net=`.
  */
 
-import { envLabel, networkFromQuery, splitEnvLabel, withNetwork } from '@cloudsforge/ui'
+import { networkFromQuery, splitEnvLabel, withNetwork } from '@cloudsforge/ui'
 import { keepNetworkInTheAddressBar } from '@cloudsforge/ui/network-view'
 import { chainIndexBase } from './hosts.ts'
 import type { PageNetwork } from './hosts.ts'
@@ -136,13 +136,32 @@ export function chainIndexBaseOn(network: PageNetwork): string {
   if (here === 'local' || network === 'local' || network === here) return base
   try {
     const url = new URL(base)
+    // ── THE SIBLING IS AN APEX, AND THE MOUNT COMES WITH IT ───────────────────────────────────
+    //
+    // This rewrote the FIRST LABEL of the explorer's host — `explorer.` to `explorer-testnet.` —
+    // and returned `url.origin`. Wave 3h moved that surface to `<apex>/explorer`, and both halves
+    // of the old composition broke:
+    //
+    //   * the hostname is now `cloudsforge.online`, two labels, so the `< 3` guard returned the
+    //     MAINNET base unchanged and the testnet column of this page quietly read mainnet;
+    //   * on the testnet estate the first label IS the environment, so `splitEnvLabel` yielded an
+    //     empty subdomain and `envLabel('', …)` composed `https://.cloudsforge.online` — a
+    //     leading dot, the same defect shape that took Litecoin off hub-web's miner in wave 3d;
+    //   * and `url.origin` DROPPED `/explorer`, so even a correct host would have asked
+    //     micro-site for `/v1/chains/…` and been handed an SPA shell with a 200.
+    //
+    // The estates differ by their APEX now, and the surface sits at the same path on both. So the
+    // environment label is added to or removed from the apex, and the pathname is carried across
+    // untouched.
     const parts = url.hostname.split('.')
-    if (parts.length < 3) return base
-    const env = splitEnvLabel(parts[0] ?? '')
-    const sub = env ? env.subdomain : (parts[0] ?? '')
-    const label = envLabel(sub, network === 'testnet' ? 'testnet' : '')
-    url.hostname = [label, ...parts.slice(1)].join('.')
-    return url.origin
+    const bare = splitEnvLabel(parts[0] ?? '') || parts[0] === 'testnet'
+      ? parts.slice(1).join('.')
+      : url.hostname
+    if (!bare.includes('.')) return base
+    url.hostname = network === 'testnet' ? `testnet.${bare}` : bare
+    // `url.href` minus any trailing slash, NOT `url.origin`: the mount is the half of this
+    // address that says WHERE UNDER the estate the chain index lives.
+    return `${url.origin}${url.pathname.replace(/\/+$/, '')}`
   } catch {
     return base
   }
