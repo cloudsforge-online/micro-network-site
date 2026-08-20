@@ -103,29 +103,29 @@ describe('the network a link arrived carrying', () => {
 describe('the chain index a panel reads follows that panel’s network', () => {
   it('asks each estate about the network it walks, from the mainnet estate', async () => {
     const m = await loadAt('https://network.cloudsforge.online/chain')
-    assert.equal(m.chainIndexBaseOn('mainnet'), 'https://explorer.cloudsforge.online')
-    assert.equal(m.chainIndexBaseOn('testnet'), 'https://explorer-testnet.cloudsforge.online')
+    assert.equal(m.chainIndexBaseOn('mainnet'), 'https://cloudsforge.online/explorer')
+    assert.equal(m.chainIndexBaseOn('testnet'), 'https://testnet.cloudsforge.online/explorer')
   })
 
   it('and the same two answers from the testnet estate — the own-network case inverts', async () => {
     const m = await loadAt('https://network-testnet.cloudsforge.online/chain')
-    assert.equal(m.chainIndexBaseOn('mainnet'), 'https://explorer.cloudsforge.online')
-    assert.equal(m.chainIndexBaseOn('testnet'), 'https://explorer-testnet.cloudsforge.online')
+    assert.equal(m.chainIndexBaseOn('mainnet'), 'https://cloudsforge.online/explorer')
+    assert.equal(m.chainIndexBaseOn('testnet'), 'https://testnet.cloudsforge.online/explorer')
   })
 
   it('is not moved by the switcher', async () => {
     const m = await loadAt('https://network.cloudsforge.online/chain')
     m.setViewedNetwork('testnet')
     assert.equal(m.viewedNetwork(), 'testnet', 'the reader is viewing testnet')
-    assert.equal(m.chainIndexBaseOn('mainnet'), 'https://explorer.cloudsforge.online')
-    assert.equal(m.chainIndexBaseOn('testnet'), 'https://explorer-testnet.cloudsforge.online')
+    assert.equal(m.chainIndexBaseOn('mainnet'), 'https://cloudsforge.online/explorer')
+    assert.equal(m.chainIndexBaseOn('testnet'), 'https://testnet.cloudsforge.online/explorer')
   })
 
   it('is not moved by the link either', async () => {
     const m = await loadAt('https://network.cloudsforge.online/chain?net=testnet')
     assert.equal(m.viewedNetwork(), 'testnet')
-    assert.equal(m.chainIndexBaseOn('mainnet'), 'https://explorer.cloudsforge.online')
-    assert.equal(m.chainIndexBaseOn('testnet'), 'https://explorer-testnet.cloudsforge.online')
+    assert.equal(m.chainIndexBaseOn('mainnet'), 'https://cloudsforge.online/explorer')
+    assert.equal(m.chainIndexBaseOn('testnet'), 'https://testnet.cloudsforge.online/explorer')
   })
 
   it('composes no sibling off-registry, where there is one index and no second estate', async () => {
